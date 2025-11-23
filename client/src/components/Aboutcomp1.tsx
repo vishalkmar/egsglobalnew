@@ -5,27 +5,27 @@ export default function AboutHeroEGS() {
   return (
     <section className="bg-slate-50">
       <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 min-h-[520px] flex flex-col">
-        {/* Top nav bar */}
-       
         {/* Main hero content */}
         <div className="flex flex-col lg:flex-row items-center lg:items-center gap-10 lg:gap-10 py-6 pb-16 lg:justify-between">
           {/* Left text */}
           <div className="w-full lg:w-[48%]">
-            <h1 className="text-[36px] sm:text-[42px] lg:text-[48px] leading-tight font-semibold tracking-[0.08em] text-slate-900">
-              BUSINESS
+            <h1 className="text-[32px] sm:text-[40px] lg:text-[46px] leading-tight font-semibold tracking-[0.08em] text-slate-900">
+              ABOUT EGS GROUP
             </h1>
             <p className="mt-1 text-sm tracking-[0.32em] uppercase text-slate-500">
-              Landing Page – EGS Group
+              Global Travel & Documentation Partner
             </p>
 
             <p className="mt-5 text-sm md:text-base text-slate-600 max-w-md leading-relaxed">
-              EGS Group helps you simplify global travel and documentation – from
-              visas and attestations to insurance and airport assistance. A single
-              partner for all your cross-border requirements.
+              EGS Group simplifies global travel and documentation for individuals
+              and businesses. From visas, attestations and document legalization
+              to insurance and airport assistance, we provide reliable end-to-end
+              support under one roof. Our expert team ensures accuracy,
+              transparency and a smooth experience at every step of your journey.
             </p>
 
             <button className="mt-7 inline-flex items-center rounded-full bg-emerald-400 px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-emerald-500 transition">
-              SEE MORE
+              LEARN MORE
             </button>
           </div>
 

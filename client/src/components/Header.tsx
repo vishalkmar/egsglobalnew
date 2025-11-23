@@ -4,11 +4,18 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
+const HEADER_GRADIENT =
+  "bg-[#020617] bg-[radial-gradient(circle_at_5%_10%,rgba(37,99,235,0.35),transparent_55%),radial-gradient(circle_at_80%_90%,rgba(147,51,234,0.35),transparent_60%)]";
+
 export default function Header() {
   const [location] = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<"services" | "visa" | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<"services" | "visa" | null>(
+    null
+  );
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const [mobileVisaOpen, setMobileVisaOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,43 +44,55 @@ export default function Header() {
     { name: "E-Visa", path: "/visa/e-visa" },
   ];
 
+  const handleMobileLinkClick = () => {
+    setIsMobileMenuOpen(false);
+    setMobileServicesOpen(false);
+    setMobileVisaOpen(false);
+  };
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-background/95 backdrop-blur-md shadow-md" : "bg-background"
+        isScrolled
+          ? "bg-transparent backdrop-blur-md shadow-md"
+          : HEADER_GRADIENT
       }`}
     >
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo - Left */}
+          {/* Logo */}
           <Link href="/">
-            <div data-testid="link-logo" className="flex items-center gap-2 cursor-pointer">
+            <div
+              data-testid="link-logo"
+              className="flex items-center gap-2 cursor-pointer"
+            >
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-md font-bold text-lg">
                 EGS Group
               </div>
             </div>
           </Link>
 
-          {/* Desktop Navigation - Right Aligned */}
+          {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8 ml-auto">
             <nav className="flex items-center gap-8">
-              {navLinks.map((link) => (
+              {/* Render first nav link (Home) */}
+              {navLinks.slice(0, 1).map((link) => (
                 <Link key={link.path} href={link.path}>
                   <span
                     data-testid={`link-${link.name.toLowerCase()}`}
-                    className={`text-sm font-medium transition-colors hover:text-primary relative cursor-pointer ${
-                      location === link.path ? "text-primary" : "text-foreground"
+                    className={`text-sm font-medium transition-colors relative cursor-pointer text-white/80 hover:text-sky-200 ${
+                      location === link.path ? "text-sky-300" : ""
                     }`}
                   >
                     {link.name}
                     {location === link.path && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary"></span>
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-sky-300" />
                     )}
                   </span>
                 </Link>
               ))}
 
-              {/* Services Dropdown */}
+              {/* Services Dropdown (desktop) - placed after Home */}
               <div
                 className="relative"
                 onMouseEnter={() => setOpenDropdown("services")}
@@ -81,27 +100,28 @@ export default function Header() {
               >
                 <button
                   data-testid="button-services-dropdown"
-                  className="flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary"
+                  className="flex items-center gap-1 text-sm font-medium transition-colors text-white/80 hover:text-sky-200"
                 >
                   Services
                   <ChevronDown className="w-4 h-4" />
                 </button>
 
-                {/* Dropdown Menu */}
                 {(openDropdown === "services" || openDropdown === "visa") && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-card border border-card-border rounded-md shadow-lg py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-slate-900/95 border border-slate-700 rounded-md shadow-lg py-2 animate-in fade-in slide-in-from-top-2 duration-200">
                     {serviceItems.map((item) => (
                       <Link key={item.path} href={item.path}>
                         <span
-                          data-testid={`link-service-${item.name.toLowerCase().replace(/\s+/g, "-")}`}
-                          className="block px-4 py-2 text-sm hover-elevate active-elevate-2 transition-colors cursor-pointer"
+                          data-testid={`link-service-${item.name
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")}`}
+                          className="block px-4 py-2 text-sm text-slate-100 hover:bg-white/10 cursor-pointer"
                         >
                           {item.name}
                         </span>
                       </Link>
                     ))}
 
-                    {/* Visa Sub-dropdown */}
+                    {/* Visa nested submenu */}
                     <div
                       className="relative"
                       onMouseEnter={() => setOpenDropdown("visa")}
@@ -109,19 +129,21 @@ export default function Header() {
                     >
                       <button
                         data-testid="button-visa-submenu"
-                        className="w-full flex items-center justify-between px-4 py-2 text-sm hover-elevate active-elevate-2 transition-colors"
+                        className="w-full flex items-center justify-between px-4 py-2 text-sm text-slate-100 hover:bg-white/10 cursor-pointer"
                       >
                         Visa
                         <ChevronDown className="w-4 h-4 -rotate-90" />
                       </button>
 
                       {openDropdown === "visa" && (
-                        <div className="absolute left-full top-0 ml-1 w-48 bg-card border border-card-border rounded-md shadow-lg py-2 animate-in fade-in slide-in-from-left-2 duration-200">
+                        <div className="absolute left-24 top-full mt-1 w-[60%] bg-slate-900/95 border border-slate-700 rounded-md shadow-lg py-2 animate-in fade-in duration-200 z-50">
                           {visaSubItems.map((item) => (
                             <Link key={item.path} href={item.path}>
                               <span
-                                data-testid={`link-${item.name.toLowerCase().replace(/\s+/g, "-")}`}
-                                className="block px-4 py-2 text-sm hover-elevate active-elevate-2 transition-colors cursor-pointer"
+                                data-testid={`link-${item.name
+                                  .toLowerCase()
+                                  .replace(/\s+/g, "-")}`}
+                                className="block px-4 py-2 text-sm text-slate-100 hover:bg-white/10 cursor-pointer"
                               >
                                 {item.name}
                               </span>
@@ -133,20 +155,36 @@ export default function Header() {
                   </div>
                 )}
               </div>
+
+              {/* Render remaining nav links (About, Contact, etc.) */}
+              {navLinks.slice(1).map((link) => (
+                <Link key={link.path} href={link.path}>
+                  <span
+                    data-testid={`link-${link.name.toLowerCase()}`}
+                    className={`text-sm font-medium transition-colors relative cursor-pointer text-white/80 hover:text-sky-200 ${
+                      location === link.path ? "text-sky-300" : ""
+                    }`}
+                  >
+                    {link.name}
+                    {location === link.path && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-sky-300" />
+                    )}
+                  </span>
+                </Link>
+              ))}
             </nav>
 
-            {/* Login Button - Desktop Only */}
+            {/* Desktop Login */}
             <Button
               data-testid="button-login"
-              variant="default"
               size="sm"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
             >
               Login
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu */}
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button
@@ -154,13 +192,16 @@ export default function Header() {
                 variant="ghost"
                 size="icon"
               >
-                <Menu className="h-6 w-6" />
+                <Menu className="h-6 w-6 text-white" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-80 p-0">
+            <SheetContent
+              side="left"
+              className={`w-80 p-0 text-white ${HEADER_GRADIENT} [&_[data-radix-dialog-close]]:hidden`}
+            >
               <div className="flex flex-col h-full">
-                {/* Mobile Menu Header */}
-                <div className="flex items-center justify-between p-4 border-b">
+                {/* Mobile Header */}
+                <div className="flex items-center justify-between p-4 border-b border-white/10">
                   <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-md font-bold">
                     EGS Group
                   </div>
@@ -170,22 +211,20 @@ export default function Header() {
                     size="icon"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <X className="h-5 w-5" />
+                    <X className="h-5 w-5 text-white" />
                   </Button>
                 </div>
 
-                {/* Mobile Menu Content */}
+                {/* Mobile Nav */}
                 <nav className="flex-1 overflow-y-auto p-4">
                   <div className="space-y-1">
                     {navLinks.map((link) => (
                       <Link key={link.path} href={link.path}>
                         <span
                           data-testid={`mobile-link-${link.name.toLowerCase()}`}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className={`block px-4 py-3 rounded-md text-sm font-medium transition-colors hover-elevate active-elevate-2 cursor-pointer ${
-                            location === link.path
-                              ? "bg-primary text-primary-foreground"
-                              : ""
+                          onClick={handleMobileLinkClick}
+                          className={`block px-4 py-3 rounded-md text-sm font-medium transition-colors cursor-pointer text-white/90 hover:bg-white/10 ${
+                            location === link.path ? "bg-white/15" : ""
                           }`}
                         >
                           {link.name}
@@ -193,44 +232,79 @@ export default function Header() {
                       </Link>
                     ))}
 
-                    {/* Mobile Services */}
-                    <div className="pt-2">
-                      <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase">
-                        Services
-                      </div>
-                      {serviceItems.map((item) => (
-                        <Link key={item.path} href={item.path}>
-                          <span
-                            data-testid={`mobile-service-${item.name.toLowerCase().replace(/\s+/g, "-")}`}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="block px-4 py-3 rounded-md text-sm hover-elevate active-elevate-2 transition-colors cursor-pointer"
-                          >
-                            {item.name}
-                          </span>
-                        </Link>
-                      ))}
+                    {/* Services accordion (mobile) */}
+                    <div className="pt-3 space-y-1">
+                      <button
+                        type="button"
+                        data-testid="mobile-accordion-services"
+                        onClick={() =>
+                          setMobileServicesOpen((prev) => !prev)
+                        }
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-md text-sm font-semibold text-white/80 hover:bg-white/10"
+                      >
+                        <span>Services</span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform ${
+                            mobileServicesOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {mobileServicesOpen && (
+                        <div className="pl-2 space-y-1">
+                          {serviceItems.map((item) => (
+                            <Link key={item.path} href={item.path}>
+                              <span
+                                data-testid={`mobile-service-${item.name
+                                  .toLowerCase()
+                                  .replace(/\s+/g, "-")}`}
+                                onClick={handleMobileLinkClick}
+                                className="block px-4 py-2 rounded-md text-sm text-white/90 hover:bg-white/10 cursor-pointer"
+                              >
+                                {item.name}
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
 
-                      <div className="px-4 py-2 text-xs font-semibold text-muted-foreground">
-                        Visa Services
-                      </div>
-                      {visaSubItems.map((item) => (
-                        <Link key={item.path} href={item.path}>
-                          <span
-                            data-testid={`mobile-visa-${item.name.toLowerCase().replace(/\s+/g, "-")}`}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="block px-4 py-3 rounded-md text-sm hover-elevate active-elevate-2 transition-colors cursor-pointer"
-                          >
-                            {item.name}
-                          </span>
-                        </Link>
-                      ))}
+                      {/* Visa accordion (mobile) */}
+                      <button
+                        type="button"
+                        data-testid="mobile-accordion-visa"
+                        onClick={() => setMobileVisaOpen((prev) => !prev)}
+                        className="w-full mt-2 flex items-center justify-between px-4 py-3 rounded-md text-sm font-semibold text-white/80 hover:bg-white/10"
+                      >
+                        <span>Visa Services</span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform ${
+                            mobileVisaOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {mobileVisaOpen && (
+                        <div className="pl-2 space-y-1">
+                          {visaSubItems.map((item) => (
+                            <Link key={item.path} href={item.path}>
+                              <span
+                                data-testid={`mobile-visa-${item.name
+                                  .toLowerCase()
+                                  .replace(/\s+/g, "-")}`}
+                                onClick={handleMobileLinkClick}
+                                className="block px-4 py-2 rounded-md text-sm text-white/90 hover:bg-white/10 cursor-pointer"
+                              >
+                                {item.name}
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Mobile Login Button */}
                     <div className="pt-4">
                       <Button
                         data-testid="button-mobile-login"
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         Login

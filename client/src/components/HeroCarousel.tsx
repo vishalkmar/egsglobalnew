@@ -9,7 +9,7 @@ import consultationImage from "@assets/generated_images/customer_service_consult
 const slides = [
   {
     image: airportImage,
-    title: "Your Journey Begins Here",
+    title: "Your Gateway to Hassle-Free Document Services",
     subtitle: "Expert visa services for seamless international travel",
     cta1: "Get Started",
     cta2: "Learn More",

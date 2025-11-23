@@ -1,7 +1,6 @@
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import { Link } from "wouter";
+"use client";
+
+import React from "react";
 import embassyImg from "@assets/generated_images/embassy_legalization_service.png";
 import attestationImg from "@assets/generated_images/attestation_certificate_service.png";
 import insuranceImg from "@assets/generated_images/travel_insurance_documents.png";
@@ -13,102 +12,121 @@ const services = [
   {
     image: embassyImg,
     title: "Embassy & Legalization",
-    description: "Complete embassy legalization and document authentication services for international use.",
+    description:
+      "Complete embassy legalization and document authentication services for international use.",
     path: "/embassy-legalization",
   },
   {
     image: attestationImg,
     title: "Attestation & Apostille",
-    description: "Professional attestation and apostille services for educational and official documents.",
+    description:
+      "Professional attestation and apostille services for educational and official documents.",
     path: "/attestation-apostille",
   },
   {
     image: insuranceImg,
     title: "Insurance & Dummy Ticket",
-    description: "Travel insurance and flight reservation services for visa applications.",
+    description:
+      "Travel insurance and flight reservation services for visa applications.",
     path: "/insurance-dummy-ticket",
   },
   {
     image: meetGreetImg,
     title: "Meet & Greet",
-    description: "Airport assistance and personalized meet & greet services for smooth arrivals.",
+    description:
+      "Airport assistance and personalized meet & greet services for smooth arrivals.",
     path: "/meet-greet",
   },
   {
     image: accommodationImg,
     title: "Accommodation & Assistant",
-    description: "Help with booking accommodations and personal assistance throughout your journey.",
+    description:
+      "Help with booking accommodations and personal assistance throughout your journey.",
     path: "/accommodation-assistant",
   },
   {
     image: visaImg,
     title: "Visa Services",
-    description: "Comprehensive visa processing including normal visas and e-visa services.",
+    description:
+      "Comprehensive visa processing including normal visas and e-visa services.",
     path: "/visa/normal",
   },
 ];
 
-export default function ServicesSection() {
+const Services = () => {
   return (
-    <section className="py-16 md:py-24">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-12">
-           <h2 className="text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-sky-500 to-purple-600 bg-clip-text text-transparent">
-          Services We
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Comprehensive visa and travel services tailored to your needs
-          </p>
-        </div>
+    <section className="bg-white overflow-hidden text-gray-700 relative">
+      {/* subtle top gradient hint (like sunlight reflection on white) */}
+      <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-emerald-50 via-white to-transparent pointer-events-none"></div>
 
-        <div className="  grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* ---------- HEADER SECTION ---------- */}
+      <div className="w-full text-center py-10 px-4 relative z-10">
+        <h1 className="text-4xl text-center md:text-5xl font-bold md:py-16 text-sky-600 tracking-wide">
+               Services We Provide
+            </h1>
+        <p className="text-gray-600 text-[1rem] sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+         EGS Group provides seamless global travel and documentation support, offering visas, legalization, insurance, airport assistance, and accommodation with expert, reliable service.
+        </p>
+      </div>
+
+      {/* ---------- ITINERARY / SERVICES SECTION ---------- */}
+      <div className="py-6 px-4 sm:px-8 md:px-12 max-w-7xl mx-auto relative z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-20 text-center">
           {services.map((service, index) => (
-            <Card
-              key={service.title}
-              data-testid={`card-service-${service.title.toLowerCase().replace(/\s+/g, "-")}`}
-              className="group bg-[#4ab5bd] overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 hover:border-primary/30"
+            <div
+              key={index}
+              className="flex flex-col items-center relative hover:scale-[1.02] transition-transform duration-300"
             >
-              {/* Service Image */}
-              <div className="relative h-56 overflow-hidden">
-                <img
-                  src={service.image}
-                  alt={service.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+              <div className="relative mb-12 flex flex-col items-center">
+                {/* Curved Cap with color tone */}
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10">
+                  <svg
+                    width="200"
+                    height="80"
+                    viewBox="0 0 200 80"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M10,70 Q100,0 190,70"
+                      fill="none"
+                      stroke="#13dde8ff"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex justify-center items-start pt-6">
+                   
+                  </div>
+                </div>
+
+                {/* Circle Image */}
+                <div className="w-52 h-52 sm:w-56 sm:h-56 md:w-60 md:h-60 rounded-full overflow-hidden border-[4px] border-emerald-100 shadow-md relative z-0">
+                  <img
+                    src={service.image}
+                    alt={service.title}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  />
+                </div>
               </div>
 
-              {/* Content */}
-              <div className="p-6">
-                <h3
-                  data-testid={`text-service-title-${service.title.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="text-xl font-bold mb-3 text-white"
-                >
-                  {service.title}
-                </h3>
-                <p
-                  data-testid={`text-service-description-${service.title.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="text-white text-sm mb-5 leading-relaxed min-h-[3rem]"
-                >
-                  {service.description}
-                </p>
-                <Link href={service.path}>
-                  <Button
-                    data-testid={`button-service-learn-more-${service.title.toLowerCase().replace(/\s+/g, "-")}`}
-                    variant="ghost"
-                    className="group/button p-0 h-auto bg-white"
-                  >
-                    <span className="text-primary font-semibold">Learn More</span>
-                    <ArrowRight className="w-4 h-4 ml-1 group-hover/button:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-              </div>
-            </Card>
+              {/* Title */}
+              <h3 className="text-2xl font-semibold uppercase mb-4 text-sky-600 tracking-wide">
+                {service.title}
+              </h3>
+
+              {/* Description from services data */}
+              <ul className="text-base text-gray-600 space-y-2 leading-relaxed max-w-xs">
+                <li className="text-[1rem]">{service.description}</li>
+              </ul>
+            </div>
           ))}
         </div>
       </div>
+
+      {/* Bottom soft gradient touch */}
+      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-teal-50 via-white to-transparent pointer-events-none"></div>
     </section>
   );
-}
+};
 
-
+export default Services;
