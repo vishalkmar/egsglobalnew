@@ -1,4 +1,4 @@
-"use client";
+
 
 import React, { useState, ChangeEvent, FormEvent } from "react";
 
@@ -51,28 +51,24 @@ const MeaAttestationHero: React.FC = () => {
           {/* LEFT SIDE – TEXT BLOCK */}
           <div className="flex flex-col justify-center space-y-6 md:space-y-8">
             <div>
-              <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.22em] text-sky-200 mb-2">
-                Ministry of External Affairs – Document Services
-              </p>
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.3rem] font-bold leading-tight md:leading-[1.15] space-y-1">
-                <span className="block">Apostille &amp; MEA</span>
-                <span className="block">Attestation Services</span>
-                <span className="block">Embassy Legalization &amp;</span>
-                <span className="block">Document Authentication</span>
+                <span className="block">Ministry of External</span>
+                <span className="block">Affairs – MEA Attestation</span>
               </h1>
             </div>
 
             <p className="text-sm sm:text-base text-sky-50/90 max-w-xl leading-relaxed">
-              EGS Group helps you complete Apostille, MEA attestation and
-              embassy legalization for personal, educational and commercial
-              documents—end-to-end assistance with pickup, processing and safe
-              return of your documents.
+              EGS Group provides end-to-end support for MEA attestation of
+              personal, educational and commercial documents. From state /
+              chamber authentication to MEA stamping and safe delivery, we
+              manage the complete process so your documents are ready for use
+              abroad without hassles.
             </p>
 
             <ul className="space-y-1 text-xs sm:text-sm text-sky-100/90">
-              <li>• Support for MEA, SDM, HRD and Embassy attestation</li>
-              <li>• Guidance on country-specific requirements and timelines</li>
-              <li>• Dedicated relationship team for status updates</li>
+              <li>• MEA attestation for educational, personal & commercial documents</li>
+              <li>• Coordination with HRD, Home Department & Chamber of Commerce</li>
+              <li>• Expert guidance on country-wise documentation and timelines</li>
             </ul>
           </div>
 
@@ -85,7 +81,7 @@ const MeaAttestationHero: React.FC = () => {
                   EGS
                 </div>
                 <p className="mt-3 text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-slate-500 text-center">
-                  Online Apostille &amp; Attestation Form
+                  Online MEA Attestation Enquiry Form
                 </p>
               </div>
 
@@ -212,9 +208,9 @@ const MeaAttestationHero: React.FC = () => {
                   <textarea
                     name="details"
                     rows={4}
-                    placeholder="• Document type(s) you need Apostille / Attestation for
+                    placeholder={`• Document type(s) you need MEA attestation / Apostille for
 • Country where you will use the document
-• Any specific instructions or urgent timelines"
+• Any specific instructions or urgent timelines`}
                     value={formData.details}
                     onChange={handleChange}
                     className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 resize-y"

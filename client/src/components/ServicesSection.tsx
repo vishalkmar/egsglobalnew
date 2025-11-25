@@ -11,7 +11,7 @@ import visaImg from "@assets/generated_images/visa_approval_service.png";
 const services = [
   {
     image: embassyImg,
-    title: "Embassy & Legalization",
+    title: "Embassy and consular services",
     description:
       "Complete embassy legalization and document authentication services for international use.",
     path: "/embassy-legalization",
@@ -32,14 +32,14 @@ const services = [
   },
   {
     image: meetGreetImg,
-    title: "Meet & Greet",
+    title: "Meet & Greet Services In Delhi",
     description:
       "Airport assistance and personalized meet & greet services for smooth arrivals.",
     path: "/meet-greet",
   },
   {
     image: accommodationImg,
-    title: "Accommodation & Assistant",
+    title: "Accommodation & Assistance In Delhi",
     description:
       "Help with booking accommodations and personal assistance throughout your journey.",
     path: "/accommodation-assistant",

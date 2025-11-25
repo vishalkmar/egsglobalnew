@@ -11,9 +11,7 @@ export default function Header() {
   const [location] = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<"services" | "visa" | null>(
-    null
-  );
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [mobileVisaOpen, setMobileVisaOpen] = useState(false);
 
@@ -31,21 +29,29 @@ export default function Header() {
     { name: "Contact", path: "/contact" },
   ];
 
-  const serviceItems = [
-     { name: "MEA & Embassy Appostille", path: "/MEA-Embassy" },
-    { name: "PCC Legalisation & Appostille", path: "/PCC-Legalisation" },
-    { name: " Embassy Attestation", path: "/Embassy-Attention" },
-     { name: "Translation Languages", path: "/Translation-Languages" },
-      { name: "HRD Stamping", path: "/HRD-Stamping" },
-       { name: "Assistance in Sumission & collection", path: "/Assistance-in-Sumission" },
-    { name: "Insurance & Dummy Ticket", path: "/insurance-dummy-ticket" },
-    { name: "Meet & Greet", path: "/meet-greet" },
-    { name: "Accommodation & Assistant", path: "/accommodation-assistant" },
+  const visaSubItems = [
+    { name: "Sticker Visa", path: "/visa/normal" },
+    { name: "E-Visa", path: "/visa/e-visa" },
   ];
 
-  const visaSubItems = [
-    { name: "Normal Visa", path: "/visa/normal" },
-    { name: "E-Visa", path: "/visa/e-visa" },
+  const serviceItems = [
+        { name: "MEA Attestation", path: "/MEA-Attention" },
+    { name: "PCC Legalisation & Appostille", path: "/PCC-Legalisation" },
+    { name: "Translation Services", path: "/Translation-services" },
+    { name: "Visa", children: visaSubItems },
+    {
+      name: "Embassy and consular services",
+      children: [
+        {
+          name: "Assistance in Appointment & Submission",
+          path: "/Assistance-in-Sumission",
+        },
+      ],
+    },
+    { name: "HRD Stamping", path: "/HRD-Stamping" },
+    { name: "Insurance & Dummy Ticket", path: "/insurance-dummy-ticket" },
+    { name: "Meet & Greet Assistance in Delhi ", path: "/meet-greet" },
+    { name: "Accommodation Assistance in Delhi", path: "/accommodation-assistant" },
   ];
 
   const handleMobileLinkClick = () => {
@@ -97,65 +103,60 @@ export default function Header() {
               ))}
 
               {/* Services Dropdown (desktop) - placed after Home */}
-              <div
-                className="relative"
-                onMouseEnter={() => setOpenDropdown("services")}
-                onMouseLeave={() => setOpenDropdown(null)}
-              >
+              <div className="relative">
                 <button
                   data-testid="button-services-dropdown"
+                  onClick={() => setOpenDropdown((v) => (v === "services" ? null : "services"))}
                   className="flex items-center gap-1 text-sm font-medium transition-colors text-white/80 hover:text-sky-200"
                 >
                   Services
                   <ChevronDown className="w-4 h-4" />
                 </button>
 
-                {(openDropdown === "services" || openDropdown === "visa") && (
+                {(openDropdown === "services" || serviceItems.some((si) => si.name === openDropdown)) && (
                   <div className="absolute top-full left-0 mt-2 w-64 bg-slate-900/95 border border-slate-700 rounded-md shadow-lg py-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                    {serviceItems.map((item) => (
-                      <Link key={item.path} href={item.path}>
-                        <span
-                          data-testid={`link-service-${item.name
-                            .toLowerCase()
-                            .replace(/\s+/g, "-")}`}
-                          className="block px-4 py-2 text-sm text-slate-100 hover:bg-white/10 cursor-pointer"
-                        >
-                          {item.name}
-                        </span>
-                      </Link>
+                    {serviceItems.map((item, idx) => (
+                      <div key={idx} className="">
+                        {item.path ? (
+                          <Link key={String(item.path)} href={String(item.path)}>
+                            <span
+                              data-testid={`link-service-${String(item.name)
+                                .toLowerCase()
+                                .replace(/\s+/g, "-")}`}
+                              className="block px-4 py-2 text-sm text-slate-100 hover:bg-white/10 cursor-pointer"
+                            >
+                              {item.name}
+                            </span>
+                          </Link>
+                        ) : item.children ? (
+                          <div className="relative">
+                            <button
+                              onClick={() => setOpenDropdown((v) => (v === item.name ? null : item.name))}
+                              className="w-full flex items-center justify-between px-4 py-2 text-sm text-slate-100 hover:bg-white/10 cursor-pointer"
+                            >
+                              {item.name}
+                              <ChevronDown className="w-4 h-4 -rotate-90" />
+                            </button>
+
+                            {openDropdown === item.name && (
+                              <div className="absolute left-24 top-0 ml-1 w-56 bg-slate-900/95 border border-slate-700 rounded-md shadow-lg py-2 z-50">
+                                {item.children.map((child) => (
+                                  <Link key={child.path} href={child.path}>
+                                    <span className="block px-4 py-2 text-sm text-slate-100 hover:bg-white/10 cursor-pointer">
+                                      {child.name}
+                                    </span>
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="block px-4 py-2 text-sm text-slate-100">
+                            {item.name}
+                          </span>
+                        )}
+                      </div>
                     ))}
-
-                    {/* Visa nested submenu */}
-                    <div
-                      className="relative"
-                      onMouseEnter={() => setOpenDropdown("visa")}
-                      onMouseLeave={() => setOpenDropdown("services")}
-                    >
-                      <button
-                        data-testid="button-visa-submenu"
-                        className="w-full flex items-center justify-between px-4 py-2 text-sm text-slate-100 hover:bg-white/10 cursor-pointer"
-                      >
-                        Visa
-                        <ChevronDown className="w-4 h-4 -rotate-90" />
-                      </button>
-
-                      {openDropdown === "visa" && (
-                        <div className="absolute left-24 top-full mt-1 w-[60%] bg-slate-900/95 border border-slate-700 rounded-md shadow-lg py-2 animate-in fade-in duration-200 z-50">
-                          {visaSubItems.map((item) => (
-                            <Link key={item.path} href={item.path}>
-                              <span
-                                data-testid={`link-${item.name
-                                  .toLowerCase()
-                                  .replace(/\s+/g, "-")}`}
-                                className="block px-4 py-2 text-sm text-slate-100 hover:bg-white/10 cursor-pointer"
-                              >
-                                {item.name}
-                              </span>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
                   </div>
                 )}
               </div>
@@ -255,18 +256,46 @@ export default function Header() {
                       </button>
                       {mobileServicesOpen && (
                         <div className="pl-2 space-y-1">
-                          {serviceItems.map((item) => (
-                            <Link key={item.path} href={item.path}>
-                              <span
-                                data-testid={`mobile-service-${item.name
-                                  .toLowerCase()
-                                  .replace(/\s+/g, "-")}`}
-                                onClick={handleMobileLinkClick}
-                                className="block px-4 py-2 rounded-md text-sm text-white/90 hover:bg-white/10 cursor-pointer"
-                              >
-                                {item.name}
-                              </span>
-                            </Link>
+                          {serviceItems.map((item, idx) => (
+                            <div key={idx}>
+                              {item.path ? (
+                                <Link key={String(item.path)} href={String(item.path)}>
+                                  <span
+                                    data-testid={`mobile-service-${String(item.name)
+                                      .toLowerCase()
+                                      .replace(/\s+/g, "-")}`}
+                                    onClick={handleMobileLinkClick}
+                                    className="block px-4 py-2 rounded-md text-sm text-white/90 hover:bg-white/10 cursor-pointer"
+                                  >
+                                    {item.name}
+                                  </span>
+                                </Link>
+                              ) : item.children ? (
+                                <div>
+                                  <button
+                                    type="button"
+                                    onClick={() => { /* toggle handled by mobileServicesOpen at top-level if needed */ }}
+                                    className="w-full text-left px-4 py-2 rounded-md text-sm text-white/90"
+                                  >
+                                    {item.name}
+                                  </button>
+                                  <div className="pl-4">
+                                    {item.children.map((child) => (
+                                      <Link key={child.path} href={child.path}>
+                                        <span
+                                          onClick={handleMobileLinkClick}
+                                          className="block px-4 py-2 rounded-md text-sm text-white/90 hover:bg-white/10 cursor-pointer"
+                                        >
+                                          {child.name}
+                                        </span>
+                                      </Link>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="block px-4 py-2 rounded-md text-sm text-white/90">{item.name}</span>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}

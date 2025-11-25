@@ -2,93 +2,96 @@
 
 import React, { useState, FormEvent, ChangeEvent } from "react";
 
-type ActiveTab = "flight" | "hotel" | "insurance";
+type ActiveTab = "dummyTicket" | "insurance";
 type TripType = "oneWay" | "roundTrip";
 
 const DummyTicketBooking: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("flight");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("dummyTicket");
   const [tripType, setTripType] = useState<TripType>("oneWay");
 
   const [flightForm, setFlightForm] = useState({
+    name: "",
+    email: "",
     startLocation: "",
-    endLocation: "",
+  
     departureDate: "",
     returnDate: "",
-  });
-
-  const [hotelForm, setHotelForm] = useState({
-    city: "",
-    checkIn: "",
-    checkOut: "",
   });
 
   const [insuranceForm, setInsuranceForm] = useState({
     name: "",
     email: "",
     mobile: "",
-    nominee: "",
-    pan: "",
-    aadhar: "",
-    passportFile: null as File | null,
+    destination: "",
+    travelDate: "",
+    dob: "",
   });
 
-  const handleFlightChange = (
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
+  const [error, setError] = useState<string | null>(null);
+
+  // Dummy ticket form change
+  const handleFlightChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFlightForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleHotelChange = (
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
+  // Insurance form change
+  const handleInsuranceChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setHotelForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleInsuranceChange = (
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
-    const { name, value, files } = e.target;
-    if (name === "passportFile" && files) {
-      setInsuranceForm((prev) => ({ ...prev, passportFile: files[0] }));
-    } else {
-      setInsuranceForm((prev) => ({ ...prev, [name]: value }));
-    }
+    setInsuranceForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     let payload: any = { tab: activeTab };
 
-    if (activeTab === "flight") {
+    if (activeTab === "dummyTicket") {
+      const {
+        name,
+        email,
+        startLocation,
+        
+        departureDate,
+        returnDate,
+      } = flightForm;
+
+      // basic validation
+      if (!name || !email || !startLocation || !endLocation || !departureDate) {
+        setError("Please fill all required fields in the dummy ticket form.");
+        return;
+      }
+      if (tripType === "roundTrip" && !returnDate) {
+        setError("Please select a return date for round trip.");
+        return;
+      }
+
       payload = {
         ...payload,
         tripType,
         ...flightForm,
-      };
-    } else if (activeTab === "hotel") {
-      payload = {
-        ...payload,
-        ...hotelForm,
+        amount: 1000,
       };
     } else if (activeTab === "insurance") {
+      const { name, email, mobile, destination, travelDate, dob } =
+        insuranceForm;
+
+      // light validation for insurance as well
+      if (!name || !email || !mobile || !destination || !travelDate || !dob) {
+        setError("Please fill all required fields in the insurance form.");
+        return;
+      }
+
       payload = {
         ...payload,
         ...insuranceForm,
-        passportFile: insuranceForm.passportFile
-          ? insuranceForm.passportFile.name
-          : null,
       };
     }
 
-    console.log("Dummy ticket form submit payload:", payload);
+    console.log("Dummy ticket / Insurance form submit payload:", payload);
 
-    // yahan future mein API call kar sakte ho:
-    // await fetch("/api/dummy-ticket", { method: "POST", body: JSON.stringify(payload) });
-
-    alert("Your request has been submitted successfully.");
+    alert("Your request has been submitted successfully. Our team will coordinate with you shortly.");
   };
 
   return (
@@ -103,8 +106,8 @@ const DummyTicketBooking: React.FC = () => {
               </h2>
               <p className="text-sm sm:text-base text-slate-600 max-w-md">
                 Choose your option, share basic details and submit your request.
-                Our team will process your dummy ticket / hotel / insurance and
-                share it with you shortly.
+                Our team will process your dummy ticket or travel insurance and
+                share the confirmation with you shortly.
               </p>
             </div>
 
@@ -116,15 +119,13 @@ const DummyTicketBooking: React.FC = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4 text-white">
-                           <ul className="space-y-2 text-sm text-white">
-              <li>• 100% visa-friendly documentation</li>
-              <li>• Instant request submission, processed by our team</li>
-              <li>• Support for flight, hotel and travel insurance</li>
-            </ul>
+                <ul className="space-y-2 text-sm text-white">
+                  <li>• 100% visa-friendly documentation</li>
+                  <li>• Instant request submission, processed by our team</li>
+                  <li>• Support for dummy ticket and travel insurance</li>
+                </ul>
               </div>
             </div>
-
-
           </div>
 
           {/* RIGHT SIDE: form */}
@@ -132,34 +133,41 @@ const DummyTicketBooking: React.FC = () => {
             <div className="border border-slate-200 rounded-2xl shadow-sm overflow-hidden bg-white">
               {/* Tabs */}
               <div className="flex bg-slate-100">
-                {(["flight", "hotel", "insurance"] as ActiveTab[]).map(
-                  (tab) => (
-                    <button
-                      key={tab}
-                      type="button"
-                      onClick={() => setActiveTab(tab)}
-                      className={`flex-1 py-2.5 text-sm sm:text-base font-medium border-b-2 transition-colors ${
-                        activeTab === tab
-                          ? "bg-sky-600 text-white border-sky-700"
-                          : "bg-transparent text-slate-700 border-transparent"
-                      }`}
-                    >
-                      {tab === "flight"
-                        ? "Flight"
-                        : tab === "hotel"
-                        ? "Hotel"
-                        : "Insurance"}
-                    </button>
-                  )
-                )}
+                {[
+                  { id: "dummyTicket" as ActiveTab, label: "Dummy Ticket" },
+                  { id: "insurance" as ActiveTab, label: "Insurance" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setError(null);
+                    }}
+                    className={`flex-1 py-2.5 text-sm sm:text-base font-medium border-b-2 transition-colors ${
+                      activeTab === tab.id
+                        ? "bg-sky-600 text-white border-sky-700"
+                        : "bg-transparent text-slate-700 border-transparent"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
               <form
                 onSubmit={handleSubmit}
                 className="p-4 sm:p-6 space-y-4 sm:space-y-5"
               >
-                {/* Flight tab */}
-                {activeTab === "flight" && (
+                {/* Error message */}
+                {error && (
+                  <div className="rounded-md bg-rose-50 border border-rose-200 px-3 py-2 text-xs sm:text-sm text-rose-700">
+                    {error}
+                  </div>
+                )}
+
+                {/* Dummy Ticket tab */}
+                {activeTab === "dummyTicket" && (
                   <>
                     {/* Trip type toggle */}
                     <div className="flex justify-center">
@@ -189,24 +197,45 @@ const DummyTicketBooking: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Fields */}
+                    {/* Name & Email */}
                     <div className="space-y-3 sm:space-y-4">
+                      <div className="space-y-1">
+                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                          NAME
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          placeholder="Enter your name"
+                          value={flightForm.name}
+                          onChange={handleFlightChange}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                          EMAIL
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          placeholder="Enter your email"
+                          value={flightForm.email}
+                          onChange={handleFlightChange}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                        />
+                      </div>
+
                       <input
                         type="text"
                         name="startLocation"
-                        placeholder="Start Location"
+                        placeholder=" DESTINATION"
                         value={flightForm.startLocation}
                         onChange={handleFlightChange}
                         className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                       />
-                      <input
-                        type="text"
-                        name="endLocation"
-                        placeholder="End Location"
-                        value={flightForm.endLocation}
-                        onChange={handleFlightChange}
-                        className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                      />
+                     
 
                       <div className="space-y-1">
                         <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
@@ -236,52 +265,17 @@ const DummyTicketBooking: React.FC = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Amount box */}
+                    <div className="rounded-md border border-slate-200 px-3 py-3 bg-slate-50 flex items-center justify-between mt-2">
+                      <span className="text-xs sm:text-sm font-semibold text-slate-600">
+                        Dummy Ticket Amount
+                      </span>
+                      <span className="text-sm sm:text-base font-bold text-sky-700">
+                        ₹ 1000
+                      </span>
+                    </div>
                   </>
-                )}
-
-                {/* Hotel tab */}
-                {activeTab === "hotel" && (
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="space-y-1">
-                      <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                        CITY
-                      </label>
-                      <input
-                        type="text"
-                        name="city"
-                        placeholder="City"
-                        value={hotelForm.city}
-                        onChange={handleHotelChange}
-                        className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                        CHECK IN
-                      </label>
-                      <input
-                        type="date"
-                        name="checkIn"
-                        value={hotelForm.checkIn}
-                        onChange={handleHotelChange}
-                        className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                        CHECK OUT
-                      </label>
-                      <input
-                        type="date"
-                        name="checkOut"
-                        value={hotelForm.checkOut}
-                        onChange={handleHotelChange}
-                        className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                      />
-                    </div>
-                  </div>
                 )}
 
                 {/* Insurance tab */}
@@ -326,55 +320,43 @@ const DummyTicketBooking: React.FC = () => {
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                          NOMINEE
-                        </label>
-                        <input
-                          type="text"
-                          name="nominee"
-                          value={insuranceForm.nominee}
-                          onChange={handleInsuranceChange}
-                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                          PAN NO
-                        </label>
-                        <input
-                          type="text"
-                          name="pan"
-                          value={insuranceForm.pan}
-                          onChange={handleInsuranceChange}
-                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                        />
-                      </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                        DESTINATION
+                      </label>
+                      <input
+                        type="text"
+                        name="destination"
+                        placeholder="Country / region you are travelling to"
+                        value={insuranceForm.destination}
+                        onChange={handleInsuranceChange}
+                        className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div className="space-y-1">
                         <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                          AADHAR NO
+                          DATE
                         </label>
                         <input
-                          type="text"
-                          name="aadhar"
-                          value={insuranceForm.aadhar}
+                          type="date"
+                          name="travelDate"
+                          value={insuranceForm.travelDate}
                           onChange={handleInsuranceChange}
                           className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                         />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                          PASSPORT ATTACHMENT
+                          DATE OF BIRTH
                         </label>
                         <input
-                          type="file"
-                          name="passportFile"
+                          type="date"
+                          name="dob"
+                          value={insuranceForm.dob}
                           onChange={handleInsuranceChange}
-                          className="w-full text-xs sm:text-sm"
+                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                         />
                       </div>
                     </div>
@@ -386,7 +368,9 @@ const DummyTicketBooking: React.FC = () => {
                   type="submit"
                   className="mt-4 w-full rounded-md bg-sky-600 hover:bg-sky-700 text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 transition-colors"
                 >
-                  Buy Dummy Ticket
+                  {activeTab === "dummyTicket"
+                    ? "Buy Dummy Ticket"
+                    : "Submit Insurance Request"}
                 </button>
               </form>
             </div>

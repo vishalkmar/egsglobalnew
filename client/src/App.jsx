@@ -13,12 +13,12 @@ import AccommodationAssistant from "@/pages/AccommodationAssistant";
 import NormalVisa from "@/pages/NormalVisa";
 import EVisa from "@/pages/EVisa";
 import NotFound from "@/pages/not-found";
-import MEAEmbassy from "./pages/MeaEmbassay";
+
 import PCCLegalization from "./pages/PCCLegalization";
 import EmbassyAttention from "./pages/EmbassyAttention";
 import TranslationLanguages from "./pages/TranslationLanguages";
 import HrdStamping from "./pages/HRDStamping";
-import AssistanceinSumission from "./pages/AssostanceInSummission";
+import  AssistanceinSumission from './pages/AssostanceInSummission'
 
 function Router() {
   return (
@@ -26,10 +26,10 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
-      <Route path="/MEA-Embassy" component={MEAEmbassy} />
+
          <Route path="/PCC-Legalisation" component={PCCLegalization} />
-       <Route path="/Embassy-Attestation" component={EmbassyAttention} />
-              <Route path="/Translation-Languages" component={TranslationLanguages} />
+       <Route path="/MEA-Attention" component={EmbassyAttention} />
+              <Route path="/Translation-services" component={TranslationLanguages} />
                        <Route path="/HRD-Stamping" component={HrdStamping} />
        <Route path="/Assistance-in-Sumission" component={AssistanceinSumission} />
          
