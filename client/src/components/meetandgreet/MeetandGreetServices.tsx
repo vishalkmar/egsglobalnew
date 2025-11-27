@@ -8,7 +8,7 @@ const meetGreetSteps = [
     imageSrc: "/meetgreet/pickup.jpg",
   },
   {
-    title: "Hotel-to-VFS Transfers",
+    title: "Hotel-to-VFS /  Embassy Transfers",
     description:
       "Hassle-free transport between your accommodation and visa application centers.",
     imageSrc: "/meetgreet/pickup2.jpg",
@@ -16,7 +16,7 @@ const meetGreetSteps = [
   {
     title: "Personalized Assistance",
     description:
-      "Dedicated staff to guide and support you throughout your journey.",
+      "Dedicated staff to guide and support you VFS/ Embassy Submission.",
     imageSrc: "/meetgreet/personalize.jpg",
   },
   {
@@ -46,7 +46,7 @@ const MeetGreetServices: React.FC = () => {
         {/* Heading */}
         <div className="mb-10 sm:mb-12">
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900">
-            Meet &amp; Greet Services
+            Meet &amp; Greet Services In Delhi 
           </h2>
           <div className="h-[2px] w-20 bg-sky-500 mt-2" />
         </div>

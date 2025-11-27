@@ -9,34 +9,18 @@ const services = [
       "Support in booking hotels or serviced apartments for short visits.",
     imageSrc: "/accomodation/short.jpg",
   },
-  {
-    title: "Long-Term Housing Solutions",
-    description:
-      "Assistance in securing apartments or hostels for students, employees, and families.",
-    imageSrc: "/accomodation/long.webp",
-  },
+ 
   {
     title: "Budget-Friendly Options",
     description:
       "Tailored recommendations that fit individual financial preferences.",
     imageSrc: "/accomodation/budget.jpg",
   },
-  {
-    title: "Premium & Executive Stays",
-    description:
-      "Access to high-quality, well-connected properties for business and corporate travelers.",
-    imageSrc: "/accomodation/premium.jpg",
-  },
-  {
-    title: "Verified & Secure Properties",
-    description:
-      "Ensuring all accommodations are safe, reliable, and compliant with local standards.",
-    imageSrc: "/accomodation/varified.jpg",
-  },
+ 
   {
     title: "End-to-End Support",
     description:
-      "Guidance from booking to check-in for a hassle-free living experience abroad.",
+      "Guidance from booking to check-in for a hassle-free living experience.",
     imageSrc: "/accomodation/endtoend.jpeg",
   },
 ];
@@ -48,7 +32,7 @@ const AccommodationServices: React.FC = () => {
         {/* Heading */}
         <div className="mb-10 sm:mb-12">
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900">
-            Accommodation Services
+            Accommodation Services In Delhi
           </h2>
           <div className="h-[2px] w-20 bg-sky-500 mt-2" />
         </div>

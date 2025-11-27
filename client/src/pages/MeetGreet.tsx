@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MeetGreetServices from "@/components/meetandgreet/MeetandGreetServices";
+import MeetAndGreetForm from "@/components/meetandgreet/MeetAndGreetForm";
 
 const HEADING_TEXT = "“Premium Guest Handling";
 
@@ -77,6 +78,7 @@ const MeetGreetBanner: React.FC = () => {
           </div>
         </div>
       </section>
+      <MeetAndGreetForm/>
       <MeetGreetServices/>
       <Footer />
     </>
