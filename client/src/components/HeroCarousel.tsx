@@ -21,13 +21,7 @@ const slides = [
     cta1: "Apply Now",
     cta2: "View Services",
   },
-  {
-    image: travelersImage,
-    title: "Travel With Confidence",
-    subtitle: "Trusted by thousands of satisfied travelers worldwide",
-    cta1: "Contact Us",
-    cta2: "Success Stories",
-  },
+  
   {
     image: consultationImage,
     title: "Expert Consultation",

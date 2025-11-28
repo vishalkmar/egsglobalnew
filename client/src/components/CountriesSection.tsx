@@ -131,61 +131,66 @@ export default function CountriesSection() {
               </div>
 
               {/* Content */}
-              <div className="p-6 flex flex-col flex-1">
-                <p
-                  data-testid={`text-country-description-${country.name
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")}`}
-                  className="text-sm text-slate-600 leading-relaxed mb-5"
-                >
-                  {country.description}
-                </p>
+              {/* Content */}
+<div className="p-6 flex flex-col flex-1">
+  <p
+    data-testid={`text-country-description-${country.name
+      .toLowerCase()
+      .replace(/\s+/g, "-")}`}
+    className="text-sm text-slate-600 leading-relaxed mb-5"
+  >
+    {country.description}
+  </p>
 
-                {/* NEW small section: Services + Nationalities Catered */}
-                <div className="mb-6 grid grid-cols-2 gap-4 text-xs sm:text-[0.8rem] text-slate-700">
-                  <div>
-                    <p className="font-semibold text-slate-900 mb-1">
-                      Services
-                    </p>
-                    <ul className="space-y-1">
-                      {country.services.map((service) => (
-                        <li key={service} className="flex items-center gap-1.5">
-                          <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
-                          <span>{service}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-900 mb-1">
-                      Nationalities Catered
-                    </p>
-                    <ul className="space-y-1">
-                      {NATIONALITIES.map((nat) => (
-                        <li key={nat} className="flex items-center gap-1.5">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                          <span>{nat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+  {/* Services + Nationalities as table-style tiles */}
+  <div className="mb-6 rounded-xl border border-slate-200 overflow-hidden text-xs sm:text-[0.8rem] text-slate-700">
+    <div className="grid grid-cols-2 divide-x divide-slate-200">
+      {/* Services tile */}
+      <div className="p-4 bg-white">
+        <p className="font-semibold text-slate-900 mb-2">
+          Services
+        </p>
+        <ul className="space-y-1">
+          {country.services.map((service) => (
+            <li key={service} className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
+              <span>{service}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-                {/* CTA button */}
-                <div className="mt-auto">
-                  <Button
-                    data-testid={`button-learn-more-${country.name
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
-                    variant="outline"
-                    className="w-full group/button text-white border-primary/60 bg-primary hover:text-white hover:border-primary transition-all"
-                  >
-                    Learn more about {country.name}
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover/button:translate-x-1 transition-transform" />
-                  </Button>
-                </div>
-              </div>
+      {/* Nationalities tile */}
+      <div className="p-4 bg-slate-50">
+        <p className="font-semibold text-slate-900 mb-2">
+          Nationalities Catered
+        </p>
+        <ul className="space-y-1">
+          {NATIONALITIES.map((nat) => (
+            <li key={nat} className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span>{nat}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
 
+  {/* CTA button */}
+  <div className="mt-auto">
+    <Button
+      data-testid={`button-learn-more-${country.name
+        .toLowerCase()
+        .replace(/\s+/g, "-")}`}
+      variant="outline"
+      className="w-full group/button text-white border-primary/60 bg-primary hover:text-white hover:border-primary transition-all"
+    >
+      Learn more about {country.name}
+      <ArrowRight className="w-4 h-4 ml-2 group-hover/button:translate-x-1 transition-transform" />
+    </Button>
+  </div>
+</div>
               {/* Subtle glow on hover */}
               <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                 <div className="absolute -inset-24 bg-radial from-primary/10 via-transparent to-transparent blur-3xl" />
