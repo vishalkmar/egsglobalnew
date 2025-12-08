@@ -19,12 +19,7 @@ const meetGreetSteps = [
       "Dedicated staff to guide and support you VFS/ Embassy Submission.",
     imageSrc: "/meetgreet/personalize.jpg",
   },
-  {
-    title: "Real-Time Coordination",
-    description:
-      "Ensuring seamless transfers and on-time arrivals for appointments.",
-    imageSrc: "/meetgreet/realtime.jpg",
-  },
+ 
   {
     title: "Safety & Comfort",
     description:

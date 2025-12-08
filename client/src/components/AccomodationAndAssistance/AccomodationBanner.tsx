@@ -40,7 +40,7 @@ const AccommodationAssistanceBanner: React.FC = () => {
 
               {/* Subheading */}
               <p className="text-base sm:text-lg md:text-xl font-normal text-slate-900">
-                Accommodation Assistance in Delhi &amp; abroad for every type of
+                Accommodation Assistance in Delhi for every type of
                 traveller.
               </p>
 
@@ -48,18 +48,14 @@ const AccommodationAssistanceBanner: React.FC = () => {
               <p className="text-sm sm:text-base md:text-lg text-slate-800 font-light max-w-2xl leading-relaxed">
                 Finding the right place to stay abroad is essential for a
                 comfortable journey. EGS Group assists travelers with short-term
-                and long-term accommodation arrangements tailored to their
+                  arrangements tailored to their
                 needs, preferences, and budgets. From affordable stays to
                 premium housing options, we help you secure safe, reliable, and
                 well-connected accommodations.
               </p>
 
               {/* CTA button */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
-                <button className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-purple-600 px-7 py-2.5 text-sm sm:text-base font-semibold shadow-lg hover:from-sky-600 hover:via-blue-700 hover:to-purple-700 transition text-white">
-                  Enquire for Accommodation Assistance
-                </button>
-              </div>
+             
             </div>
 
             {/* RIGHT: Image */}

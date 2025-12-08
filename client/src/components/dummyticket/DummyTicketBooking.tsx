@@ -1,91 +1,81 @@
 "use client";
 
-import React, { useState, FormEvent, ChangeEvent } from "react";
+import React, { useState } from "react";
 
-type ActiveTab = "dummyTicket" | "insurance";
-type TripType = "oneWay" | "roundTrip";
+const COUNTRY_OPTIONS = [
+  "Bulgaria",
+  "North Macedonia",
+  "Croatia",
+  "Serbia",
+  "Russia",
+  "Montenegro",
+  "Belarus",
+];
 
-type FlightForm = {
-  name: string;
-  email: string;
-  startLocation: string;
-  departureDate: string;
-  returnDate: string;
-};
+const DummyTicketBooking = () => {
+  const [activeTab, setActiveTab] = useState("dummyTicket"); // "dummyTicket" | "insurance"
+  const [tripType, setTripType] = useState("oneWay"); // "oneWay" | "roundTrip"
 
-type InsuranceForm = {
-  name: string;
-  email: string;
-  mobile: string;
-  destination: string;
-  travelDate: string;
-  dob: string;
-  passportFront: File | null;
-  passportBack: File | null;
-};
-
-const DummyTicketBooking: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("dummyTicket");
-  const [tripType, setTripType] = useState<TripType>("oneWay");
-
-  const [flightForm, setFlightForm] = useState<FlightForm>({
+  const [flightForm, setFlightForm] = useState({
     name: "",
     email: "",
+    mobile: "",
     startLocation: "",
     departureDate: "",
     returnDate: "",
   });
 
-  const [insuranceForm, setInsuranceForm] = useState<InsuranceForm>({
+  const [insuranceForm, setInsuranceForm] = useState({
     name: "",
     email: "",
     mobile: "",
+    insuranceType: "",
+    travelStart: "",
+    travelEnd: "",
     destination: "",
-    travelDate: "",
     dob: "",
-    passportFront: null,
-    passportBack: null,
+    passportFile: null,
   });
 
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
-  // Dummy ticket form change
-  const handleFlightChange = (e: ChangeEvent<HTMLInputElement>) => {
+  // Dummy ticket form change (text + select)
+  const handleFlightChange = (e) => {
     const { name, value } = e.target;
     setFlightForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Insurance form change (text + file)
-  const handleInsuranceChange = (e: ChangeEvent<HTMLInputElement>) => {
+  // Insurance form change (text + select + file)
+  const handleInsuranceChange = (e) => {
     const { name, type, value, files } = e.target;
 
     if (type === "file") {
       setInsuranceForm((prev) => ({
         ...prev,
-        [name]: files && files.length > 0 ? files[0] : null,
+        passportFile: files && files.length > 0 ? files[0] : null,
       }));
     } else {
       setInsuranceForm((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError(null);
 
-    let payload: any = { tab: activeTab };
+    let payload = { tab: activeTab };
 
     if (activeTab === "dummyTicket") {
       const {
         name,
         email,
+        mobile,
         startLocation,
         departureDate,
         returnDate,
       } = flightForm;
 
-      // basic validation
-      if (!name || !email || !startLocation || !departureDate) {
+      if (!name || !email || !mobile || !startLocation || !departureDate) {
         setError("Please fill all required fields in the dummy ticket form.");
         return;
       }
@@ -105,23 +95,24 @@ const DummyTicketBooking: React.FC = () => {
         name,
         email,
         mobile,
+        insuranceType,
+        travelStart,
+        travelEnd,
         destination,
-        travelDate,
         dob,
-        passportFront,
-        passportBack,
+        passportFile,
       } = insuranceForm;
 
-      // validation for insurance
       if (
         !name ||
         !email ||
         !mobile ||
+        !insuranceType ||
+        !travelStart ||
+        !travelEnd ||
         !destination ||
-        !travelDate ||
         !dob ||
-        !passportFront ||
-        !passportBack
+        !passportFile
       ) {
         setError("Please fill all required fields in the insurance form.");
         return;
@@ -144,7 +135,7 @@ const DummyTicketBooking: React.FC = () => {
     <section className="bg-white py-12 mt-[50px] sm:py-16 lg:py-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
-          {/* LEFT SIDE: info + image */}
+          {/* LEFT SIDE: info + image (same as before) */}
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
@@ -180,8 +171,8 @@ const DummyTicketBooking: React.FC = () => {
               {/* Tabs */}
               <div className="flex bg-slate-100">
                 {[
-                  { id: "dummyTicket" as ActiveTab, label: "Dummy Ticket" },
-                  { id: "insurance" as ActiveTab, label: "Insurance" },
+                  { id: "dummyTicket", label: "Dummy Ticket" },
+                  { id: "insurance", label: "Insurance" },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -243,8 +234,9 @@ const DummyTicketBooking: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Name & Email */}
+                    {/* Fields */}
                     <div className="space-y-3 sm:space-y-4">
+                      {/* Name */}
                       <div className="space-y-1">
                         <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
                           NAME
@@ -259,6 +251,7 @@ const DummyTicketBooking: React.FC = () => {
                         />
                       </div>
 
+                      {/* Email */}
                       <div className="space-y-1">
                         <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
                           EMAIL
@@ -273,15 +266,42 @@ const DummyTicketBooking: React.FC = () => {
                         />
                       </div>
 
-                      <input
-                        type="text"
-                        name="startLocation"
-                        placeholder=" DESTINATION"
-                        value={flightForm.startLocation}
-                        onChange={handleFlightChange}
-                        className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                      />
+                      {/* Mobile */}
+                      <div className="space-y-1">
+                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                          MOBILE NO
+                        </label>
+                        <input
+                          type="tel"
+                          name="mobile"
+                          placeholder="Enter your mobile number"
+                          value={flightForm.mobile}
+                          onChange={handleFlightChange}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                        />
+                      </div>
 
+                      {/* Destination country (select) */}
+                      <div className="space-y-1">
+                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                          DESTINATION COUNTRY
+                        </label>
+                        <select
+                          name="startLocation"
+                          value={flightForm.startLocation}
+                          onChange={handleFlightChange}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white"
+                        >
+                          <option value="">Select destination</option>
+                          {COUNTRY_OPTIONS.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Departure date */}
                       <div className="space-y-1">
                         <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
                           DEPARTURE DATE
@@ -295,6 +315,7 @@ const DummyTicketBooking: React.FC = () => {
                         />
                       </div>
 
+                      {/* Return date if round trip */}
                       {tripType === "roundTrip" && (
                         <div className="space-y-1">
                           <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
@@ -326,72 +347,102 @@ const DummyTicketBooking: React.FC = () => {
                 {/* Insurance tab */}
                 {activeTab === "insurance" && (
                   <div className="space-y-3 sm:space-y-4">
-                    <div className="space-y-1">
-                      <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                        NAME
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={insuranceForm.name}
-                        onChange={handleInsuranceChange}
-                        className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                        EMAIL
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={insuranceForm.email}
-                        onChange={handleInsuranceChange}
-                        className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                        MOBILE NO
-                      </label>
-                      <input
-                        type="tel"
-                        name="mobile"
-                        value={insuranceForm.mobile}
-                        onChange={handleInsuranceChange}
-                        className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                        DESTINATION
-                      </label>
-                      <input
-                        type="text"
-                        name="destination"
-                        placeholder="Country / region you are travelling to"
-                        value={insuranceForm.destination}
-                        onChange={handleInsuranceChange}
-                        className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                      />
-                    </div>
-
+                    {/* Row 1: Name + Email */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div className="space-y-1">
                         <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                          DATE
+                          NAME
                         </label>
                         <input
-                          type="date"
-                          name="travelDate"
-                          value={insuranceForm.travelDate}
+                          type="text"
+                          name="name"
+                          value={insuranceForm.name}
                           onChange={handleInsuranceChange}
                           className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                         />
                       </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                          EMAIL
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={insuranceForm.email}
+                          onChange={handleInsuranceChange}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Row 2: Mobile + Insurance Type */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                          MOBILE NO
+                        </label>
+                        <input
+                          type="tel"
+                          name="mobile"
+                          value={insuranceForm.mobile}
+                          onChange={handleInsuranceChange}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                          INSURANCE TYPE
+                        </label>
+                        <select
+                          name="insuranceType"
+                          value={insuranceForm.insuranceType}
+                          onChange={handleInsuranceChange}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white"
+                        >
+                          <option value="">Select insurance type</option>
+                          <option value="Travel Insurance">
+                            Travel Insurance
+                          </option>
+                          <option value="Student Insurance">
+                            Student Insurance
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Row 3: Travel dates (start / end) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                          TRAVEL START DATE
+                        </label>
+                        <input
+                          type="date"
+                          name="travelStart"
+                          value={insuranceForm.travelStart}
+                          onChange={handleInsuranceChange}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                          TRAVEL END DATE
+                        </label>
+                        <input
+                          type="date"
+                          name="travelEnd"
+                          value={insuranceForm.travelEnd}
+                          onChange={handleInsuranceChange}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Row 4: DOB + Destination country */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div className="space-y-1">
                         <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
                           DATE OF BIRTH
@@ -404,35 +455,39 @@ const DummyTicketBooking: React.FC = () => {
                           className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                         />
                       </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                          DESTINATION COUNTRY
+                        </label>
+                        <select
+                          name="destination"
+                          value={insuranceForm.destination}
+                          onChange={handleInsuranceChange}
+                          className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white"
+                        >
+                          <option value="">Select destination</option>
+                          {COUNTRY_OPTIONS.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
-                    {/* Passport upload */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                          PASSPORT FRONT
-                        </label>
-                        <input
-                          type="file"
-                          name="passportFront"
-                          accept="image/*,.pdf"
-                          onChange={handleInsuranceChange}
-                          className="w-full rounded-md border border-slate-200 px-3 py-2 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
-                          PASSPORT BACK
-                        </label>
-                        <input
-                          type="file"
-                          name="passportBack"
-                          accept="image/*,.pdf"
-                          onChange={handleInsuranceChange}
-                          className="w-full rounded-md border border-slate-200 px-3 py-2 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
-                        />
-                      </div>
+                    {/* Row 5: Passport file (PDF only) */}
+                    <div className="space-y-1">
+                      <label className="text-[11px] sm:text-xs font-semibold text-sky-700">
+                        PASSPORT COPY (PDF)
+                      </label>
+                      <input
+                        type="file"
+                        name="passportFile"
+                        accept="application/pdf"
+                        onChange={handleInsuranceChange}
+                        className="w-full rounded-md border border-slate-200 px-3 py-2 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
+                      />
                     </div>
                   </div>
                 )}

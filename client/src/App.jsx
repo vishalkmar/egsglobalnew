@@ -31,7 +31,7 @@ function Router() {
          <Route path="/PCC-Legalisation" component={PCCLegalization} />
        <Route path="/MEA-Attention" component={EmbassyAttention} />
               <Route path="/Translation-services" component={TranslationLanguages} />
-                       <Route path="/HRD-Stamping" component={HrdStamping} />
+                       <Route path="/HRD-Attestation" component={HrdStamping} />
        <Route path="/Assistance-in-Sumission" component={AssistanceinSumission} />
          
       <Route path="/insurance-dummy-ticket" component={InsuranceDummyTicket} />

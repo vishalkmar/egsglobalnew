@@ -21,24 +21,14 @@ const services = [
       "One-way, round-trip, or multi-city bookings based on travel needs.",
     imageSrc: "/dummyticket/costomize.jpg",
   },
-  {
-    title: "Comprehensive Travel Insurance",
-    description:
-      "Coverage for medical emergencies, trip cancellations, and lost baggage.",
-    imageSrc: "/dummyticket/insurence.jpg",
-  },
+ 
   {
     title: "Tailored Insurance Plans",
     description:
-      "Options for individuals, families, students, and business travelers.",
+      "Comprehensive insurance plan as per individual request.",
     imageSrc: "/dummyticket/tailored.jpg",
   },
-  {
-    title: "Peace of Mind",
-    description:
-      "Strengthening visa applications while ensuring safety and protection throughout the journey.",
-    imageSrc: "/dummyticket/peace.jpg",
-  },
+  
 ];
 
 const DummyTicketInsuranceService: React.FC = () => {

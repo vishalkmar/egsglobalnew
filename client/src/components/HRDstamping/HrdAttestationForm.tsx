@@ -6,13 +6,38 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { RotateCw } from "lucide-react";
 
-const SERVICE_OPTIONS = [
-  "HRD Attestation",
-  "Apostille",
-  "MEA Attestation",
-  "Embassy Attestation",
-  "PCC / Police Clearance",
-];
+const DOCUMENT_OPTIONS: Record<string, string[]> = {
+  "Commercial Documents": [
+    "Hiring documents",
+    "Company invoices",
+    "GST documents",
+    "Income tax return",
+    "Company register",
+    "Certificates of Origin",
+    "Power of attorney",
+    "Other business documents",
+  ],
+  "Personal Documents": [
+    "Marriage certificates",
+    "Single status certificate",
+    "Birth certificates",
+    "Divorce certificates",
+    "Aadhar card",
+    "Death certificates",
+    "Power of attorney",
+    "Police clearance certificate",
+  ],
+  "Educational Documents": [
+    "High school certificates",
+    "Degree certificates",
+    "Diploma certificates",
+    "Report cards",
+    "Marksheet verification",
+    "Diploma certificates (additional)",
+    "Power of attorney",
+    "Police clearance certificate",
+  ],
+};
 
 type FormState = {
   firstName: string;
@@ -20,9 +45,11 @@ type FormState = {
   email: string;
   mobile: string;
   state: string;
-  service: string;
   message: string;
-  captchaInput: string;
+
+  docType: string;        // Commercial / Personal / Educational
+  documents: string[];    // selected docs (checkboxes)
+  docCount: string;       // total number of documents
 };
 
 const initialFormState: FormState = {
@@ -31,9 +58,11 @@ const initialFormState: FormState = {
   email: "",
   mobile: "",
   state: "",
-  service: "",
   message: "",
-  captchaInput: "",
+
+  docType: "",
+  documents: [],
+  docCount: "",
 };
 
 function generateCaptcha() {
@@ -46,15 +75,44 @@ export default function HRDAttestationSection() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setSuccessMessage(null);
   };
 
+  const handleDocumentToggle = (doc: string) => {
+    setForm((prev) => {
+      const alreadySelected = prev.documents.includes(doc);
+      return {
+        ...prev,
+        documents: alreadySelected
+          ? prev.documents.filter((d) => d !== doc)
+          : [...prev.documents, doc],
+      };
+    });
+    setSuccessMessage(null);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // basic validation for new fields
+    if (!form.docType) {
+      alert("Please select document type.");
+      return;
+    }
+    if (!form.documents.length) {
+      alert("Please select at least one document.");
+      return;
+    }
+    if (!form.docCount) {
+      alert("Please enter the total number of documents.");
+      return;
+    }
 
     console.log("HRD Attestation Enquiry:", {
       ...form,
@@ -68,8 +126,12 @@ export default function HRDAttestationSection() {
     setCaptcha(generateCaptcha());
   };
 
+  const currentDocList = form.docType
+    ? DOCUMENT_OPTIONS[form.docType] || []
+    : [];
+
   return (
-    <section className=" md:py-20 bg-white py-[100px] bg-gray">
+    <section className="md:py-20 bg-white py-[100px] bg-gray">
       <div className="max-w-6xl mx-auto px-4 md:px-6">
         <div className="grid gap-10 md:grid-cols-[1.1fr,1fr] items-start">
           {/* LEFT: Content */}
@@ -90,12 +152,13 @@ export default function HRDAttestationSection() {
             </p>
 
             <p className="text-sm md:text-base text-slate-700 leading-relaxed mb-4">
-              HRD Attestation service offered by <span className="font-medium">EGS Group</span>{" "}
-              ensures that your educational documents meet the necessary
-              requirements set by government authorities and are recognised
-              internationally. Our team has an in-depth understanding of the
-              attestation process, and we offer reliable and efficient services
-              to simplify the entire procedure.
+              HRD Attestation service offered by{" "}
+              <span className="font-medium">EGS Group</span> ensures that your
+              educational documents meet the necessary requirements set by
+              government authorities and are recognised internationally. Our
+              team has an in-depth understanding of the attestation process, and
+              we offer reliable and efficient services to simplify the entire
+              procedure.
             </p>
 
             <p className="text-sm md:text-base text-slate-700 leading-relaxed mb-8">
@@ -104,9 +167,6 @@ export default function HRDAttestationSection() {
               mark sheets and other academic records. Our streamlined process
               ensures that your documents are processed correctly and on time.
             </p>
-
-          
-            {/* You can add a step list / accordion below later if needed */}
           </div>
 
           {/* RIGHT: Form card */}
@@ -173,36 +233,85 @@ export default function HRDAttestationSection() {
                   </div>
                 </div>
 
-                {/* State + Service */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* State */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">State</label>
+                  <Input
+                    name="state"
+                    placeholder="State"
+                    value={form.state}
+                    onChange={handleChange}
+                    className="bg-white/90 border-none text-slate-900 placeholder:text-slate-400"
+                  />
+                </div>
+
+                {/* Document type select */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">
+                    Select Document Type
+                  </label>
+                  <select
+                    name="docType"
+                    value={form.docType}
+                    onChange={handleChange}
+                    className="w-full rounded-full px-3 py-2 text-sm bg-white/90 text-slate-900 border-none outline-none"
+                    required
+                  >
+                    <option value="">Select document category</option>
+                    <option value="Commercial Documents">
+                      Commercial Documents
+                    </option>
+                    <option value="Personal Documents">
+                      Personal Documents
+                    </option>
+                    <option value="Educational Documents">
+                      Educational Documents
+                    </option>
+                  </select>
+                </div>
+
+                {/* Dynamic document checkboxes */}
+                {form.docType && (
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-medium">
+                      Select the document(s) you want to attest
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
+                      {currentDocList.map((doc) => (
+                        <label
+                          key={doc}
+                          className="flex items-center gap-2 text-[11px] md:text-xs"
+                        >
+                          <input
+                            type="checkbox"
+                            className="accent-sky-400"
+                            checked={form.documents.includes(doc)}
+                            onChange={() => handleDocumentToggle(doc)}
+                          />
+                          <span>{doc}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Number of documents */}
+                {form.docType && (
                   <div className="space-y-1">
-                    <label className="text-xs font-medium">State</label>
+                    <label className="text-xs font-medium">
+                      Total Number of Documents
+                    </label>
                     <Input
-                      name="state"
-                      placeholder="State"
-                      value={form.state}
+                      type="number"
+                      name="docCount"
+                      min={1}
+                      placeholder="e.g., 3"
+                      value={form.docCount}
                       onChange={handleChange}
                       className="bg-white/90 border-none text-slate-900 placeholder:text-slate-400"
                     />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium">Interested in</label>
-                    <select
-                      name="service"
-                      value={form.service}
-                      onChange={handleChange}
-                      className="w-full rounded-full px-3 py-2 text-sm bg-white/90 text-slate-900 border-none outline-none"
-                      required
-                    >
-                      <option value="">Select the Service you are Interested in</option>
-                      {SERVICE_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                )}
 
                 {/* Message */}
                 <div className="space-y-1">
@@ -216,17 +325,20 @@ export default function HRDAttestationSection() {
                   />
                 </div>
 
-              
                 {/* Submit + Success message */}
                 <div className="pt-2 space-y-3">
                   <Button
                     type="submit"
-                    className="w-full rounded-full bg-white text-blue-700 hover:bg-sky-50 font-semibold"
+                    className="w-full rounded-full  "
                   >
                     Submit
                   </Button>
 
-                  
+                  {successMessage && (
+                    <p className="text-[11px] md:text-xs text-emerald-100 text-center">
+                      {successMessage}
+                    </p>
+                  )}
                 </div>
               </form>
             </div>

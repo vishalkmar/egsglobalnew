@@ -12,7 +12,7 @@ export default function HrdStamping(){
      return (<>
 
           <Header/>
-        <section className="relative w-full min-h-[80vh] md:min-h-[90vh] bg-black overflow-hidden">
+        <section className="relative w-full min-h-[80vh] md:min-h-[90vh] bg-black overflow-hidden pt-[100px]">
   {/* Background image */}
   <div
     className="absolute inset-0 bg-center bg-cover"
@@ -41,14 +41,7 @@ export default function HrdStamping(){
       </h1>
 
       {/* No theory text – only CTAs */}
-      <div className="flex flex-wrap gap-3 sm:gap-4 pt-2">
-        <button className="inline-flex items-center justify-center rounded-full bg-rose-500 px-6 sm:px-7 py-2.5 text-sm sm:text-base font-semibold text-white shadow-lg hover:bg-rose-600 transition">
-          Enquire for HRD Attestation <span className="ml-2 text-sm">➜</span>
-        </button>
-        <button className="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 sm:px-7 py-2.5 text-sm sm:text-base font-semibold text-white shadow-lg hover:bg-blue-700 transition">
-          Partner with EGS <span className="ml-2 text-sm">➜</span>
-        </button>
-      </div>
+      
     </div>
   </div>
 </section>

@@ -20,7 +20,7 @@ export default function Footer() {
     { name: "Sticker Visa", path: "/visa/sticker-visa" },
     { name: "E-Visa", path: "/visa/e-visa" },
     { name: "Assistance in Appointment & Submission", path: "/Assistance-in-Sumission" },
-    { name: "HRD Stamping", path: "/HRD-Stamping" },
+    { name: "HRD Attestation", path: "/HRD-Attestation" },
     { name: "Insurance & Dummy Ticket", path: "/insurance-dummy-ticket" },
     { name: "Meet & Greet Assistance in Delhi", path: "/meet-greet" },
     { name: "Accommodation Assistance in Delhi", path: "/accommodation-assistant" },

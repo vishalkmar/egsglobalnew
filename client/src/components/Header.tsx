@@ -63,7 +63,7 @@ export default function Header() {
         },
       ],
     },
-    { name: "HRD Stamping", path: "/HRD-Stamping" },
+    { name: "HRD Attestation", path: "/HRD-Attestation" },
     { name: "Insurance & Dummy Ticket", path: "/insurance-dummy-ticket" },
     { name: "Meet & Greet Assistance in Delhi ", path: "/meet-greet" },
     { name: "Accommodation Assistance in Delhi", path: "/accommodation-assistant" },

@@ -4,42 +4,45 @@ import React, { useState, ChangeEvent, FormEvent } from "react";
 
 type VisaType = "work" | "business" | "tourist";
 
-interface AppointmentFormData {
+interface MeetGreetFormData {
+  name: string;
+  email: string;
+  phone: string;
+  arrivalDate: string;
   submissionDate: string;
-  country: string;
-  visaType: VisaType | "";
+  visaType: string;
+  submissionCountry: string;
 }
 
 const countries = ["North Macedonia", "Romania", "Serbia", "Italy", "Croatia"];
 
 const AppointmentSubmissionHero: React.FC = () => {
-  const [formData, setFormData] = useState<AppointmentFormData>({
-    submissionDate: "",
-    country: "",
-    visaType: "",
-  });
-
-  const [submittedData, setSubmittedData] =
-    useState<AppointmentFormData | null>(null);
-
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    console.log("Appointment & Submission form data:", formData);
-    setSubmittedData(formData);
-    alert(
-      "Your appointment & submission request has been received. Our team will coordinate with you shortly."
-    );
-  };
+   const [typedHeading, setTypedHeading] = useState("");
+   const [formData, setFormData] = useState<MeetGreetFormData>({
+     name: "",
+     email: "",
+     phone: "",
+     arrivalDate: "",
+     submissionDate: "",
+     visaType: "",
+     submissionCountry: "",
+   });
+ 
+   
+   const handleChange = (
+     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+   ) => {
+     const { name, value } = e.target;
+     setFormData((prev) => ({ ...prev, [name]: value }));
+   };
+ 
+   const handleSubmit = (e: FormEvent) => {
+     e.preventDefault();
+     console.log("Assistance in Appointment & Submission Form Data:", formData);
+     alert(" Assistance in Appointment & Submissiondata submitted successfully");
+     // Yahan API call add kar sakte ho
+   };
+ 
 
   return (
     <section className="relative w-full overflow-hidden bg-black py-14 md:pt-40 md:pb-20">
@@ -87,101 +90,177 @@ const AppointmentSubmissionHero: React.FC = () => {
           </div>
 
           {/* RIGHT SIDE – FORM CARD */}
-          <div className="flex items-stretch">
-            <div className="w-full bg-white/95 backdrop-blur-[4px] text-slate-900 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.45)] px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-9">
-              {/* Logo / Title */}
-              <div className="flex flex-col items-center mb-6">
-                <div className="h-11 w-11 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                  EGS
-                </div>
-                <p className="mt-3 text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-slate-500 text-center">
-                  Appointment &amp; Submission Form
-                </p>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Submission Date */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                    Submission Date
-                  </label>
-                  <input
-                    type="date"
-                    name="submissionDate"
-                    value={formData.submissionDate}
-                    onChange={handleChange}
-                    className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white"
-                  />
-                </div>
-
-                {/* Country */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                    Country for Submission
-                  </label>
-                  <select
-                    name="country"
-                    value={formData.country}
-                    onChange={handleChange}
-                    className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white"
-                  >
-                    <option value="">Select Country</option>
-                    {countries.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Visa Type */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                    Visa Type for Submission
-                  </label>
-                  <select
-                    name="visaType"
-                    value={formData.visaType}
-                    onChange={handleChange}
-                    className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white"
-                  >
-                    <option value="">Select Visa Type</option>
-                    <option value="work">Work Visa</option>
-                    <option value="business">Business Visa</option>
-                    <option value="tourist">Tourist Visa</option>
-                  </select>
-                </div>
-
-                {/* Amount – hardcoded */}
-                <div className="rounded-md border border-slate-200 px-3 py-3 bg-slate-50 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-600">
-                    Service Amount
-                  </span>
-                  <span className="text-sm font-bold text-sky-700">1000</span>
-                </div>
-
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  className="mt-2 w-full rounded-md bg-sky-600 hover:bg-sky-700 text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 transition-colors shadow-md"
-                >
-                  Submit Request
-                </button>
-              </form>
-
-              {/* Optional submitted data preview (kept for debugging if needed) */}
-              {submittedData && (
-                <div className="mt-6 border-t border-slate-200 pt-4">
-                  <p className="text-xs font-semibold text-slate-600 mb-2">
-                    Submitted Data (preview)
+             {/* RIGHT: FORM CARD */}
+            <div className="order-2 lg:order-2 flex items-stretch">
+              <form
+                onSubmit={handleSubmit}
+                className="w-full bg-white/95 backdrop-blur-[4px] text-slate-900 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.45)] px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-9 space-y-4"
+              >
+                <div className="mb-2">
+                  <p className="text-xs sm:text-sm font-semibold tracking-[0.18em] uppercase text-slate-500 text-center">
+                  Appointment booking Request Form
                   </p>
-                  <pre className="text-[11px] sm:text-xs bg-slate-50 border border-slate-200 rounded-md p-3 overflow-x-auto">
-                    {JSON.stringify(submittedData, null, 2)}
-                  </pre>
                 </div>
-              )}
+
+                {/* Row 1: Name / Email / Phone */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="name"
+                      className="text-xs font-medium text-slate-600 mb-1"
+                    >
+                      Full Name
+                    </label>
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 px-3 py-2.5 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/60"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="email"
+                      className="text-xs font-medium text-slate-600 mb-1"
+                    >
+                      Email
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 px-3 py-2.5 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/60"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="phone"
+                      className="text-xs font-medium text-slate-600 mb-1"
+                    >
+                      Phone
+                    </label>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 px-3 py-2.5 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/60"
+                    />
+                  </div>
+                </div>
+
+                {/* Row 2: Arrival / Submission Date */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="arrivalDate"
+                      className="text-xs font-medium text-slate-600 mb-1"
+                    >
+                      Date of Arrival
+                    </label>
+                    <input
+                      id="arrivalDate"
+                      name="arrivalDate"
+                      type="date"
+                      required
+                      value={formData.arrivalDate}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 px-3 py-2.5 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/60"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="submissionDate"
+                      className="text-xs font-medium text-slate-600 mb-1"
+                    >
+                      Submission Date (Visa / VFS)
+                    </label>
+                    <input
+                      id="submissionDate"
+                      name="submissionDate"
+                      type="date"
+                      required
+                      value={formData.submissionDate}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 px-3 py-2.5 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/60"
+                    />
+                  </div>
+                </div>
+
+                {/* Row 3: Visa Type / Country */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="visaType"
+                      className="text-xs font-medium text-slate-600 mb-1"
+                    >
+                      Visa Type
+                    </label>
+                    <select
+                      id="visaType"
+                      name="visaType"
+                      required
+                      value={formData.visaType}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 px-3 py-2.5 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/60"
+                    >
+                      <option value="">Select Visa Type</option>
+                      <option value="Tourist Visa">Tourist Visa</option>
+                      <option value="Business Visa">Business Visa</option>
+                      <option value="Work Visa">Work Visa</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="submissionCountry"
+                      className="text-xs font-medium text-slate-600 mb-1"
+                    >
+                      Country for Submission
+                    </label>
+                    <select
+                      id="submissionCountry"
+                      name="submissionCountry"
+                      required
+                      value={formData.submissionCountry}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-slate-200 bg-white text-slate-900 px-3 py-2.5 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/60"
+                    >
+                      <option value="">Select Country</option>
+                      <option value="Bulgaria">Bulgaria</option>
+                      <option value="North Macedonia">North Macedonia</option>
+                      <option value="Croatia">Croatia</option>
+                      <option value="Serbia">Serbia</option>
+                      <option value="Russia">Russia</option>
+                      <option value="Montenegro">Montenegro</option>
+                      <option value="Belarus">Belarus</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Button */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-purple-600 text-white font-semibold text-sm px-6 py-2.5 shadow-lg shadow-sky-500/30 hover:shadow-xl hover:translate-y-[-1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 transition"
+                  >
+                  Assistance in
+Appointment & Submission
+                  </button>
+                </div>
+              </form>
             </div>
-          </div>
         </div>
       </div>
     </section>
