@@ -8,8 +8,8 @@ type Slide = {
   badge: string;
   titleLines: string[];
   description: string;
-  primaryCta: string;
-  secondaryCta: string;
+  primaryCta?: string;
+  secondaryCta?: string;
 };
 
 const slides: Slide[] = [
@@ -18,62 +18,40 @@ const slides: Slide[] = [
     image: "/visa/bone.avif",
     badge: "Your Trusted Visa Partner",
     titleLines: [
-      "India's Leading B2B Visa",
-      "Platform for Travel",
-      "Businesses",
+      "Your Trusted Partner for",
+      "Smooth & Successful Visa",
+      "Approvals",
     ],
     description:
       "EGS Group simplifies visa processing with reliable, accurate, and fully managed backend support—helping travel agencies and tour operators deliver faster approvals with complete confidence.",
-    primaryCta: "Get Started",
-    secondaryCta: "Contact Us",
   },
-
   {
     id: 2,
     image: "/visa/btwo.jpg",
     badge: "Reliable & Faster Processing",
-    titleLines: ["End-to-End Visa", "Processing Support", "for Your Clients"],
+    titleLines: ["Full-Scale Visa", "Support Designed for Travel", "  Professionals"],
     description:
       "From itinerary verification to document review and embassy submission, EGS ensures seamless, error-free workflows so you can focus on growing your travel business.",
-    primaryCta: "Explore Services",
-    secondaryCta: "Talk to Expert",
   },
-
   {
     id: 3,
     image: "/visa/three.jpg",
     badge: "Global Visa Coverage",
-    titleLines: ["Visas for 100+", "Destinations", "Worldwide"],
+    titleLines: ["Visas for 50+", "Destinations", "Worldwide"],
     description:
       "Powered by strong expertise and international compliance knowledge, EGS supports visa applications across major leisure, corporate, MICE, and student destinations with unmatched accuracy.",
-    primaryCta: "View Countries",
-    secondaryCta: "Partner With Us",
   },
-
   {
     id: 4,
-    image: "/visa/four.jpg",
-    badge: "Made for Travel Agencies",
-    titleLines: ["Smart Dashboard for", "Travel Agents &", "Visa Consultants"],
-    description:
-      "EGS provides a streamlined digital workspace where you can upload documents, track progress in real time, and manage all visa files effortlessly with total transparency.",
-    primaryCta: "Book a Demo",
-    secondaryCta: "Sign Up",
-  },
-
-  {
-    id: 5,
     image: "/visa/five.jpg",
     badge: "Trusted by Thousands",
     titleLines: ["Reliable Backend", "Team for High", "Visa Volumes"],
     description:
       "With a dedicated, experienced, and process-driven operations team, EGS ensures high-volume visa handling with precision, compliance, and consistent customer satisfaction.",
-    primaryCta: "Scale with Us",
-    secondaryCta: "Schedule Call",
   },
 ];
 
-const AUTO_SLIDE_INTERVAL = 4000; // 7 seconds
+const AUTO_SLIDE_INTERVAL = 4000;
 
 const VisaBannerCarousel: React.FC = () => {
   const [current, setCurrent] = useState(0);
@@ -101,7 +79,7 @@ const VisaBannerCarousel: React.FC = () => {
 
   return (
     <section
-      className="relative w-full min-h-[70vh] md:min-h-[90vh] pt-[60px] bg-black overflow-hidden"
+      className="relative w-full h-[70vh] md:h-[90vh] pt-[60px] bg-black overflow-hidden"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
@@ -113,19 +91,19 @@ const VisaBannerCarousel: React.FC = () => {
         {slides.map((slide) => (
           <div
             key={slide.id}
-            className="relative w-full flex-shrink-0"
+            className="relative w-full h-full flex-shrink-0"
           >
             {/* Background image */}
             <div
-              className="absolute inset-0 bg-center"
-              style={{ backgroundImage: `url(${slide.image})`, backgroundSize:"100% 100%"}}
+              className="absolute inset-0 bg-center bg-cover"
+              style={{ backgroundImage: `url(${slide.image})` ,backgroundSize:'100% 100%'}}
             />
 
             {/* Dark overlay gradient */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/20" />
 
             {/* Content */}
-            <div className="relative z-10 max-w-6xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center py-16 md:py-24">
+            <div className="relative z-10 max-w-6xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center">
               <div className="max-w-xl md:max-w-2xl space-y-6 md:space-y-8">
                 {/* Badge */}
                 <span className="inline-flex items-center rounded-full bg-rose-500 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-lg">
@@ -146,15 +124,7 @@ const VisaBannerCarousel: React.FC = () => {
                   {slide.description}
                 </p>
 
-                {/* CTA Buttons */}
-                <div className="flex flex-wrap gap-3 sm:gap-4 pt-2">
-                  <button className="inline-flex items-center justify-center rounded-full bg-rose-500 px-6 sm:px-7 py-2.5 text-sm sm:text-base font-semibold text-white shadow-lg hover:bg-rose-600 transition">
-                    {slide.primaryCta} <span className="ml-2 text-sm">➜</span>
-                  </button>
-                  <button className="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 sm:px-7 py-2.5 text-sm sm:text-base font-semibold text-white shadow-lg hover:bg-blue-700 transition">
-                    {slide.secondaryCta} <span className="ml-2 text-sm">➜</span>
-                  </button>
-                </div>
+                {/* Agar baad mein CTA add karna ho to yahan buttons aa sakte hain */}
               </div>
             </div>
           </div>

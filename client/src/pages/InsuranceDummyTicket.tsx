@@ -67,11 +67,7 @@ const DummyTicketBanner: React.FC = () => {
             </p>
 
             {/* CTA button */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
-              <button className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-purple-600 px-7 py-2.5 text-sm sm:text-base font-semibold shadow-lg hover:from-sky-600 hover:via-blue-700 hover:to-purple-700 transition text-white">
-                Get Insurance & Dummy Ticket
-              </button>
-            </div>
+           
           </div>
         </div>
       </section>
