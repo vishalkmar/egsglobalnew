@@ -4,14 +4,6 @@ import React, { useMemo, useState } from "react";
 
 type VisaType = "Tourist" | "Work" | "Business";
 
-const HERO = {
-  image: "/visa/bone.avif",
-  badge: "Your Trusted Visa Partner",
-  titleLines: ["Your Trusted Partner for", "Smooth & Successful Visa", "Approvals"],
-  description:
-    "EGS Group simplifies visa processing with reliable, accurate, and fully managed backend support—helping travel agencies and tour operators deliver faster approvals with complete confidence.",
-};
-
 const COUNTRIES = [
   "Dubai",
   "UAE",
@@ -47,7 +39,7 @@ type FormState = {
 
 const ACCEPTED_FILE_TYPES = "image/*,application/pdf";
 
-export default function VisaBannerWithEVisaForm() {
+export default function VisaStickerCard() {
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
@@ -72,7 +64,7 @@ export default function VisaBannerWithEVisaForm() {
   }, [form, attachments]);
 
   const updateField = (key: keyof FormState, value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((p) => ({ ...p, [key]: value }));
   };
 
   const handleFileChange = (index: number, file: File | null) => {
@@ -108,72 +100,85 @@ export default function VisaBannerWithEVisaForm() {
         })),
     };
 
-    console.log("E-Visa Form Payload:", payload);
-    console.log("Raw Files (FormData):", attachments);
+    console.log("Visa Sticker Form Payload:", payload);
+    console.log("Raw Files:", attachments);
 
-    alert("Form submitted (check console).");
+    alert("Submitted! Check console.");
   };
 
   return (
-    <section className="relative w-full bg-white text-slate-900 mt-[70px]">
-      <div className="relative w-full min-h-[70vh] md:min-h-[85vh] overflow-hidden">
-        <div
-          className="absolute inset-0 bg-center bg-cover"
-          style={{
-    background:
-      "radial-gradient(900px 500px at 18% 25%, rgba(99,102,241,0.45) 0%, rgba(15,23,42,0) 60%)," +
-      "radial-gradient(700px 450px at 85% 30%, rgba(56,189,248,0.30) 0%, rgba(15,23,42,0) 55%)," +
-      "radial-gradient(800px 520px at 55% 85%, rgba(244,114,182,0.18) 0%, rgba(15,23,42,0) 60%)," +
-      "linear-gradient(135deg, rgba(2,6,23,1) 0%, rgba(15,23,42,1) 35%, rgba(2,6,23,1) 100%)",
-  }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35" />
+    <section className="w-full bg-white px-4 py-10 mt-[70px]"
+    style={{
+              background:
+                "radial-gradient(900px 500px at 18% 25%, rgba(99,102,241,0.45) 0%, rgba(15,23,42,0) 60%)," +
+                "radial-gradient(700px 450px at 85% 30%, rgba(56,189,248,0.30) 0%, rgba(15,23,42,0) 55%)," +
+                "radial-gradient(800px 520px at 55% 85%, rgba(244,114,182,0.18) 0%, rgba(15,23,42,0) 60%)," +
+                "linear-gradient(135deg, rgba(2,6,23,1) 0%, rgba(15,23,42,1) 35%, rgba(2,6,23,1) 100%)",
+            }}
+    >
+      <div className="max-w-6xl mx-auto">
+        {/* Sticker Wrapper */}
+        <div className="relative overflow-hidden rounded-[28px]  shadow-2xl">
+          {/* Navy lighting background */}
+          <div
+            className="absolute inset-0"
+            
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-black/15 to-transparent" />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
-            {/* LEFT */}
-            <div className="text-white pt-10 md:pt-14">
-              <span className="inline-flex items-center rounded-full bg-rose-500 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-lg">
-                {HERO.badge}
-              </span>
+          {/* Decorative glows */}
+          <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-500/25 blur-3xl" />
+          <div className="absolute top-16 -right-24 h-72 w-72 rounded-full bg-sky-400/20 blur-3xl" />
 
-              <h1 className="mt-6 text-3xl sm:text-4xl md:text-5xl lg:text-[3.2rem] font-bold leading-tight">
-                {HERO.titleLines.map((line, i) => (
-                  <span key={i} className="block">
-                    {line}
-                  </span>
-                ))}
-              </h1>
+          {/* Content */}
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 p-6 md:p-8">
+            {/* LEFT: Sticker info */}
+            <div className="text-white">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-xs sm:text-sm font-semibold">
+                <span className="h-2 w-2 rounded-full bg-rose-400" />
+                EGS Group Visa Desk
+              </div>
 
-              <p className="mt-5 text-sm sm:text-base md:text-lg text-slate-100 max-w-xl leading-relaxed">
-                {HERO.description}
+              <h2 className="mt-5 text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
+                Apply for Sticker Visa
+              </h2>
+
+              <p className="mt-3 text-sm sm:text-base text-slate-100 leading-relaxed max-w-xl">
+               Upload documents once — we verify, format-check, and submit as per country rules. Get a clean, embassy-ready application with fewer rejections and faster processing
               </p>
 
-              <div className="mt-7 grid grid-cols-2 gap-3 max-w-xl">
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                  <p className="text-xs text-slate-200">Avg. Processing</p>
+                  <p className="text-xs text-slate-200">Processing</p>
                   <p className="text-base font-semibold">2–7 Working Days</p>
                 </div>
                 <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                  <p className="text-xs text-slate-200">Coverage</p>
-                  <p className="text-base font-semibold">50+ Destinations</p>
+                  <p className="text-xs text-slate-200">Document Check</p>
+                  <p className="text-base font-semibold">Accuracy First</p>
                 </div>
+               
+                <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                  <p className="text-xs text-slate-200">Support</p>
+                  <p className="text-base font-semibold">Dedicated Team</p>
+                </div>
+              </div>
+
+              <div className="mt-6 text-xs text-slate-200/90">
+                Supported files: Images (all formats) + PDF. All fields are mandatory.
               </div>
             </div>
 
-            {/* RIGHT (Compact 2-col form) */}
-            <div className="bg-white/95 backdrop-blur rounded-2xl border border-white/20 shadow-2xl p-6 md:p-7 mt-4 md:mt-0">
-              <h2 className="text-xl md:text-2xl font-semibold text-slate-900">
-                Apply for E-Visa
-              </h2>
+            {/* RIGHT: Form */}
+            <div className="bg-white/95 backdrop-blur rounded-2xl border border-white/20 shadow-xl p-5 md:p-6">
+              <h3 className="text-lg md:text-xl font-semibold text-slate-900">
+                Quick Application Form
+              </h3>
               <p className="mt-1 text-sm text-slate-600">
-                All fields are mandatory.
+                Fill details. On submit, data prints in console.
               </p>
 
-              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                {/* Two-column grid for inputs */}
+              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Name */}
                   <div>
                     <label className="text-sm font-medium text-slate-700">
                       Name <span className="text-rose-500">*</span>
@@ -182,13 +187,12 @@ export default function VisaBannerWithEVisaForm() {
                       value={form.name}
                       onChange={(e) => updateField("name", e.target.value)}
                       type="text"
-                      placeholder="Full name"
                       className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-400"
+                      placeholder="Full name"
                       required
                     />
                   </div>
 
-                  {/* Email */}
                   <div>
                     <label className="text-sm font-medium text-slate-700">
                       Email <span className="text-rose-500">*</span>
@@ -197,13 +201,12 @@ export default function VisaBannerWithEVisaForm() {
                       value={form.email}
                       onChange={(e) => updateField("email", e.target.value)}
                       type="email"
-                      placeholder="you@example.com"
                       className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-400"
+                      placeholder="you@example.com"
                       required
                     />
                   </div>
 
-                  {/* Phone */}
                   <div>
                     <label className="text-sm font-medium text-slate-700">
                       Phone <span className="text-rose-500">*</span>
@@ -212,13 +215,12 @@ export default function VisaBannerWithEVisaForm() {
                       value={form.phone}
                       onChange={(e) => updateField("phone", e.target.value)}
                       type="tel"
-                      placeholder="Phone number"
                       className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-400"
+                      placeholder="Phone number"
                       required
                     />
                   </div>
 
-                  {/* Visa Type */}
                   <div>
                     <label className="text-sm font-medium text-slate-700">
                       Visa Type <span className="text-rose-500">*</span>
@@ -236,7 +238,6 @@ export default function VisaBannerWithEVisaForm() {
                     </select>
                   </div>
 
-                  {/* Country */}
                   <div>
                     <label className="text-sm font-medium text-slate-700">
                       Select Country <span className="text-rose-500">*</span>
@@ -256,7 +257,6 @@ export default function VisaBannerWithEVisaForm() {
                     </select>
                   </div>
 
-                  {/* Days */}
                   <div>
                     <label className="text-sm font-medium text-slate-700">
                       No. of Days <span className="text-rose-500">*</span>
@@ -268,19 +268,18 @@ export default function VisaBannerWithEVisaForm() {
                       }
                       type="text"
                       inputMode="numeric"
-                      placeholder="e.g. 7"
                       className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-400"
+                      placeholder="e.g. 7"
                       required
                     />
                   </div>
                 </div>
 
-                {/* Attachments (full width) */}
+                {/* Attachments */}
                 <div>
                   <div className="flex items-center justify-between gap-3">
                     <label className="text-sm font-medium text-slate-700">
-                      Attachments (Image/PDF){" "}
-                      <span className="text-rose-500">*</span>
+                      Attachments <span className="text-rose-500">*</span>
                     </label>
                     <button
                       type="button"
@@ -300,10 +299,8 @@ export default function VisaBannerWithEVisaForm() {
                         <div className="flex items-start justify-between gap-3">
                           <div className="w-full">
                             <p className="text-xs text-slate-500 mb-2">
-                              Document {idx + 1}{" "}
-                              <span className="text-rose-500">*</span>
+                              Document {idx + 1} <span className="text-rose-500">*</span>
                             </p>
-
                             <input
                               type="file"
                               accept={ACCEPTED_FILE_TYPES}
@@ -313,16 +310,12 @@ export default function VisaBannerWithEVisaForm() {
                               className="block w-full text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:opacity-90"
                               required
                             />
-
                             {file ? (
                               <p className="mt-2 text-xs text-slate-600">
-                                Selected:{" "}
-                                <span className="font-medium">{file.name}</span>
+                                Selected: <span className="font-medium">{file.name}</span>
                               </p>
                             ) : (
-                              <p className="mt-2 text-xs text-slate-500">
-                                No file selected
-                              </p>
+                              <p className="mt-2 text-xs text-slate-500">No file selected</p>
                             )}
                           </div>
 
@@ -341,7 +334,7 @@ export default function VisaBannerWithEVisaForm() {
                   </div>
 
                   <p className="mt-2 text-xs text-slate-500">
-                    Supported: all image formats + PDF. Every attachment field is mandatory.
+                    Supported: images + PDF. Each attachment field is mandatory.
                   </p>
                 </div>
 
@@ -357,8 +350,6 @@ export default function VisaBannerWithEVisaForm() {
                 >
                   Submit Application
                 </button>
-
-               
               </form>
             </div>
           </div>

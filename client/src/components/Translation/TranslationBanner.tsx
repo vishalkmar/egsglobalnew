@@ -8,8 +8,7 @@ type Slide = {
   badge: string;
   titleLines: string[];
   description: string; // 1 short EGS-style line
-  primaryCta: string;
-  secondaryCta: string;
+ 
 };
 
 const slides: Slide[] = [
@@ -25,7 +24,7 @@ const slides: Slide[] = [
     description:
       "EGS Group delivers accurate, legally valid translations for your degrees, diplomas and official certificates.",
     primaryCta: "Enquire for Translation",
-    secondaryCta: "Talk to Our Team",
+   
   },
   {
     id: 2,
@@ -39,7 +38,7 @@ const slides: Slide[] = [
     description:
       "Specialised translations for immigration, PR and visa files aligned with embassy and consulate requirements.",
     primaryCta: "Get Immigration Support",
-    secondaryCta: "Schedule a Call",
+    
   },
 ];
 
@@ -117,14 +116,7 @@ const TranslationBannerCarousel: React.FC = () => {
                 </p>
 
                 {/* CTA buttons */}
-                <div className="flex flex-wrap gap-3 sm:gap-4 pt-2">
-                  <button className="inline-flex items-center justify-center rounded-full bg-rose-500 px-6 sm:px-7 py-2.5 text-sm sm:text-base font-semibold text-white shadow-lg hover:bg-rose-600 transition">
-                    {slide.primaryCta} <span className="ml-2 text-sm">➜</span>
-                  </button>
-                  <button className="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 sm:px-7 py-2.5 text-sm sm:text-base font-semibold text-white shadow-lg hover:bg-blue-700 transition">
-                    {slide.secondaryCta} <span className="ml-2 text-sm">➜</span>
-                  </button>
-                </div>
+               
               </div>
             </div>
           </div>

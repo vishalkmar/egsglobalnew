@@ -16,17 +16,17 @@ const DESTINATIONS: Destination[] = [
     image: "/visa/countries/dubai.jpg",
     badge: "E-Visa",
     visaType: "Tourism",
-    stayDuration: "30 days",
-    processingTime: "3–5 working days",
-    entryType: "Single / Multiple",
+    stayDuration: "10/30 days",
+    processingTime: "4–6 working days",
+    entryType: "Single",
   },
   {
     name: "Oman",
     image: "/visa/countries/oman.jpg",
-    badge: "Sticker",
+    badge: "E-Visa",
     visaType: "Tourism",
-    stayDuration: "10–30 days",
-    processingTime: "5–7 working days",
+    stayDuration: "10/30 days",
+    processingTime: "1-3 working days",
     entryType: "Single Entry",
   },
   {
@@ -34,62 +34,62 @@ const DESTINATIONS: Destination[] = [
     image: "/visa/countries/singapore.avif",
     badge: "E-Visa",
     visaType: "Tourism",
-    stayDuration: "30 days",
-    processingTime: "3–4 working days",
-    entryType: "Multiple Entry",
+    stayDuration: "10/30 days",
+    processingTime: "3–5 working days",
+    entryType: "Single / Multiple Entry",
   },
   {
     name: "Vietnam",
     image: "/visa/countries/viatnamm.jpg",
     badge: "E-Visa",
     visaType: "Tourism",
-    stayDuration: "30 days",
+    stayDuration: "10/30 days",
     processingTime: "4–7 working days",
-    entryType: "Single Entry",
+       entryType: "Single / Multiple Entry",
   },
   {
     name: "Russia",
      image: "/visa/countries/russia.avif",
    badge: "E-Visa",
     visaType: "Tourism",
-    stayDuration: "15–30 days",
+    stayDuration: "15/30 days",
     processingTime: "10–15 working days",
-    entryType: "Single / Double",
+    entryType: "Single / Double / Multiple",
   },
   {
     name: "Thailand",
      image: "/visa/countries/thailand.avif",
     badge: "E-Visa",
     visaType: "Tourism",
-    stayDuration: "15 days",
+    stayDuration: "10/15/30 days",
     processingTime: "2–5 working days",
-    entryType: "Single Entry",
+    entryType: "Single / Multiple Entery ",
   },
   {
     name: "Azerbaijan",
     image: "/visa/countries/azerbaijan.jpg",
     badge: "E-Visa",
     visaType: "Tourism",
-    stayDuration: "30 days",
-    processingTime: "3–5 working days",
-    entryType: "Single Entry",
+    stayDuration: "10/30 days",
+    processingTime: "3–7 working days",
+    entryType: "Single / Mulitple Entry",
   },
   {
     name: "Bahrain",
     image: "/visa/countries/bahrain.avif",
     badge: "E-Visa",
     visaType: "Tourism",
-    stayDuration: "14 days",
-    processingTime: "5–7 working days",
+    stayDuration: "10/15/30 days",
+    processingTime: "3-5 working days",
     entryType: "Single Entry",
   },
   {
     name: "Armenia",
      image: "/visa/countries/armenia.avif",
-    badge: "Sticker",
+    badge: "E-Visa",
     visaType: "Tourism",
-    stayDuration: "21 days",
-    processingTime: "5 working days",
+    stayDuration: "10/30 days",
+    processingTime: "3-5 working days",
     entryType: "Single Entry",
   },
   {
@@ -97,7 +97,7 @@ const DESTINATIONS: Destination[] = [
   image: "/visa/countries/egypt.avif",
     badge: "E-Visa",
     visaType: "Tourism",
-    stayDuration: "30 days",
+    stayDuration: "10/30 days",
     processingTime: "5–7 working days",
     entryType: "Single Entry",
   },
@@ -166,13 +166,13 @@ export default function PopularDestinations() {
                 </div>
 
                 {/* Info row */}
-                <div className="grid grid-cols-3 gap-2 text-[11px] md:text-xs text-slate-500 mt-1">
-                  <div className="bg-slate-50 rounded-2xl px-3 py-2">
+                <div className="grid grid-cols-2 gap-2 text-[11px] md:text-xs text-slate-500 mt-1">
+                  {/* <div className="bg-slate-50 rounded-2xl px-3 py-2">
                     <p className="font-semibold text-[11px] text-slate-600">
                       Per person
                     </p>
                     <p className="mt-1">•••••</p>
-                  </div>
+                  </div> */}
                   <div className="bg-slate-50 rounded-2xl px-3 py-2">
                     <p className="font-semibold text-[11px] text-slate-600">
                       Stay Duration
@@ -182,7 +182,7 @@ export default function PopularDestinations() {
                   <div className="bg-slate-50 rounded-2xl px-3 py-2">
                     <p className="font-semibold text-[11px] text-slate-600 flex items-center gap-1">
                       Processing Time
-                      <span className="text-xs">⚡</span>
+                      
                     </p>
                     <p className="mt-1">{dest.processingTime}</p>
                   </div>

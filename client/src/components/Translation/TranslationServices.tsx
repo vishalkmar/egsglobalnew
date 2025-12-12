@@ -2,22 +2,24 @@
 
 import React from "react";
 
+/* ----------------------------- Types ----------------------------- */
 type Category = {
-  name: string;
+  title: string;
   items: string[];
 };
 
-type TranslationServiceCard = {
-  key: string;
-  title: string;
-  badge: string;
-  shortLine: string;
+type TranslationCard = {
+  id: string;
+  heading: string;
+  tagLine: string;
+  description: string;
   categories: Category[];
 };
 
-const CERTIFICATE_TRANSLATION_CATEGORIES: Category[] = [
+/* ------------------------ Data Definitions ------------------------ */
+const CERTIFICATE_TRANSLATION: Category[] = [
   {
-    name: "Personal Certificate Translation",
+    title: "Personal Certificates",
     items: [
       "Marriage Certificate",
       "Birth Certificate",
@@ -27,30 +29,29 @@ const CERTIFICATE_TRANSLATION_CATEGORIES: Category[] = [
     ],
   },
   {
-    name: "Commercial Documents",
+    title: "Commercial Documents",
     items: [
       "Certificate of Origin",
       "Certificate of Incorporation",
-      "Invoices",
+      "Commercial Invoices",
     ],
   },
   {
-    name: "Educational Certificate Translation",
+    title: "Educational Certificates",
     items: [
-      "School Leaving Certificates",
-      "College Leaving Certificates",
-      "Degree Certificates",
-      "Mark Sheets",
+      "School Leaving Certificate",
+      "College Leaving Certificate",
+      "Degree Certificate",
+      "Academic Mark Sheets",
       "Bonafide Certificate",
-      "PG Degree Certificate",
+      "Post-Graduate Degree Certificate",
     ],
   },
 ];
 
-// You can change / extend these easily later
-const IMMIGRATION_TRANSLATION_CATEGORIES: Category[] = [
+const IMMIGRATION_TRANSLATION: Category[] = [
   {
-    name: "Visa & PR Applications",
+    title: "Visa & Residency Applications",
     items: [
       "Visa Application Forms",
       "Permanent Residency Documents",
@@ -59,16 +60,16 @@ const IMMIGRATION_TRANSLATION_CATEGORIES: Category[] = [
     ],
   },
   {
-    name: "Identity & Status Documents",
+    title: "Identity & Civil Status",
     items: [
-      "Passports & ID Cards",
-      "Residence Permits",
-      "Police Clearance / PCC",
+      "Passport & National ID",
+      "Residence Permit",
+      "Police Clearance Certificate (PCC)",
       "Civil Status Certificates",
     ],
   },
   {
-    name: "Supporting Immigration Papers",
+    title: "Supporting Documents",
     items: [
       "Bank Statements",
       "Salary Slips",
@@ -78,85 +79,152 @@ const IMMIGRATION_TRANSLATION_CATEGORIES: Category[] = [
   },
 ];
 
-const TRANSLATION_SERVICES: TranslationServiceCard[] = [
+const TRANSLATION_CARDS: TranslationCard[] = [
   {
-    key: "certificate",
-    title: "Certificate Translation",
-    badge: "For Personal, Commercial & Educational Documents",
-    shortLine:
-      "Accurate, formatted translations for certificates required by embassies, universities and global authorities.",
-    categories: CERTIFICATE_TRANSLATION_CATEGORIES,
+    id: "certificate-translation",
+    heading: "Certificate Translation",
+    tagLine: "Personal • Educational • Commercial",
+    description:
+      "Professionally translated certificates with accurate formatting and terminology, accepted by embassies, universities, and international authorities.",
+    categories: CERTIFICATE_TRANSLATION,
   },
   {
-    key: "immigration",
-    title: "Immigration Translation",
-    badge: "For Visa, PR & Residency Files",
-    shortLine:
-      "Specialised translations tailored to immigration, consulate and visa centre requirements across destinations.",
-    categories: IMMIGRATION_TRANSLATION_CATEGORIES,
+    id: "immigration-translation",
+    heading: "Immigration Translation",
+    tagLine: "Visa • PR • Residency",
+    description:
+      "Specialised immigration translations aligned with consulate, embassy, and visa processing standards across global destinations.",
+    categories: IMMIGRATION_TRANSLATION,
   },
 ];
 
+/* --------------------------- Component --------------------------- */
 const TranslationServicesAtGlance: React.FC = () => {
   return (
-    <section className="py-16 md:py-20 bg-slate-50">
-      <div className="max-w-6xl mx-auto px-4 md:px-6">
-        {/* Heading */}
-        <div className="mb-10 text-center space-y-3">
-          <span className="inline-flex items-center rounded-full bg-sky-100 px-4 py-1.5 text-xs md:text-sm font-semibold text-sky-700 uppercase tracking-wide">
-            At Glance To Translation Services
+    <section
+      className="
+        w-full py-20
+        bg-gradient-to-b
+        from-[#f6f2eb]
+        via-[#f1ede6]
+        to-[#ebe6dd]
+      "
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* ------------------------- Heading ------------------------- */}
+        <div className="max-w-3xl mx-auto text-center mb-16 space-y-4">
+          <span
+            className="
+              inline-block px-5 py-2 rounded-full
+              text-xs font-semibold tracking-widest uppercase
+              bg-[#2e2e2e] text-[#f3e8d5]
+            "
+          >
+            Translation Services Overview
           </span>
-          <h2 className="text-3xl md:text-4xl font-semibold text-slate-900">
+
+          <h2
+            className="
+              text-3xl md:text-4xl lg:text-5xl
+              font-semibold text-[#2b2b2b]
+            "
+          >
             Professional Translation Solutions by EGS Group
           </h2>
-          <p className="text-sm md:text-base text-slate-600 max-w-2xl mx-auto">
-            Two focused translation services designed for
-            certificate validation and smooth immigration processing.
+
+          <p className="text-sm md:text-base text-[#555555]">
+            High-accuracy translation services designed for legal validation,
+            embassy submission, and immigration compliance.
           </p>
         </div>
 
-        {/* Two cards layout */}
-        <div className="grid gap-6 md:gap-8 md:grid-cols-2">
-          {TRANSLATION_SERVICES.map((service) => (
+        {/* -------------------------- Cards -------------------------- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          {TRANSLATION_CARDS.map((card) => (
             <div
-              key={service.key}
-              className="group relative h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-xl transition-all duration-300"
+              key={card.id}
+              className="
+                relative rounded-3xl
+                bg-[#fffdfa]
+                border border-[#d6c6a8]
+                shadow-[0_25px_60px_rgba(0,0,0,0.12)]
+                overflow-hidden
+              "
             >
-              {/* Soft gradient accent */}
-              <div className="pointer-events-none absolute -top-20 -right-20 h-48 w-48 rounded-full bg-gradient-to-br from-sky-400/20 via-rose-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              {/* Decorative Accent */}
+              <div
+                className="
+                  absolute top-0 right-0
+                  h-40 w-40
+                  bg-gradient-to-br
+                  from-[#c9a24d]/30
+                  to-transparent
+                "
+              />
 
-              <div className="relative p-5 md:p-6 space-y-4">
-                {/* Header */}
-                <div className="space-y-2">
-                  <span className="inline-flex items-center rounded-full bg-slate-900 text-white text-[0.7rem] md:text-xs font-semibold px-3 py-1">
-                    {service.badge}
+              <div className="relative p-8 space-y-8">
+                {/* Card Header */}
+                <div className="space-y-3">
+                  <span
+                    className="
+                      inline-block px-4 py-1.5 rounded-full
+                      text-[11px] font-semibold tracking-wide
+                      bg-[#2e2e2e] text-[#f5ead6]
+                    "
+                  >
+                    {card.tagLine}
                   </span>
-                  <h3 className="text-xl md:text-2xl font-semibold text-slate-900">
-                    {service.title}
+
+                  <h3 className="text-2xl font-semibold text-[#2b2b2b]">
+                    {card.heading}
                   </h3>
-                  <p className="text-xs md:text-sm text-slate-600">
-                    {service.shortLine}
+
+                  <p className="text-sm text-[#5a5a5a] leading-relaxed">
+                    {card.description}
                   </p>
                 </div>
 
-                {/* Categories */}
-                <div className="mt-3 space-y-4">
-                  {service.categories.map((category) => (
+                {/* Categories (FIXED) */}
+                <div className="space-y-5">
+                  {card.categories.map((cat) => (
                     <div
-                      key={category.name}
-                      className="rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-3 md:px-4 md:py-3.5"
+                      key={cat.title}
+                      className="
+                        group relative overflow-hidden
+                        rounded-2xl px-6 py-5
+                        border border-white/10
+                        bg-gradient-to-br from-[#0b3a3a] via-[#0e4a4b] to-[#0f5b57]
+                        shadow-[0_16px_40px_rgba(0,0,0,0.22)]
+                        transition-all duration-300 ease-out
+                        hover:-translate-y-1
+                        hover:shadow-[0_26px_70px_rgba(16,185,129,0.22)]
+                        hover:border-emerald-300/40
+                      "
                     >
-                      <p className="text-xs md:text-sm font-semibold text-slate-900 mb-1.5">
-                        {category.name}
-                      </p>
-                      <ul className="space-y-1">
-                        {category.items.map((item) => (
+                      {/* Soft shine on hover */}
+                      <div className="pointer-events-none absolute -top-20 -right-20 h-48 w-48 rounded-full bg-emerald-300/12 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      <h4 className="text-sm font-semibold text-white/95 mb-3">
+                        {cat.title}
+                      </h4>
+
+                      <ul className="space-y-2">
+                        {cat.items.map((item) => (
                           <li
                             key={item}
-                            className="flex items-start gap-1.5 text-[0.75rem] md:text-xs text-slate-600"
+                            className="flex items-start gap-3 text-sm text-white/90"
                           >
-                            <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-sky-500" />
-                            <span>{item}</span>
+                            <span
+                              className="
+                                mt-[7px] h-2 w-2 rounded-full
+                                bg-emerald-300 flex-shrink-0
+                                shadow-[0_0_0_3px_rgba(16,185,129,0.14)]
+                              "
+                            />
+                            <span className="transition-colors duration-200 group-hover:text-white">
+                              {item}
+                            </span>
                           </li>
                         ))}
                       </ul>
@@ -164,11 +232,11 @@ const TranslationServicesAtGlance: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Small EGS footer line */}
-                <div className="pt-2 border-t border-slate-100 mt-4">
-                  <p className="text-[0.7rem] md:text-xs text-slate-500">
-                    Managed and quality-checked by EGS Group&apos;s specialised
-                    translation team.
+                {/* Footer */}
+                <div className="pt-4 border-t border-[#e1d6bf]">
+                  <p className="text-xs text-[#6a6a6a]">
+                    All translations are handled by EGS Group’s certified
+                    linguists and undergo multi-level quality checks.
                   </p>
                 </div>
               </div>

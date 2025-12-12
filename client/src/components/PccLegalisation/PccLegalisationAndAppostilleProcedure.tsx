@@ -17,10 +17,10 @@ interface FlowType {
 
 const flows: FlowType[] = [
   {
-    title: "PCC Legalization – Non-Hague Countries",
+    title: "PCC Legalization",
     highlight: "PCC → State → MEA → Embassy",
     description:
-      "For Non-Hague Convention countries such as UAE, Qatar, Kuwait, Oman and Saudi Arabia, the Police Clearance Certificate (PCC) is legalized through state authentication, MEA attestation and final embassy attestation of the destination country.",
+      "PCC for Bangladesh and Nepal is processed through state verification followed by MEA attestation, ensuring the document is valid for official use.",
     color: "border-sky-500",
     steps: [
       {
@@ -37,15 +37,15 @@ const flows: FlowType[] = [
       },
       {
         label: "Embassy Attestation",
-        sub: "Embassy / Consulate of destination Non-Hague country",
+        sub: "Embassy / Consulate of destination Bangladesh & Nepal",
       },
     ],
   },
   {
-    title: "PCC Apostille – Hague Convention Countries",
+    title: "PCC Apostille",
     highlight: "PCC → State → MEA Apostille",
     description:
-      "For Hague Convention member countries in Europe, USA, Australia and others, the PCC is first authenticated by the State Home Department and then apostilled by the MEA. No further embassy attestation is required.",
+      "For India, the PCC is processed through State Home Department authentication followed by MEA Apostille, making it valid for international use without further attestation.",
     color: "border-emerald-500",
     steps: [
       {
@@ -53,12 +53,12 @@ const flows: FlowType[] = [
         sub: "Local Police Station / PSK / Passport Office",
       },
       {
-        label: "State Home Department Authentication",
-        sub: "Home / General Administration Department (State Govt.)",
+        label: "State Authentication",
+        sub: "State Home / General Administration Department",
       },
       {
         label: "MEA Apostille",
-        sub: "Computer-generated Apostille sticker by MEA, New Delhi",
+        sub: "Apostille by Ministry of External Affairs, New Delhi",
       },
     ],
   },
@@ -98,11 +98,11 @@ const PccLegalizationApostilleFlow: React.FC = () => {
             Procedure for PCC Legalization & Apostille
           </h2>
           <p className="mt-3 text-sm sm:text-base text-gray-600 leading-relaxed max-w-3xl mx-auto">
-            The process for Police Clearance Certificate (PCC) attestation
-            depends on whether the destination country is a Hague Convention
-            member or a Non-Hague country. For Non-Hague countries, full
-            legalization including embassy attestation is required, while Hague
-            countries accept an MEA Apostille after state authentication.
+            We provide PCC legalization services for Bangladesh and Nepal, which
+            are completed through state authentication followed by MEA
+            attestation. For India, PCC is processed through State Home
+            Department authentication and MEA Apostille, making it valid for
+            international use.
           </p>
         </div>
 

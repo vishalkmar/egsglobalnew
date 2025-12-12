@@ -5,20 +5,19 @@ import { ShieldCheck, Stamp, Globe2, CheckCircle2 } from "lucide-react";
 
 interface PccVariant {
   title: string;
-  subtitle: string;
+
   badge: string;
   color: string; // border / accent
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   required: string[];
   optional: string[];
-  note: string;
+ 
 }
 
 const pccVariants: PccVariant[] = [
   {
     title: "PCC Legalization",
-    subtitle: "For Non-Hague Convention Countries",
-    badge: "UAE · Qatar · Kuwait · Oman · Saudi · China · Egypt",
+    badge: "Bangladesh · Nepal",
     color: "border-sky-500",
     icon: ShieldCheck,
     required: [
@@ -27,17 +26,18 @@ const pccVariants: PccVariant[] = [
       "Valid PCC within the acceptable time frame (usually 3–6 months)",
     ],
     optional: [
-      "Job offer letter / employment contract (for work visas)",
+       "University admission letter (for students)",
+      
       "Visa copy or approval letter, if available",
-      "Address proof such as Aadhaar or local ID (if demanded by state authority)",
+    
       "Passport-size photographs (only for a few embassies)",
     ],
-    note: "Process path: PCC → State Home Department → MEA Attestation → Embassy Attestation of destination Non-Hague country.",
+  
   },
   {
     title: "PCC Apostille",
-    subtitle: "For Hague Convention Countries",
-    badge: "Europe · USA · UK · Australia · New Zealand etc.",
+    
+    badge: "India",
     color: "border-emerald-500",
     icon: Stamp,
     required: [
@@ -49,9 +49,9 @@ const pccVariants: PccVariant[] = [
       "University admission letter (for students)",
       "Employment contract / offer letter (for job seekers)",
       "Visa appointment / application proof, if any",
-      "Local ID proof (only if state Home Dept. asks during authentication)",
+      
     ],
-    note: "Process path: PCC → State Home Department → MEA Apostille (no embassy attestation required for Hague Convention countries).",
+   
   },
 ];
 
@@ -65,9 +65,7 @@ const PccDocumentsRequired: React.FC = () => {
             Documents Required for PCC Legalization & Apostille
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            The documents for Police Clearance Certificate (PCC) depend on whether
-            your destination country is a Hague Convention member or a
-            Non-Hague country. Below is a clear checklist for both situations.
+           PCC attestation process usually starts with verification from the issuing authority (PSK / Passport Office or Local Police). After verification, the document is authenticated at the state level (as applicable) and then submitted to MEA for Apostille or Attestation. If the destination requires further stamping, we also coordinate Embassy / Consulate attestation and provide safe pickup & delivery support.
           </p>
         </div>
 
@@ -95,9 +93,7 @@ const PccDocumentsRequired: React.FC = () => {
                     <h3 className="text-lg sm:text-xl font-semibold text-slate-900">
                       {variant.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-500">
-                      {variant.subtitle}
-                    </p>
+                    
                     <p className="mt-2 inline-flex items-center rounded-full bg-slate-100 text-[11px] sm:text-xs text-slate-700 px-3 py-1">
                       <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-500" />
                       {variant.badge}
@@ -137,9 +133,7 @@ const PccDocumentsRequired: React.FC = () => {
                 </div>
 
                 {/* Note */}
-                <p className="mt-3 text-[11px] sm:text-xs text-slate-500 border-t border-slate-100 pt-3 leading-relaxed">
-                  {variant.note}
-                </p>
+               
               </div>
             );
           })}

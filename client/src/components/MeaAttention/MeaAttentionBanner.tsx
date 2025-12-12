@@ -1,218 +1,394 @@
+import React, { useMemo, useState, ChangeEvent, FormEvent } from "react";
 
+type DocCategory =
+  | "Educational Documents"
+  | "Personal Documents"
+  | "Commercial Documents";
 
-import React, { useState, ChangeEvent, FormEvent } from "react";
+const DOC_TYPES: Record<DocCategory, string[]> = {
+  "Educational Documents": [
+    "Degree certificate",
+    "Diploma certificate",
+    "Mark sheets",
+    "Transfer Certificate",
+    "Nursing Certificate",
+  ],
+  "Personal Documents": [
+    "Birth certificate",
+    "Marriage certificate",
+    "Death certificate",
+    "Divorce certificate",
+    "PCC Certificate",
+  ],
+  "Commercial Documents": [
+    "Power of Attorney",
+    "Company Invoices",
+    "Export Documentation",
+    "Certificates of Incorporation",
+    "Memorandum of Association",
+  ],
+};
 
-type ServiceType = "attestation" | "apostille" | "translation" | "visa";
+const ACCEPTED_FILE_TYPES = "image/*,application/pdf";
+
+const ALL_COUNTRIES = [
+  "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria",
+  "Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia",
+  "Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cambodia","Cameroon","Canada",
+  "Cape Verde","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo (Congo-Brazzaville)","Costa Rica",
+  "Croatia","Cuba","Cyprus","Czechia (Czech Republic)","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt",
+  "El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini (fmr. Swaziland)","Ethiopia","Fiji","Finland","France","Gabon",
+  "Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras",
+  "Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya",
+  "Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg",
+  "Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia",
+  "Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar (Burma)","Namibia","Nauru","Nepal","Netherlands",
+  "New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine State",
+  "Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda",
+  "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia",
+  "Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa",
+  "South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania",
+  "Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine",
+  "United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam",
+  "Yemen","Zambia","Zimbabwe",
+];
 
 interface MeaFormData {
-  name: string;
-  countryCode: string;
-  phone: string;
+  name: string; // optional
   email: string;
-  city: string;
-  service: ServiceType;
-  details: string;
+  contact: string;
+  country: string;
+  docCategory: DocCategory | "";
+  docType: string;
+  noOfDocuments: string;
 }
 
 const MeaAttestationHero: React.FC = () => {
   const [formData, setFormData] = useState<MeaFormData>({
     name: "",
-    countryCode: "+91",
-    phone: "",
     email: "",
-    city: "",
-    service: "attestation",
-    details: "",
+    contact: "",
+    country: "",
+    docCategory: "",
+    docType: "",
+    noOfDocuments: "",
   });
 
-  const [submittedData, setSubmittedData] = useState<MeaFormData | null>(null);
+  const [files, setFiles] = useState<(File | null)[]>([null]);
+  const [submittedData, setSubmittedData] = useState<any>(null);
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const docTypeOptions = useMemo(() => {
+    if (!formData.docCategory) return [];
+    return DOC_TYPES[formData.docCategory];
+  }, [formData.docCategory]);
+
+  const syncFilesCount = (count: number) => {
+    setFiles((prev) => {
+      const next = [...prev];
+      if (next.length < count) while (next.length < count) next.push(null);
+      if (next.length > count) next.length = count;
+      return next;
+    });
   };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+
+    if (name === "docCategory") {
+      setFormData((prev) => ({
+        ...prev,
+        docCategory: value as DocCategory,
+        docType: "",
+      }));
+      return;
+    }
+
+    if (name === "noOfDocuments") {
+      const onlyNum = value.replace(/[^\d]/g, "");
+      const n = Math.min(Math.max(Number(onlyNum || "1"), 1), 20);
+      setFormData((prev) => ({ ...prev, noOfDocuments: String(n) }));
+      syncFilesCount(n);
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (index: number, file: File | null) => {
+    setFiles((prev) => {
+      const next = [...prev];
+      next[index] = file;
+      return next;
+    });
+  };
+
+  const isValid = useMemo(() => {
+    if (!formData.email.trim()) return false;
+    if (!formData.contact.trim()) return false;
+    if (!formData.country) return false;
+    if (!formData.docCategory) return false;
+    if (!formData.docType) return false;
+
+    const n = Number(formData.noOfDocuments || "0");
+    if (!n || n < 1) return false;
+    if (files.length !== n) return false;
+    if (files.some((f) => !f)) return false;
+
+    return true;
+  }, [formData, files]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    console.log("MEA Attestation form data:", formData);
-    setSubmittedData(formData);
-    alert("Your MEA / Apostille enquiry has been submitted.");
+
+    const payload = {
+      ...formData,
+      noOfDocuments: Number(formData.noOfDocuments),
+      files: files.map((f, i) => ({
+        index: i + 1,
+        name: f?.name,
+        type: f?.type,
+        size: f?.size,
+      })),
+    };
+
+    console.log("MEA Attestation form payload:", payload);
+    console.log("RAW FILES (send via FormData):", files);
+
+    setSubmittedData(payload);
+    alert("Your enquiry has been submitted. Check console for data.");
   };
 
   return (
-    <section className="relative w-full overflow-hidden bg-black py-14 md:pt-40 md:pb-20">
-  {/* Background Image */}
-  <div
-    className="absolute inset-0 bg-cover bg-center"
-    style={{
-      backgroundImage: "url('/meattestationheader.jpg')", // change as per your file
-    }}
-  />
+    <section className="relative w-full overflow-hidden bg-black py-14 md:pt-36 md:pb-20">
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/meattestationheader.jpg')" }}
+      />
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/30" />
 
-  {/* Dark Overlay Gradient (same style as sticker visa) */}
-  <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/30" />
-
-  {/* CONTENT BLOCK */}
-  <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-14 items-stretch">
-
-      {/* LEFT SIDE TEXT */}
-      <div className="flex flex-col justify-center space-y-6 md:space-y-8 text-white">
-        <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.3rem] font-bold leading-tight md:leading-[1.15] space-y-1">
-            <span className="block">Ministry of External</span>
-            <span className="block">Affairs – MEA Attestation</span>
+      {/* CONTENT */}
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Center heading */}
+        <div className="text-center text-white">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
+            Ministry of External Affairs – MEA Attestation
           </h1>
+          <p className="mt-3 text-sm sm:text-base text-slate-100/90 max-w-3xl mx-auto leading-relaxed">
+            EGS Group provides end-to-end support for MEA attestation of personal, educational and commercial documents.
+            From authentication to MEA stamping and safe delivery, we manage the entire process.
+          </p>
         </div>
 
-        <p className="text-sm sm:text-base text-slate-100/90 max-w-xl leading-relaxed">
-          EGS Group provides end-to-end support for MEA attestation of personal,
-          educational and commercial documents. From state / chamber
-          authentication to MEA stamping and safe delivery, we manage the entire
-          process so your documents are ready for use abroad without hassles.
-        </p>
-
-        <ul className="space-y-1 text-xs sm:text-sm text-slate-100/90">
-          <li>• MEA attestation for educational, personal & commercial documents</li>
-          <li>• Coordination with HRD, Home Department & Chamber of Commerce</li>
-          <li>• Expert guidance on country-wise documentation and timelines</li>
-        </ul>
-      </div>
-
-      {/* RIGHT SIDE FORM */}
-      <div className="flex items-stretch">
-        <div className="w-full bg-white text-slate-900 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.45)] px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-9 backdrop-blur-[4px] bg-white/95">
-
-          {/* Logo */}
-          <div className="flex flex-col items-center mb-6">
-            <div className="h-11 w-11 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 flex items-center justify-center text-white font-bold text-lg shadow-md">
-              EGS
-            </div>
-            <p className="mt-3 text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-slate-500 text-center">
-              Online MEA Attestation Enquiry Form
-            </p>
-          </div>
-
-          {/* YOUR ORIGINAL FORM (unchanged) */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-
-            <input
-              type="text"
-              name="name"
-              placeholder="Enter Name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-            />
-
-            <div className="grid grid-cols-[0.9fr_1.5fr] gap-3">
-              <div className="relative">
-                <select
-                  name="countryCode"
-                  value={formData.countryCode}
-                  onChange={handleChange}
-                  className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm pr-8 appearance-none outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                >
-                  <option value="+91">India +91</option>
-                  <option value="+977">Nepal +977</option>
-                  <option value="+880">Bangladesh +880</option>
-                  <option value="+971">UAE +971</option>
-                </select>
-                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400 text-xs">
-                  ▼
-                </span>
+        {/* Form 75% width centered */}
+        <div className="mt-10 flex justify-center">
+          <div className="w-full lg:w-[75%] bg-white/95 backdrop-blur rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.45)] border border-white/20 px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-9">
+            {/* Logo + subtitle */}
+            <div className="flex flex-col items-center mb-6">
+              <div className="h-11 w-11 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                EGS
               </div>
-
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Enter Contact Number"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-              />
-            </div>
-
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter Email Address"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-            />
-
-            <input
-              type="text"
-              name="city"
-              placeholder="Which city are you in?"
-              value={formData.city}
-              onChange={handleChange}
-              className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-            />
-
-            {/* Service Radio */}
-            <div className="rounded-md border border-slate-200 px-3 py-3">
-              <p className="text-xs font-semibold text-slate-600 mb-2">Select Service</p>
-              <div className="flex flex-wrap gap-4 text-xs sm:text-sm">
-                {["attestation","apostille","translation","visa"].map((svc) => (
-                  <label key={svc} className="inline-flex items-center gap-2 cursor-pointer text-slate-700">
-                    <input
-                      type="radio"
-                      name="service"
-                      value={svc}
-                      checked={formData.service === svc}
-                      onChange={handleChange}
-                      className="accent-sky-600"
-                    />
-                    <span className="capitalize">{svc}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <textarea
-              name="details"
-              rows={4}
-              placeholder={`• Document type(s) you need MEA attestation / Apostille for
-• Country where you will use the document
-• Any specific instructions or urgent timelines`}
-              value={formData.details}
-              onChange={handleChange}
-              className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 resize-y"
-            />
-
-            <button
-              type="submit"
-              className="mt-2 w-full rounded-md bg-sky-600 hover:bg-sky-700 text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 transition-colors shadow-md"
-            >
-              Submit Enquiry
-            </button>
-          </form>
-
-          {/* Preview */}
-          {submittedData && (
-            <div className="mt-6 border-t border-slate-200 pt-4">
-              <p className="text-xs font-semibold text-slate-600 mb-2">
-                Submitted Data (preview)
+              <p className="mt-3 text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-slate-500 text-center">
+                Online MEA Attestation Enquiry Form
               </p>
-              <pre className="text-[11px] sm:text-xs bg-slate-50 border border-slate-200 rounded-md p-3 overflow-x-auto">
-                {JSON.stringify(submittedData, null, 2)}
-              </pre>
             </div>
-          )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Inputs: 2–3 per row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Name optional */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">
+                    Name (optional)
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Enter Name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                  />
+                </div>
+
+                {/* Email required */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">
+                    Email <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Enter Email Address"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    required
+                  />
+                </div>
+
+                {/* Contact required */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">
+                    Contact <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="contact"
+                    placeholder="Enter Contact Number"
+                    value={formData.contact}
+                    onChange={handleChange}
+                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    required
+                  />
+                </div>
+
+                {/* Country required */}
+                <div className="lg:col-span-2">
+                  <label className="text-xs font-semibold text-slate-600">
+                    Country (where you will use the document){" "}
+                    <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    name="country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    required
+                  >
+                    <option value="">Select Country</option>
+                    {ALL_COUNTRIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Doc category */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">
+                    Document Category <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    name="docCategory"
+                    value={formData.docCategory}
+                    onChange={handleChange}
+                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Educational Documents">Educational Documents</option>
+                    <option value="Personal Documents">Personal Documents</option>
+                    <option value="Commercial Documents">Commercial Documents</option>
+                  </select>
+                </div>
+
+                {/* Doc type */}
+                <div className="lg:col-span-2">
+                  <label className="text-xs font-semibold text-slate-600">
+                    Document Type <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    name="docType"
+                    value={formData.docType}
+                    onChange={handleChange}
+                    disabled={!formData.docCategory}
+                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 disabled:bg-slate-100"
+                    required
+                  >
+                    <option value="">
+                      {formData.docCategory ? "Select Document Type" : "Select Category first"}
+                    </option>
+                    {docTypeOptions.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* No of documents */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">
+                    No. of Documents <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    name="noOfDocuments"
+                    value={formData.noOfDocuments}
+                    onChange={handleChange}
+                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    required
+                  />
+                  <p className="mt-1 text-[11px] text-slate-500">Max 20 files.</p>
+                </div>
+              </div>
+
+              {/* Upload grid: 2–3 per row */}
+              <div>
+                <p className="text-xs font-semibold text-slate-600 mb-2">
+                  Upload Documents <span className="text-rose-500">*</span>
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {files.map((file, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-md border border-slate-200 bg-white px-3 py-3"
+                    >
+                      <p className="text-[11px] font-semibold text-slate-600 mb-2">
+                        File {idx + 1} <span className="text-rose-500">*</span>
+                      </p>
+                      <input
+                        type="file"
+                        accept={ACCEPTED_FILE_TYPES}
+                        onChange={(e) =>
+                          handleFileChange(idx, e.target.files?.[0] ?? null)
+                        }
+                        className="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:opacity-90"
+                        required
+                      />
+                      <p className="mt-2 text-[11px] text-slate-500 truncate">
+                        {file ? `Selected: ${file.name}` : "No file selected"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="mt-2 text-[11px] text-slate-500">
+                  Supported: images + PDF. All fields required except Name.
+                </p>
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={!isValid}
+                className={`w-full rounded-md text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 transition-colors shadow-md
+                  ${isValid ? "bg-sky-600 hover:bg-sky-700" : "bg-slate-300 cursor-not-allowed"}`}
+              >
+                Submit Enquiry
+              </button>
+            </form>
+
+            {/* Preview (optional) */}
+            {submittedData && (
+              <div className="mt-6 border-t border-slate-200 pt-4">
+                <p className="text-xs font-semibold text-slate-600 mb-2">
+                  Submitted Data (preview)
+                </p>
+                <pre className="text-[11px] sm:text-xs bg-slate-50 border border-slate-200 rounded-md p-3 overflow-x-auto">
+                  {JSON.stringify(submittedData, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-    </div>
-  </div>
-</section>
-
+    </section>
   );
 };
 

@@ -43,30 +43,23 @@ const ImmigrationTabs = {
           <li>
             <span className="font-semibold">Accuracy:</span> Professional
             translation services ensure that your translated documents are
-            accurate and faithfully represent the originals. Even small
-            mistakes can have serious consequences for your application.
+            accurate and faithfully represent the originals.
           </li>
           <li>
             <span className="font-semibold">Legality:</span> Many immigration
-            authorities require legally recognised translations. EGS Group
-            understands these requirements and provides translations that meet
-            official standards.
+            authorities require legally recognised translations.
           </li>
           <li>
-            <span className="font-semibold">Speed:</span> With the right
-            resources and workflows, professional teams can translate documents
-            quickly and efficiently—especially helpful when you are working with
-            strict timelines.
+            <span className="font-semibold">Speed:</span> Professional teams can
+            translate documents quickly and efficiently.
           </li>
           <li>
             <span className="font-semibold">Quality:</span> Experienced
-            translators fluent in both languages ensure that translated content
-            is clear, precise and easy to read.
+            translators ensure translated content is clear and precise.
           </li>
           <li>
-            <span className="font-semibold">Convenience:</span> Using EGS Group
-            saves you time and effort—you don’t have to find individual
-            translators or check every detail yourself.
+            <span className="font-semibold">Convenience:</span> Saves time and
+            effort—no need to manage multiple translators yourself.
           </li>
         </ul>
       </>
@@ -78,15 +71,12 @@ const ImmigrationTabs = {
       <>
         <p className="mb-3">
           EGS Group understands the unique challenges individuals and businesses
-          face when navigating immigration processes and dealing with
-          authorities in a foreign country. That’s why we offer translation
-          solutions tailored to each client’s specific needs.
+          face when navigating immigration processes. That’s why we offer
+          translation solutions tailored to each client’s specific needs.
         </p>
         <p>
-          Our team of native and expert translators has the skills to deliver
-          high-quality, legally compliant translations that are effective and
-          reliable. EGS Group takes pride in collaborating closely with clients,
-          ensuring every document supports a strong and complete immigration
+          Our team delivers high-quality, legally compliant translations and
+          collaborates closely with clients to strengthen every immigration
           file.
         </p>
       </>
@@ -107,14 +97,12 @@ const CertificateTabs = {
         </p>
         <p className="mb-3">
           Professional translation companies like EGS Group perform certificate
-          translation using translators who are proficient in both the source
-          and target languages and have experience with official documents. The
-          translated certificate must be accurate and preserve the exact meaning
-          of the original.
+          translation using translators proficient in both the source and target
+          languages and experienced with official documents.
         </p>
         <p>
-          In many cases, an affidavit or other form of certification is needed
-          to confirm the accuracy and authenticity of the translation.
+          In many cases, an affidavit or other certification is needed to
+          confirm accuracy and authenticity of the translation.
         </p>
       </>
     ),
@@ -129,31 +117,24 @@ const CertificateTabs = {
         </p>
         <ul className="list-disc pl-6 space-y-2">
           <li>
-            <span className="font-semibold">Accuracy:</span> We ensure your
-            translated certificate is precise and faithful to the original,
-            which is critical when documents are used for legal or official
-            verification.
+            <span className="font-semibold">Accuracy:</span> Precise, faithful
+            translations for legal/official verification.
           </li>
           <li>
-            <span className="font-semibold">Legality:</span> Our team is
-            familiar with legal recognition requirements and delivers
-            translations that meet the standards of employers, universities and
-            authorities.
+            <span className="font-semibold">Legality:</span> Meets standards of
+            employers, universities and authorities.
           </li>
           <li>
-            <span className="font-semibold">Speed:</span> With dedicated
-            resources and proven workflows, we handle urgent certificate
-            translations without compromising quality.
+            <span className="font-semibold">Speed:</span> Urgent translations
+            without compromising quality.
           </li>
           <li>
-            <span className="font-semibold">Quality:</span> Skilled translators
-            ensure your certificate reads naturally in the target language while
-            retaining all important details.
+            <span className="font-semibold">Quality:</span> Natural readability
+            with all important details preserved.
           </li>
           <li>
-            <span className="font-semibold">Convenience:</span> Working with EGS
-            Group means you avoid the hassle of managing multiple translators or
-            checking technical terminology yourself.
+            <span className="font-semibold">Convenience:</span> No hassle of
+            managing translators or terminology checks.
           </li>
         </ul>
       </>
@@ -164,15 +145,14 @@ const CertificateTabs = {
     content: (
       <>
         <p className="mb-3">
-          EGS Group understands how crucial certificates are for careers,
-          studies and legal procedures. We recognise the communication gaps that
-          can arise when documents are in a different language.
+          Certificates are crucial for careers, studies and legal procedures.
+          EGS Group helps bridge communication gaps when documents are in a
+          different language.
         </p>
         <p>
-          Our translators combine linguistic expertise with industry knowledge
-          to deliver powerful, accurate translations. We work collaboratively
-          with clients, focusing on clarity, compliance and presentation so that
-          your certificates are accepted confidently wherever you submit them.
+          Our translators combine linguistic expertise with industry knowledge,
+          focusing on clarity, compliance and presentation so documents are
+          accepted confidently.
         </p>
       </>
     ),
@@ -187,12 +167,33 @@ const TabButton: React.FC<{
   <button
     type="button"
     onClick={onClick}
-    className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
-      active
-        ? "border-orange-500 text-slate-900 bg-slate-50"
-        : "border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-    }`}
+    className={`
+      relative px-4 py-2 text-sm font-semibold transition
+      ${
+        active
+          ? "text-white"
+          : "text-slate-200 hover:text-white"
+      }
+    `}
   >
+    {/* underline */}
+    <span
+      className={`
+        absolute left-0 bottom-0 h-[2px] w-full transition-opacity
+        ${active ? "opacity-100 bg-gradient-to-r from-violet-500 to-fuchsia-500" : "opacity-0"}
+      `}
+    />
+    {/* active pill bg */}
+    <span
+      className={`
+        absolute inset-0 rounded-md -z-10 transition-opacity
+        ${
+          active
+            ? "opacity-100 bg-gradient-to-r from-violet-600/70 to-fuchsia-600/60"
+            : "opacity-0 hover:opacity-100 bg-white/5"
+        }
+      `}
+    />
     {label}
   </button>
 );
@@ -202,20 +203,24 @@ const TranslationInfoSections: React.FC = () => {
   const [certificateTab, setCertificateTab] = useState<TabKey>("what");
 
   return (
-    <section className="py-16 md:py-20 bg-white">
+    <section className="py-16 md:py-20 bg-gradient-to-b from-[#070A14] via-[#0B1024] to-[#070A14]">
       <div className="max-w-6xl mx-auto px-4 md:px-6 space-y-16 md:space-y-20">
-        {/* IMMIGRATION BLOCK (LEFT ALIGNED) */}
+
+        {/* IMMIGRATION */}
         <div>
           <div className="text-center md:text-left">
-            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900">
+            <h2 className="text-3xl md:text-4xl font-semibold text-white">
               Immigration Translation Services
             </h2>
-            <div className="mt-2 h-[3px] w-32 bg-orange-500 mx-auto md:mx-0" />
+            <div className="mt-3 h-[3px] w-32 bg-gradient-to-r from-violet-500 to-fuchsia-500 mx-auto md:mx-0 rounded-full" />
+            <p className="mt-3 text-sm md:text-base text-slate-300 max-w-2xl mx-auto md:mx-0">
+              Clear, compliant translations for visa files, residency applications and official submissions.
+            </p>
           </div>
 
-          <div className="mt-8 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+          <div className="mt-8 rounded-2xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-md shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
             {/* Tabs */}
-            <div className="flex border-b border-slate-200 bg-slate-50">
+            <div className="flex gap-1 border-b border-white/10 bg-black/25 px-2 py-2">
               <TabButton
                 label="What It Is"
                 active={immigrationTab === "what"}
@@ -234,32 +239,38 @@ const TranslationInfoSections: React.FC = () => {
             </div>
 
             {/* Content */}
-            <div className="p-5 md:p-7 text-sm md:text-base text-slate-700 leading-relaxed">
-              {ImmigrationTabs[immigrationTab].heading && (
-                <h3 className="text-xl md:text-2xl font-semibold text-slate-900 mb-3">
-                  {ImmigrationTabs[immigrationTab].heading}
-                </h3>
-              )}
-              {ImmigrationTabs[immigrationTab].content}
-              <button className="mt-6 inline-flex items-center justify-center rounded-md border border-orange-500 px-5 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50 transition">
+            <div className="p-5 md:p-7 text-sm md:text-base text-slate-200 leading-relaxed">
+              <h3 className="text-xl md:text-2xl font-semibold text-white mb-3">
+                {ImmigrationTabs[immigrationTab].heading}
+              </h3>
+
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4 md:p-5 text-slate-200">
+                {ImmigrationTabs[immigrationTab].content}
+              </div>
+
+              <button className="mt-6 inline-flex items-center justify-center rounded-md bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white hover:opacity-95 transition">
                 Learn More
               </button>
             </div>
           </div>
         </div>
 
-        {/* CERTIFICATE BLOCK (RIGHT ALIGNED) */}
-        <div className="md:text-right">
+        {/* CERTIFICATE */}
+        <div>
+          {/* heading right, content LTR */}
           <div className="text-center md:text-right">
-            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900">
+            <h2 className="text-3xl md:text-4xl font-semibold text-white">
               Certificate Translation Services
             </h2>
-            <div className="mt-2 h-[3px] w-32 bg-orange-500 mx-auto md:ml-auto md:mr-0" />
+            <div className="mt-3 h-[3px] w-32 bg-gradient-to-r from-violet-500 to-fuchsia-500 mx-auto md:ml-auto md:mr-0 rounded-full" />
+            <p className="mt-3 text-sm md:text-base text-slate-300 max-w-2xl mx-auto md:ml-auto md:mr-0">
+              Embassy-ready certificate translations with accurate formatting and terminology.
+            </p>
           </div>
 
-          <div className="mt-8 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
-            {/* Tabs */}
-            <div className="flex justify-end border-b border-slate-200 bg-slate-50">
+          <div className="mt-8 rounded-2xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-md shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
+            {/* Tabs RIGHT */}
+            <div className="flex justify-end gap-1 border-b border-white/10 bg-black/25 px-2 py-2">
               <TabButton
                 label="What It Is"
                 active={certificateTab === "what"}
@@ -277,22 +288,25 @@ const TranslationInfoSections: React.FC = () => {
               />
             </div>
 
-            {/* Content */}
-            <div className="p-5 md:p-7 text-sm md:text-base text-slate-700 leading-relaxed md:text-right">
-              {CertificateTabs[certificateTab].heading && (
-                <h3 className="text-xl md:text-2xl font-semibold text-slate-900 mb-3">
-                  {CertificateTabs[certificateTab].heading}
-                </h3>
-              )}
-              {CertificateTabs[certificateTab].content}
+            {/* Content LEFT-to-RIGHT */}
+            <div className="p-5 md:p-7 text-sm md:text-base text-slate-200 leading-relaxed text-left">
+              <h3 className="text-xl md:text-2xl font-semibold text-white mb-3">
+                {CertificateTabs[certificateTab].heading}
+              </h3>
+
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4 md:p-5 text-slate-200">
+                {CertificateTabs[certificateTab].content}
+              </div>
+
               <div className="mt-6 flex md:justify-end">
-                <button className="inline-flex items-center justify-center rounded-md border border-orange-500 px-5 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50 transition">
+                <button className="inline-flex items-center justify-center rounded-md bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white hover:opacity-95 transition">
                   Learn More
                 </button>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </section>
   );
