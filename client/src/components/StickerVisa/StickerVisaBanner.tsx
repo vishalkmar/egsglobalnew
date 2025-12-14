@@ -144,7 +144,11 @@ export default function VisaStickerCard() {
               </h2>
 
               <p className="mt-3 text-sm sm:text-base text-slate-100 leading-relaxed max-w-xl">
-               Upload documents once — we verify, format-check, and submit as per country rules. Get a clean, embassy-ready application with fewer rejections and faster processing
+              A Sticker Visa is an embassy-issued visa stamped on your passport after approval. It requires proper documentation, appointment scheduling, and passport submission.
+              </p>
+
+              <p className="mt-3 text-sm sm:text-base text-slate-100 leading-relaxed max-w-xl">
+             With EGS, you upload documents once and we handle verification, formatting, embassy submission, and follow-ups as per country rules—ensuring a smooth, error-free process with faster turnaround.
               </p>
 
               <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">

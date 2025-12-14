@@ -72,7 +72,7 @@ const AppointmentSubmissionHero: React.FC = () => {
 
             <p className="text-sm sm:text-base text-slate-100/90 max-w-xl leading-relaxed">
               EGS Group helps you with visa appointment bookings and document
-              submission for European . Share your preferred submission
+              submission for European Countries. Share your preferred submission
               date, country and visa type, and our team will coordinate the next
               steps with you.
             </p>

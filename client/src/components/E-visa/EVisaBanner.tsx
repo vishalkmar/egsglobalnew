@@ -7,7 +7,7 @@ type VisaType = "Tourist" | "Work" | "Business";
 const HERO = {
   image: "/visa/bone.avif",
   badge: "Your Trusted Visa Partner",
-  titleLines: ["Your Trusted Partner for", "Smooth & Successful Visa", "Approvals"],
+  titleLines: ["We do Visa for Tourist , Study for the following countries"],
   description:
     "EGS Group simplifies visa processing with reliable, accurate, and fully managed backend support—helping travel agencies and tour operators deliver faster approvals with complete confidence.",
 };
@@ -120,12 +120,12 @@ export default function VisaBannerWithEVisaForm() {
         <div
           className="absolute inset-0 bg-center bg-cover"
           style={{
-    background:
+        background:
       "radial-gradient(900px 500px at 18% 25%, rgba(99,102,241,0.45) 0%, rgba(15,23,42,0) 60%)," +
       "radial-gradient(700px 450px at 85% 30%, rgba(56,189,248,0.30) 0%, rgba(15,23,42,0) 55%)," +
       "radial-gradient(800px 520px at 55% 85%, rgba(244,114,182,0.18) 0%, rgba(15,23,42,0) 60%)," +
       "linear-gradient(135deg, rgba(2,6,23,1) 0%, rgba(15,23,42,1) 35%, rgba(2,6,23,1) 100%)",
-  }}
+       }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35" />
 

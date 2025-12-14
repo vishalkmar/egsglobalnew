@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 type Destination = {
   name: string;
@@ -45,12 +45,12 @@ const DESTINATIONS: Destination[] = [
     visaType: "Tourism",
     stayDuration: "10/30 days",
     processingTime: "4–7 working days",
-       entryType: "Single / Multiple Entry",
+    entryType: "Single / Multiple Entry",
   },
   {
     name: "Russia",
-     image: "/visa/countries/russia.avif",
-   badge: "E-Visa",
+    image: "/visa/countries/russia.avif",
+    badge: "E-Visa",
     visaType: "Tourism",
     stayDuration: "15/30 days",
     processingTime: "10–15 working days",
@@ -58,7 +58,7 @@ const DESTINATIONS: Destination[] = [
   },
   {
     name: "Thailand",
-     image: "/visa/countries/thailand.avif",
+    image: "/visa/countries/thailand.avif",
     badge: "E-Visa",
     visaType: "Tourism",
     stayDuration: "10/15/30 days",
@@ -85,7 +85,7 @@ const DESTINATIONS: Destination[] = [
   },
   {
     name: "Armenia",
-     image: "/visa/countries/armenia.avif",
+    image: "/visa/countries/armenia.avif",
     badge: "E-Visa",
     visaType: "Tourism",
     stayDuration: "10/30 days",
@@ -94,7 +94,7 @@ const DESTINATIONS: Destination[] = [
   },
   {
     name: "Egypt",
-  image: "/visa/countries/egypt.avif",
+    image: "/visa/countries/egypt.avif",
     badge: "E-Visa",
     visaType: "Tourism",
     stayDuration: "10/30 days",
@@ -103,13 +103,86 @@ const DESTINATIONS: Destination[] = [
   },
 ];
 
+function MoreCountriesCard() {
+  return (
+    <article className="rounded-3xl border border-slate-100 bg-gradient-to-br from-slate-900 via-sky-900 to-slate-900 shadow-[0_10px_35px_rgba(15,23,42,0.08)] overflow-hidden flex flex-col min-h-[290px]">
+      <div className="relative h-54 md:h-68 w-full overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
+       
+
+        <div className="h-full w-full flex items-center justify-center">
+          <div className="text-center px-6">
+            <p className="text-white text-lg md:text-xl font-semibold">
+              We process many more countries
+            </p>
+            <p className="mt-2 text-white/80 text-sm">
+              Didn’t find your destination here? Share your country and we’ll guide you.
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-2 justify-center">
+              <span className="bg-white/10 text-white/90 text-[11px] font-semibold px-3 py-1 rounded-full">
+                Tourist Visa
+              </span>
+              <span className="bg-white/10 text-white/90 text-[11px] font-semibold px-3 py-1 rounded-full">
+                Business Visa
+              </span>
+              <span className="bg-white/10 text-white/90 text-[11px] font-semibold px-3 py-1 rounded-full">
+                Sticker / E-Visa
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-4 pt-3 pb-4 flex flex-col gap-3 flex-1">
+        <div className="flex items-center justify-between">
+          <p className="text-white font-semibold">Need help?</p>
+          <span className="bg-white/10 text-white text-[11px] font-semibold px-3 py-1 rounded-full">
+            Contact EGS
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-[11px] md:text-xs text-white/80">
+          <div className="bg-white/10 rounded-2xl px-3 py-2">
+            <p className="font-semibold text-[11px] text-white/90">Document Check</p>
+            <p className="mt-1">Free guidance</p>
+          </div>
+          <div className="bg-white/10 rounded-2xl px-3 py-2">
+            <p className="font-semibold text-[11px] text-white/90">Processing</p>
+            <p className="mt-1">Country-specific</p>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export default function PopularDestinations() {
   const [visibleCount, setVisibleCount] = useState(6);
   const visibleDestinations = DESTINATIONS.slice(0, visibleCount);
 
-  const handleLoadMore = () => {
-    setVisibleCount(DESTINATIONS.length);
-  };
+  const handleLoadMore = () => setVisibleCount(DESTINATIONS.length);
+
+  // Figure out if we should add filler cards (desktop/tablet)
+  // - mobile: 1 column => no gap
+  // - sm: 2 columns
+  // - lg: 3 columns
+  const fillers = useMemo(() => {
+    const count = visibleDestinations.length;
+
+    // For lg (3 columns): if remainder 1 => add 2 fillers, remainder 2 => add 1 filler
+    const rem3 = count % 3;
+    const needForLg = rem3 === 0 ? 0 : 3 - rem3;
+
+    // For sm (2 columns): if remainder 1 => add 1 filler
+    const rem2 = count % 2;
+    const needForSm = rem2 === 0 ? 0 : 1;
+
+    // We’ll render 2 fillers max, and show/hide by responsive classes:
+    // - one filler visible on sm (when needForSm=1)
+    // - fillers visible on lg based on needForLg
+    return { needForLg, needForSm };
+  }, [visibleDestinations.length]);
 
   return (
     <section className="w-full bg-slate-50 py-12 px-4">
@@ -167,12 +240,6 @@ export default function PopularDestinations() {
 
                 {/* Info row */}
                 <div className="grid grid-cols-2 gap-2 text-[11px] md:text-xs text-slate-500 mt-1">
-                  {/* <div className="bg-slate-50 rounded-2xl px-3 py-2">
-                    <p className="font-semibold text-[11px] text-slate-600">
-                      Per person
-                    </p>
-                    <p className="mt-1">•••••</p>
-                  </div> */}
                   <div className="bg-slate-50 rounded-2xl px-3 py-2">
                     <p className="font-semibold text-[11px] text-slate-600">
                       Stay Duration
@@ -180,9 +247,8 @@ export default function PopularDestinations() {
                     <p className="mt-1">{dest.stayDuration}</p>
                   </div>
                   <div className="bg-slate-50 rounded-2xl px-3 py-2">
-                    <p className="font-semibold text-[11px] text-slate-600 flex items-center gap-1">
+                    <p className="font-semibold text-[11px] text-slate-600">
                       Processing Time
-                      
                     </p>
                     <p className="mt-1">{dest.processingTime}</p>
                   </div>
@@ -190,6 +256,21 @@ export default function PopularDestinations() {
               </div>
             </article>
           ))}
+
+          {/* FILLER: show only when needed (responsive) */}
+          {fillers.needForSm === 1 && (
+            <div className="hidden sm:block lg:hidden">
+              <MoreCountriesCard />
+            </div>
+          )}
+
+          {fillers.needForLg >= 1 && (
+            <div className="hidden lg:block">
+              <MoreCountriesCard />
+            </div>
+          )}
+
+         
         </div>
 
         {/* Load more */}
