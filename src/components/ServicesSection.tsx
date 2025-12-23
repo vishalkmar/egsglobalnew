@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useEffect } from "react";
-import embassyImg from "@assets/generated_images/embassy_legalization_service.png";
-import attestationImg from "@assets/generated_images/attestation_certificate_service.png";
-import insuranceImg from "@assets/generated_images/travel_insurance_documents.png";
-import meetGreetImg from "@assets/generated_images/meet_and_greet_service.png";
-import accommodationImg from "@assets/generated_images/accommodation_service.png";
-import visaImg from "@assets/generated_images/visa_approval_service.png";
+const embassyImg = "/images/embassy_legalization_service.png";
+const attestationImg = "/images/attestation_certificate_service.png";
+const insuranceImg = "/images/travel_insurance_documents.png";
+const meetGreetImg = "/images/meet_and_greet_service.png";
+const accommodationImg = "/images/accommodation_service.png";
+const visaImg = "/images/visa_approval_service.png";
+
+
 import AOS from "aos";
 import "aos/dist/aos.css";
 

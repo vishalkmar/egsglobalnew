@@ -195,7 +195,7 @@ export default function Header() {
             </nav>
 
             {/* Desktop Login */}
-            <Link href="/login">
+            <Link href="/user/login">
               <Button
                 data-testid="button-login"
                 size="sm"

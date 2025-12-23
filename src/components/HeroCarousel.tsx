@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import airportImage from "@assets/generated_images/airport_terminal_travelers_scene.png";
-import passportImage from "@assets/generated_images/passport_with_visa_stamps.png";
-import travelersImage from "@assets/generated_images/happy_travelers_at_airport.png";
-import consultationImage from "@assets/generated_images/customer_service_consultation.png";
+const airportImage = "/images/airport_terminal_travelers_scene.png";
+const passportImage = "/images/passport_with_visa_stamps.png";
+const travelersImage = "/images/happy_travelers_at_airport.png";
+const consultationImage = "/images/customer_service_consultation.png";
+
 
 import AOS from "aos";
 import "aos/dist/aos.css";
