@@ -51,7 +51,7 @@ function Router() {
       <Route path="/login">
         <Redirect to="/user/login" />
       </Route>
-      <Route path="user/login" component={UserLoginPage} />
+      <Route path="/user/login" component={UserLoginPage} />
 
         <Route path="/user/dashboard">
         <UserDashboardLayout>
