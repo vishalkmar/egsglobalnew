@@ -41,6 +41,7 @@ import AdminLogin from './AdminDashboard/Pages/AdminLogin'
 
 import UserDashboardLayout from './User/UserDashboardLayout';
 import UserLoginPage from './User/pages/UserLoginPage'
+import UserDashboard from './User/pages/UserDashboard'
 
 function Router() {
   return (
@@ -55,7 +56,7 @@ function Router() {
 
         <Route path="/user/dashboard">
         <UserDashboardLayout>
-          <Dashboard />
+          <UserDashboard />
         </UserDashboardLayout>
       </Route>
 

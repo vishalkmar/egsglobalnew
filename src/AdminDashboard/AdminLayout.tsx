@@ -55,10 +55,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     else setCollapsed((v) => !v);
   };
 
-  const logout = () => {
-    // TODO: clear token
-    setLocation("/login");
-  };
+const logout = async () => {
+  try {
+    await fetch(
+      `${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/auth/admin/logout`,
+      {
+        method: "POST",
+        credentials: "include", // ✅ cookie clear hone ke liye zaroori
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (e) {
+    // ignore network error, still logout locally
+  } finally {
+    // agar tumne localStorage me kuch store kiya ho to clear
+    localStorage.removeItem("admin_token");
+    sessionStorage.removeItem("admin_token");
+
+    // ✅ history me dashboard na rahe
+    window.location.replace("/admin/login");
+
+    // agar tum setLocation use karna chahte ho, to ye line use karo:
+    // setLocation("/admin/login");
+  }
+};
+
 
   const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
     <aside

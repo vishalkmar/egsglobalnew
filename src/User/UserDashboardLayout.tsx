@@ -1,5 +1,7 @@
+
 import React, { useMemo, useState } from "react";
 import { Link, useLocation } from "wouter";
+
 import {
   LayoutDashboard,
   ClipboardList,
@@ -21,6 +23,7 @@ type NavItem = {
 };
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
+
   const userName = "User";
 
   const [location, setLocation] = useLocation();
@@ -47,10 +50,26 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     else setCollapsed((v) => !v);
   };
 
-  const logout = () => {
-    // TODO: clear token/session
-    setLocation("/user/login");
-  };
+
+const logout = async () => {
+  try {
+    await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/auth/user/logout`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    // ignore
+  } finally {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+
+    // ✅ history replace (dashboard back me nahi aayega)
+    window.location.replace("/user/login");
+  }
+};
+
+
 
   const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
     <aside

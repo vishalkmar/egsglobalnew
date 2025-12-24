@@ -1,28 +1,46 @@
-
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { GraduationCap, ShieldCheck, BarChart3, Users, Settings, Phone, KeyRound, ArrowRight } from "lucide-react";
-
+import { GraduationCap, ShieldCheck, BarChart3, Users, Settings, Mail, KeyRound, ArrowRight } from "lucide-react";
+import { z } from "zod";
 
 const OTP_LEN = 6;
 
+// Hard email validation (strict-ish)
+const emailSchema = z
+  .string()
+  .trim()
+  .min(6, "Email required")
+  .max(120, "Email too long")
+  .regex(
+    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/,
+    "Invalid email format"
+  );
+
+const otpSchema = z
+  .string()
+  .regex(/^\d{6}$/, "OTP must be 6 digits");
+
 export default function UserLogin() {
+  const [step, setStep] = useState<"email" | "otp">("email");
 
-
-  const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
 
   const [otp, setOtp] = useState<string[]>(Array.from({ length: OTP_LEN }, () => ""));
   const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
   const [verifying, setVerifying] = useState(false);
 
-  const [cooldown, setCooldown] = useState(0); // seconds
+  const [cooldown, setCooldown] = useState(0);
 
-  const phoneValid = useMemo(() => {
-    const digits = phone.replace(/\D/g, "");
-    return digits.length >= 10 && digits.length <= 13;
-  }, [phone]);
+  const [emailError, setEmailError] = useState<string>("");
+  const [otpError, setOtpError] = useState<string>("");
+
+  // ✅ Your backend base URL (replace)
+  const API_BASE = import.meta?.env?.VITE_API_URL || "http://localhost:5000/api";
+
+  const emailValid = useMemo(() => {
+    const r = emailSchema.safeParse(email);
+    return r.success;
+  }, [email]);
 
   const otpComplete = useMemo(() => otp.every((d) => d.trim().length === 1), [otp]);
   const otpValue = useMemo(() => otp.join(""), [otp]);
@@ -35,33 +53,60 @@ export default function UserLogin() {
 
   const resetOtp = () => {
     setOtp(Array.from({ length: OTP_LEN }, () => ""));
-    otpRefs.current[0]?.focus();
+    setOtpError("");
+    setTimeout(() => otpRefs.current[0]?.focus(), 0);
   };
 
+  const validateEmailUI = () => {
+    const r = emailSchema.safeParse(email);
+    setEmailError(r.success ? "" : r.error.issues[0]?.message || "Invalid email");
+    return r.success;
+  };
+
+  const validateOtpUI = () => {
+    const r = otpSchema.safeParse(otpValue);
+    setOtpError(r.success ? "" : r.error.issues[0]?.message || "Invalid OTP");
+    return r.success;
+  };
+
+  // 🔥 API: Send OTP
   const handleSendOtp = async () => {
-    if (!phoneValid || sending) return;
+    if (sending) return;
+    const ok = validateEmailUI();
+    if (!ok) return;
 
     setSending(true);
+    setOtpError("");
 
-    const payload = {
-      phone,
-      ts: new Date().toISOString(),
-    };
+    try {
+      const res = await fetch(`${API_BASE}/auth/user/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // ✅ backend should accept { email }
+        body: JSON.stringify({ email: email.trim() }),
+      });
 
-    console.log("Send OTP payload:", payload);
+      const data = await res.json().catch(() => ({}));
 
-    // demo simulation
-    setTimeout(() => {
-      setSending(false);
+      if (!res.ok) {
+        setEmailError(data?.message || "Failed to send OTP");
+        setSending(false);
+        return;
+      }
+
       setStep("otp");
       setCooldown(30);
-      setTimeout(() => otpRefs.current[0]?.focus(), 50);
-      alert("OTP sent (Demo). Check console.");
-    }, 700);
+      resetOtp();
+    } catch (err: any) {
+      setEmailError(err?.message || "Network error");
+    } finally {
+      setSending(false);
+    }
   };
 
+  // OTP input rules: only digits, one digit per box
   const handleOtpChange = (index: number, value: string) => {
-    const digit = value.replace(/\D/g, "").slice(-1); // last numeric
+    const digit = value.replace(/\D/g, "").slice(-1); // only last digit
     setOtp((prev) => {
       const next = [...prev];
       next[index] = digit;
@@ -76,7 +121,6 @@ export default function UserLogin() {
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace") {
       if (otp[index]) {
-        // clear current
         setOtp((prev) => {
           const next = [...prev];
           next[index] = "";
@@ -84,12 +128,18 @@ export default function UserLogin() {
         });
         return;
       }
-      // move back
       if (index > 0) otpRefs.current[index - 1]?.focus();
     }
 
     if (e.key === "ArrowLeft" && index > 0) otpRefs.current[index - 1]?.focus();
     if (e.key === "ArrowRight" && index < OTP_LEN - 1) otpRefs.current[index + 1]?.focus();
+
+    // Block any non-numeric key presses (optional strict)
+    // allow: Backspace, arrows, Tab
+    const allowed = ["Backspace", "ArrowLeft", "ArrowRight", "Tab"];
+    if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) {
+      e.preventDefault();
+    }
   };
 
   const handleOtpPaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
@@ -106,39 +156,63 @@ export default function UserLogin() {
     setTimeout(() => otpRefs.current[focusIndex]?.focus(), 0);
   };
 
-  const handleVerify = async () => {
-    if (!otpComplete || verifying) return;
+  // 🔥 API: Verify OTP + Login
+  const handleVerifyLogin = async () => {
+    if (verifying) return;
+
+    const emailOk = validateEmailUI();
+    if (!emailOk) return;
+
+    const otpOk = validateOtpUI();
+    if (!otpOk) return;
 
     setVerifying(true);
+    setOtpError("");
 
-    const payload = {
-      phone,
-      otp: otpValue,
-      ts: new Date().toISOString(),
-    };
+    try {
+      const res = await fetch(`${API_BASE}/auth/user/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ MUST
+        body: JSON.stringify({ email: email.trim(), otp: otpValue }),
+      });
 
-    console.log("Verify OTP payload:", payload);
+      const data = await res.json().catch(() => ({}));
 
-    // demo: accept only 123456
-    setTimeout(() => {
-      const ok = otpValue === "123456";
-
-      setVerifying(false);
-
-      if (!ok) {
-        alert("Invalid OTP (Demo). Try 123456");
+      if (!res.ok) {
+        setOtpError(data?.message || "OTP verification failed");
         resetOtp();
+        setVerifying(false);
         return;
       }
 
-      alert("OTP Verified! Redirecting...");
-      window.location.href="/user/dashboard";
-    }, 750);
+      // ✅ If backend returns token (recommended)
+      // Example response: { success:true, token:"...", user:{...} }
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      window.location.href = "/user/dashboard";
+    } catch (err: any) {
+      setOtpError(err?.message || "Network error");
+    } finally {
+      setVerifying(false);
+    }
   };
 
   const handleResend = () => {
     if (cooldown > 0 || sending) return;
     handleSendOtp();
+  };
+
+  const maskEmail = (raw: string) => {
+    const e = raw.trim();
+    const at = e.indexOf("@");
+    if (at <= 1) return e;
+    const name = e.slice(0, at);
+    const domain = e.slice(at);
+    const visible = name.slice(0, 2);
+    return `${visible}${"*".repeat(Math.max(2, name.length - 2))}${domain}`;
   };
 
   return (
@@ -163,7 +237,7 @@ export default function UserLogin() {
               <div className="mt-8">
                 <div className="text-4xl font-extrabold tracking-wide">User Portal</div>
                 <div className="mt-3 max-w-md text-white/85 text-base leading-relaxed">
-                  Sign in with your phone number to access your dashboard and track requests.
+                  Sign in with your email to access your dashboard and track requests.
                 </div>
               </div>
 
@@ -182,39 +256,45 @@ export default function UserLogin() {
               <div className="text-center">
                 <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900">Welcome Back!</h1>
                 <p className="mt-2 text-sm text-slate-500">
-                  {step === "phone" ? "Login with your phone number" : "Enter the OTP sent to your phone"}
+                  {step === "email" ? "Login with your email address" : "Enter the OTP sent to your email"}
                 </p>
               </div>
 
               <div className="mt-8 space-y-5">
-                {/* PHONE STEP */}
-                {step === "phone" && (
+                {/* EMAIL STEP */}
+                {step === "email" && (
                   <>
                     <div>
-                      <label className="text-xs font-semibold text-slate-600">Phone Number</label>
+                      <label className="text-xs font-semibold text-slate-600">Email Address</label>
                       <div className="mt-1 h-12 rounded-2xl bg-slate-50 border border-slate-200 px-4 flex items-center gap-3 focus-within:ring-2 focus-within:ring-teal-500">
-                        <Phone className="h-4 w-4 text-slate-500" />
+                        <Mail className="h-4 w-4 text-slate-500" />
                         <input
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          type="tel"
-                          inputMode="numeric"
+                          value={email}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            if (emailError) setEmailError("");
+                          }}
+                          onBlur={validateEmailUI}
+                          type="email"
                           className="w-full bg-transparent outline-none text-sm text-slate-900"
-                          placeholder="Enter phone number"
-                          autoComplete="tel"
+                          placeholder="Enter email"
+                          autoComplete="email"
                         />
                       </div>
-                      <p className="mt-2 text-xs text-slate-500">
-                        Enter 10–13 digits (country code allowed).
-                      </p>
+
+                      {emailError ? (
+                        <p className="mt-2 text-xs text-red-600">{emailError}</p>
+                      ) : (
+                        <p className="mt-2 text-xs text-slate-500">We will send a 6-digit OTP to your email.</p>
+                      )}
                     </div>
 
                     <button
                       type="button"
                       onClick={handleSendOtp}
-                      disabled={!phoneValid || sending}
+                      disabled={!emailValid || sending}
                       className={`w-full h-12 rounded-2xl font-semibold text-white flex items-center justify-center gap-2 transition
-                        ${!phoneValid || sending ? "bg-teal-300 cursor-not-allowed" : "bg-teal-700 hover:bg-teal-800"}`}
+                        ${!emailValid || sending ? "bg-teal-300 cursor-not-allowed" : "bg-teal-700 hover:bg-teal-800"}`}
                     >
                       <KeyRound className="h-5 w-5" />
                       {sending ? "Sending OTP..." : "Send OTP"}
@@ -231,29 +311,27 @@ export default function UserLogin() {
                         <button
                           type="button"
                           onClick={() => {
-                            setStep("phone");
+                            setStep("email");
                             setOtp(Array.from({ length: OTP_LEN }, () => ""));
+                            setOtpError("");
+                            setCooldown(0);
                           }}
                           className="text-xs font-semibold text-teal-800 hover:opacity-80"
                         >
-                          Change number
+                          Change email
                         </button>
                       </div>
 
-                      <div
-                        className="mt-2 flex items-center justify-center gap-2"
-                        onPaste={handleOtpPaste}
-                      >
+                      <div className="mt-2 flex items-center justify-center gap-2" onPaste={handleOtpPaste}>
                         {otp.map((d, i) => (
                           <input
                             key={i}
-                            ref={(el) => {
-                              otpRefs.current[i] = el;
-                            }}
+                            ref={(el) => (otpRefs.current[i] = el)}
                             value={d}
                             onChange={(e) => handleOtpChange(i, e.target.value)}
                             onKeyDown={(e) => handleOtpKeyDown(i, e)}
                             inputMode="numeric"
+                            pattern="\d*"
                             className="h-12 w-11 sm:w-12 rounded-2xl border border-slate-200 bg-slate-50 text-center text-lg font-bold text-slate-900 outline-none focus:ring-2 focus:ring-teal-500"
                             maxLength={1}
                             aria-label={`OTP digit ${i + 1}`}
@@ -261,37 +339,37 @@ export default function UserLogin() {
                         ))}
                       </div>
 
-                      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                        <span>
-                          OTP sent to: <span className="font-semibold text-slate-800">{phone}</span>
-                        </span>
+                      {otpError ? (
+                        <p className="mt-2 text-xs text-red-600 text-center">{otpError}</p>
+                      ) : (
+                        <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+                          <span>
+                            OTP sent to: <span className="font-semibold text-slate-800">{maskEmail(email)}</span>
+                          </span>
 
-                        <button
-                          type="button"
-                          onClick={handleResend}
-                          disabled={cooldown > 0 || sending}
-                          className={`font-semibold ${
-                            cooldown > 0 || sending ? "text-slate-400" : "text-teal-800 hover:opacity-80"
-                          }`}
-                        >
-                          {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend OTP"}
-                        </button>
-                      </div>
-
-                      <p className="mt-2 text-[11px] text-slate-500">
-                        Demo: correct OTP is <span className="font-semibold">123456</span>.
-                      </p>
+                          <button
+                            type="button"
+                            onClick={handleResend}
+                            disabled={cooldown > 0 || sending}
+                            className={`font-semibold ${
+                              cooldown > 0 || sending ? "text-slate-400" : "text-teal-800 hover:opacity-80"
+                            }`}
+                          >
+                            {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend OTP"}
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <button
                       type="button"
-                      onClick={handleVerify}
+                      onClick={handleVerifyLogin}
                       disabled={!otpComplete || verifying}
                       className={`w-full h-12 rounded-2xl font-semibold text-white flex items-center justify-center gap-2 transition
                         ${!otpComplete || verifying ? "bg-teal-300 cursor-not-allowed" : "bg-teal-700 hover:bg-teal-800"}`}
                     >
                       <ArrowRight className="h-5 w-5" />
-                      {verifying ? "Verifying..." : "Verify OTP"}
+                      {verifying ? "Verifying..." : "Verify & Login"}
                     </button>
                   </>
                 )}
@@ -300,7 +378,7 @@ export default function UserLogin() {
               </div>
 
               <p className="mt-4 text-center text-xs text-slate-500">
-                Demo only. Replace console/alert with real OTP service + auth token.
+                OTP is sent via email. Backend endpoints are required for production.
               </p>
             </div>
           </div>

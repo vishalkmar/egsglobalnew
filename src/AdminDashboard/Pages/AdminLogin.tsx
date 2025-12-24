@@ -1,44 +1,105 @@
 import React, { useMemo, useState } from "react";
-import { ShieldCheck, BarChart3, Users, Settings, GraduationCap, LogIn, Mail, Lock, Crown, User } from "lucide-react";
+import { ShieldCheck, BarChart3, Users, Settings, GraduationCap, LogIn, Mail, Lock, Crown } from "lucide-react";
+import { z } from "zod";
 
+// strict-ish email regex
+const emailSchema = z
+  .string()
+  .trim()
+  .min(6, "Email is required")
+  .max(120, "Email too long")
+  .regex(
+    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/,
+    "Invalid email format"
+  );
 
+// strong password rules (change as per your policy)
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(64, "Password too long")
+  
+
+const loginSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+  accessLevel: z.literal("Super Admin"),
+});
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState("admin@iccict.com");
-  const [password, setPassword] = useState("password");
-  const [accessLevel, setAccessLevel] = useState<"Admin" | "Super Admin">("Admin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // only super admin
+  const accessLevel: "Super Admin" = "Super Admin";
+
   const [loading, setLoading] = useState(false);
+  const [emailErr, setEmailErr] = useState("");
+  const [passErr, setPassErr] = useState("");
+  const [formErr, setFormErr] = useState("");
+
+  const API_BASE = import.meta?.env?.VITE_API_URL || "http://localhost:5000/api";
 
   const isValid = useMemo(() => {
-    if (!email.trim()) return false;
-    if (!password.trim()) return false;
-    if (!email.includes("@")) return false;
-    return true;
+    const r = loginSchema.safeParse({ email, password, accessLevel });
+    return r.success;
   }, [email, password]);
+
+  const validateUI = () => {
+    setEmailErr("");
+    setPassErr("");
+    setFormErr("");
+
+    const r = loginSchema.safeParse({ email, password, accessLevel });
+    if (r.success) return true;
+
+    // show field-wise errors
+    for (const issue of r.error.issues) {
+      if (issue.path[0] === "email") setEmailErr(issue.message);
+      if (issue.path[0] === "password") setPassErr(issue.message);
+    }
+    return false;
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValid || loading) return;
+    if (loading) return;
+
+    const ok = validateUI();
+    if (!ok) return;
 
     setLoading(true);
 
-    const payload = {
-      email,
-      password, // NOTE: production me password console mat karo
-      accessLevel,
-      ts: new Date().toISOString(),
-    };
+    try {
+      const res = await fetch(`${API_BASE}/auth/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // cookie auth support
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          accessLevel, // always "Super Admin"
+        }),
+      });
 
+      const data = await res.json().catch(() => ({}));
 
-    console.log("AdminLogin submit payload:", payload);
-    alert("admin login successsfully ");
-    window.location.href="/admin/dashboard"
+      if (!res.ok) {
+        setFormErr(data?.message || "Invalid credentials");
+        setLoading(false);
+        return;
+      }
 
+      // optional: if backend returns token and you want localStorage (cookie-only better)
+      if (data?.token) localStorage.setItem("admin_token", data.token);
 
-    setTimeout(() => {
+      // ✅ Use replace so login not in history
+      window.location.replace("/admin/dashboard");
+    } catch (err: any) {
+      setFormErr(err?.message || "Network error");
+    } finally {
       setLoading(false);
-      alert("Login submitted! (Check console)");
-    }, 650);
+    }
   };
 
   return (
@@ -47,7 +108,6 @@ export default function AdminLogin() {
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* LEFT PANEL */}
           <div className="relative bg-[#0b7b78] text-white px-8 py-10 lg:px-12 lg:py-14">
-            {/* subtle grid */}
             <div
               className="absolute inset-0 opacity-20"
               style={{
@@ -64,7 +124,7 @@ export default function AdminLogin() {
               <div className="mt-8">
                 <div className="text-4xl font-extrabold tracking-wide">ICCICT 2026</div>
                 <div className="mt-3 max-w-md text-white/85 text-base leading-relaxed">
-                  International Conference on AI, ML, IoT and Computer Science
+                  Admin Control Panel (Super Admin Access)
                 </div>
               </div>
 
@@ -82,7 +142,7 @@ export default function AdminLogin() {
             <div className="max-w-md mx-auto">
               <div className="text-center">
                 <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900">Welcome Back!</h1>
-                <p className="mt-2 text-sm text-slate-500">Please sign in to your admin account</p>
+                <p className="mt-2 text-sm text-slate-500">Sign in as Super Admin</p>
               </div>
 
               <form onSubmit={onSubmit} className="mt-8 space-y-5">
@@ -93,13 +153,22 @@ export default function AdminLogin() {
                     <Mail className="h-4 w-4 text-slate-500" />
                     <input
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (emailErr) setEmailErr("");
+                        if (formErr) setFormErr("");
+                      }}
+                      onBlur={() => {
+                        const r = emailSchema.safeParse(email);
+                        setEmailErr(r.success ? "" : r.error.issues[0]?.message || "Invalid email");
+                      }}
                       type="email"
                       className="w-full bg-transparent outline-none text-sm text-slate-900"
-                      placeholder="admin@iccict.com"
+                      placeholder="superadmin@iccict.com"
                       autoComplete="email"
                     />
                   </div>
+                  {emailErr ? <p className="mt-2 text-xs text-red-600">{emailErr}</p> : null}
                 </div>
 
                 {/* PASSWORD */}
@@ -109,55 +178,45 @@ export default function AdminLogin() {
                     <Lock className="h-4 w-4 text-slate-500" />
                     <input
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (passErr) setPassErr("");
+                        if (formErr) setFormErr("");
+                      }}
+                      onBlur={() => {
+                        const r = passwordSchema.safeParse(password);
+                        setPassErr(r.success ? "" : r.error.issues[0]?.message || "Invalid password");
+                      }}
                       type="password"
                       className="w-full bg-transparent outline-none text-sm text-slate-900"
                       placeholder="Enter password"
                       autoComplete="current-password"
                     />
                   </div>
+                  {passErr ? (
+                    <p className="mt-2 text-xs text-red-600">{passErr}</p>
+                  ) : (
+                    <p className="mt-2 text-[11px] text-slate-500">
+                      Min 8 chars, uppercase, lowercase, number, special character.
+                    </p>
+                  )}
                 </div>
 
-                {/* ACCESS LEVEL */}
+                {/* ACCESS LEVEL (fixed) */}
                 <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-                  <div className="text-sm font-semibold text-slate-900">Select Access Level</div>
-
-                  <div className="mt-3 space-y-3">
-                    <label className="flex items-start gap-3 p-3 rounded-2xl bg-white border border-slate-200 cursor-pointer hover:bg-slate-50">
-                      <input
-                        type="radio"
-                        name="access"
-                        checked={accessLevel === "Admin"}
-                        onChange={() => setAccessLevel("Admin")}
-                        className="mt-1"
-                      />
-                      <div className="mt-0.5 h-8 w-8 rounded-xl bg-slate-100 grid place-items-center">
-                        <User className="h-4 w-4 text-slate-700" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-slate-900">Admin</div>
-                        <div className="text-xs text-slate-500">Manage registrations and content</div>
-                      </div>
-                    </label>
-
-                    <label className="flex items-start gap-3 p-3 rounded-2xl bg-white border border-slate-200 cursor-pointer hover:bg-slate-50">
-                      <input
-                        type="radio"
-                        name="access"
-                        checked={accessLevel === "Super Admin"}
-                        onChange={() => setAccessLevel("Super Admin")}
-                        className="mt-1"
-                      />
-                      <div className="mt-0.5 h-8 w-8 rounded-xl bg-slate-100 grid place-items-center">
-                        <Crown className="h-4 w-4 text-slate-700" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-slate-900">Super Admin</div>
-                        <div className="text-xs text-slate-500">Full system access and admin management</div>
-                      </div>
-                    </label>
+                  <div className="text-sm font-semibold text-slate-900">Access Level</div>
+                  <div className="mt-3 flex items-start gap-3 p-3 rounded-2xl bg-white border border-slate-200">
+                    <div className="mt-0.5 h-8 w-8 rounded-xl bg-slate-100 grid place-items-center">
+                      <Crown className="h-4 w-4 text-slate-700" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-900">Super Admin</div>
+                      <div className="text-xs text-slate-500">Full system access and admin management</div>
+                    </div>
                   </div>
                 </div>
+
+                {formErr ? <p className="text-sm text-red-600 text-center">{formErr}</p> : null}
 
                 {/* SUBMIT */}
                 <button
@@ -172,10 +231,6 @@ export default function AdminLogin() {
 
                 <div className="pt-2 border-t border-slate-200" />
               </form>
-
-              <p className="mt-4 text-center text-xs text-slate-500">
-                Demo only. Replace alert/console with real authentication.
-              </p>
             </div>
           </div>
         </div>
