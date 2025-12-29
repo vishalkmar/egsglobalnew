@@ -1,4 +1,3 @@
-"use client";
 
 import { useState } from "react";
 import Header from "@/components/Header";
@@ -11,23 +10,46 @@ import { Mail, Phone, MapPin, Clock, MessageCircle } from "lucide-react";
 import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-
+import { z } from "zod";
+import { parse } from "path";
 
 const CONTACT_BANNER_GRADIENT =
   "bg-gradient-to-br from-blue-700 via-indigo-700 to-purple-700";
 
 export default function Contact() {
+  const contactSchema = z.object({
+    name: z.string().trim().min(2, "Name is required").max(80),
+    phone: z
+      .string()
+      .trim()
+      .min(8, "Phone is required")
+      .max(20, "Phone too long")
+      .regex(/^[0-9+\-\s()]{8,20}$/, "Invalid phone format"),
+    email: z
+      .string()
+      .trim()
+      .min(6, "Email is required")
+      .max(120)
+      .regex(
+        /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/,
+        "Invalid email format"
+      ),
+    serviceType: z.string().trim().min(2, "Service Type is required").max(60),
+    message: z.string().trim().max(2000).optional().or(z.literal("")),
+  });
 
-    useEffect(() => {
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
     AOS.init({
       duration: 800,
-      once: false,   // ✅ repeat on every scroll in/out
+      once: false, // ✅ repeat on every scroll in/out
       offset: 80,
       easing: "ease-in-out",
-     
     });
   }, []);
-
 
   const [formData, setFormData] = useState({
     name: "",
@@ -38,7 +60,9 @@ export default function Contact() {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -47,16 +71,54 @@ export default function Contact() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrors({});
 
-    console.log("Contact form data:", formData);
-     alert("data submitted sucessfully")
-    // yahan baad mein API call add kar sakte ho:
-    // await fetch("/api/contact", { method: "POST", body: JSON.stringify(formData) })
+    const parsed = contactSchema.safeParse(formData);
+    if (!parsed.success) {
+      const map: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const key = String(issue.path[0] || "form");
+        map[key] = issue.message;
+      }
+      setErrors(map);
+      return;
+    }
 
-    // optional: form reset
-    // setFormData({ name: "", phone: "", email: "", serviceType: "", message: "" });
+    if (submitting) return;
+    setSubmitting(true);
+
+    try {
+
+      console.log("contact form data form side ",parsed.data)
+      const res = await fetch(`${API_BASE}/contact/sendcontactemail`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      console.log("api response data",data)
+
+      if (!res.ok) {
+        alert(data?.message || "Failed to send message");
+        return;
+      }
+
+      alert("Message sent successfully!");
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        serviceType: "",
+        message: "",
+      });
+    } catch (err: any) {
+      alert(err?.message || "Network error");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -72,7 +134,8 @@ export default function Contact() {
             bg-[radial-gradient(circle_at_5%_10%,rgba(37,99,235,0.35),transparent_55%),radial-gradient(circle_at_80%_90%,rgba(147,51,234,0.35),transparent_60%)]
           "
         >
-          <h1 data-aos="fade-down"
+          <h1
+            data-aos="fade-down"
             className="
               text-center
               text-4xl sm:text-5xl md:text-6xl
@@ -149,14 +212,16 @@ export default function Contact() {
               </div>
 
               {/* RIGHT: Highlight / mini info card */}
-              <div className="flex justify-center lg:justify-end" data-aos="fade-left">
-  <img
-    src="/aboutimages.jpg"   // 👉 yahan apna image path daal dena
-    alt=""
-    className="w-[260px] sm:w-[300px] md:w-[360px] lg:w-[620px] rounded-2xl shadow-xl object-cover"
-  />
-</div>
-
+              <div
+                className="flex justify-center lg:justify-end"
+                data-aos="fade-left"
+              >
+                <img
+                  src="/aboutimages.jpg" // 👉 yahan apna image path daal dena
+                  alt=""
+                  className="w-[260px] sm:w-[300px] md:w-[360px] lg:w-[620px] rounded-2xl shadow-xl object-cover"
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -199,6 +264,11 @@ export default function Contact() {
                             value={formData.name}
                             onChange={handleChange}
                           />
+                          {errors.name ? (
+                            <p className="mt-1 text-xs text-red-600">
+                              {errors.name}
+                            </p>
+                          ) : null}
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-1.5">
@@ -213,6 +283,11 @@ export default function Contact() {
                             value={formData.phone}
                             onChange={handleChange}
                           />
+                          {errors.phone ? (
+                            <p className="mt-1 text-xs text-red-600">
+                              {errors.phone}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
 
@@ -229,6 +304,11 @@ export default function Contact() {
                           value={formData.email}
                           onChange={handleChange}
                         />
+                        {errors.email ? (
+                          <p className="mt-1 text-xs text-red-600">
+                            {errors.email}
+                          </p>
+                        ) : null}
                       </div>
 
                       <div>
@@ -250,6 +330,11 @@ export default function Contact() {
                           <option>Airport Assistance / Meet & Greet</option>
                           <option>Other Documentation Support</option>
                         </select>
+                        {errors.serviceType ? (
+                          <p className="mt-1 text-xs text-red-600">
+                            {errors.serviceType}
+                          </p>
+                        ) : null}
                       </div>
 
                       <div className="flex-1">
@@ -269,12 +354,13 @@ export default function Contact() {
 
                       <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
                         <Button
-                          data-testid="button-submit"
                           type="submit"
+                          disabled={submitting}
                           className="w-full sm:w-auto bg-gradient-to-r from-sky-600 via-blue-600 to-purple-600 hover:from-sky-700 hover:via-blue-700 hover:to-purple-700 text-sm font-semibold px-7 py-2.5 shadow-md"
                         >
-                          Send Message
+                          {submitting ? "Sending..." : "Send Message"}
                         </Button>
+
                         <p className="text-[11px] text-muted-foreground sm:text-xs">
                           Your details are safe with us and used only to respond
                           to your enquiry.
@@ -286,7 +372,10 @@ export default function Contact() {
               </div>
 
               {/* CONTACT INFO SIDE – same column height, stacked cards */}
-              <div className="flex flex-col h-full space-y-6" data-aos="fede-left">
+              <div
+                className="flex flex-col h-full space-y-6"
+                data-aos="fede-left"
+              >
                 <div>
                   <h2 className="text-2xl font-bold mb-2">
                     Contact Information
