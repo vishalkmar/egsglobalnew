@@ -2,7 +2,7 @@ import React, { useMemo, useState, ChangeEvent, FormEvent } from "react";
 import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import Translation from "../AdminDashboard/Pages/Translation";
+
 import TranslationServiceForm from "./TranslatinServiceForm";
 
 export default function TranslationBanner (){

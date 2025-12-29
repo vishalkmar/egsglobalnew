@@ -183,7 +183,7 @@ const PccLegalizationHero: React.FC = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .input {
           width: 100%;
           border: 1px solid #e2e8f0;
