@@ -42,6 +42,18 @@ type FormState = {
 const ACCEPTED_FILE_TYPES = "image/*,application/pdf";
 
 export default function VisaStickerCard() {
+  // ✅ LOGIN HELPERS (ONLY LOGIC ADDED)
+  const getToken = () =>
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const redirectToLogin = () => {
+    const next =
+      typeof window !== "undefined"
+        ? encodeURIComponent(window.location.pathname + window.location.search)
+        : "";
+    window.location.href = `/login?next=${next}`;
+  };
+
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
@@ -100,6 +112,13 @@ export default function VisaStickerCard() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // ✅ LOGIN CHECK (ONLY ADDITION)
+    const token = getToken();
+    if (!token) {
+      redirectToLogin();
+      return;
+    }
+
     const payload = {
       ...form,
       days: Number(form.days),
@@ -116,6 +135,7 @@ export default function VisaStickerCard() {
     console.log("Raw Files:", attachments);
 
     alert("Submitted! Check console.");
+    // yahan API call aayega
   };
 
   return (
@@ -131,10 +151,7 @@ export default function VisaStickerCard() {
     >
       <div className="max-w-6xl mx-auto">
         {/* Sticker Wrapper */}
-        <div
-         
-          className="relative overflow-hidden rounded-[28px] shadow-2xl"
-        >
+        <div className="relative overflow-hidden rounded-[28px] shadow-2xl">
           <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-black/15 to-transparent" />
 
           {/* Decorative glows */}
@@ -344,7 +361,10 @@ export default function VisaStickerCard() {
                               type="file"
                               accept={ACCEPTED_FILE_TYPES}
                               onChange={(e) =>
-                                handleFileChange(idx, e.target.files?.[0] ?? null)
+                                handleFileChange(
+                                  idx,
+                                  e.target.files?.[0] ?? null
+                                )
                               }
                               className="block w-full text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:opacity-90"
                               required

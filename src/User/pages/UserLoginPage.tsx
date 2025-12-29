@@ -20,6 +20,13 @@ const otpSchema = z
   .regex(/^\d{6}$/, "OTP must be 6 digits");
 
 export default function UserLogin() {
+
+  const getToken = () => localStorage.getItem("token");
+
+
+
+
+
   const [step, setStep] = useState<"email" | "otp">("email");
 
   const [email, setEmail] = useState("");
@@ -192,7 +199,7 @@ export default function UserLogin() {
         localStorage.setItem("token", data.token);
       }
 
-      window.location.href = "/user/dashboard";
+      window.location.href = "/";
     } catch (err: any) {
       setOtpError(err?.message || "Network error");
     } finally {
@@ -214,6 +221,62 @@ export default function UserLogin() {
     const visible = name.slice(0, 2);
     return `${visible}${"*".repeat(Math.max(2, name.length - 2))}${domain}`;
   };
+
+
+  
+useEffect(() => {
+  const token = getToken();
+  if (!token) return;
+
+  const verifyTokenAndRedirect = async () => {
+    try {
+     
+       setVerifying(true);
+
+      const res = await fetch(`${API_BASE}/auth/user/me`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ token backend ko
+        },
+        credentials: "include", // if you also use cookies
+      });
+
+      if (res.ok) {
+        // ✅ token valid -> redirect
+        window.location.replace("/user/dashboard");
+        return;
+      }
+
+      // ❌ token invalid -> remove it
+      localStorage.removeItem("token");
+    } catch (e) {
+      // network issue: token delete mat karo (optional)
+      // but safe approach:
+      // localStorage.removeItem("token");
+    } finally {
+      // setVerifying(false);
+    }
+  };
+
+  verifyTokenAndRedirect();
+  // API_BASE dependency ok
+}, [API_BASE]);
+
+
+useEffect(() => {
+  if (step !== "otp") return;
+  if (!otpComplete) return;
+  if (verifying) return;
+
+  // slight delay for better UX (optional)
+  const t = setTimeout(() => {
+    handleVerifyLogin();
+  }, 300);
+
+  return () => clearTimeout(t);
+}, [otpComplete, step]);
+
 
   return (
     <div className="min-h-screen w-full bg-[#0b7b78] flex items-center justify-center px-4 py-10">
@@ -322,7 +385,7 @@ export default function UserLogin() {
                         </button>
                       </div>
 
-                      <div className="mt-2 flex items-center justify-center gap-2" onPaste={handleOtpPaste}>
+                      <div className="mt-2 flex items-center justify-center gap-2" >
                         {otp.map((d, i) => (
                           <input
                             key={i}
@@ -335,6 +398,8 @@ export default function UserLogin() {
                             className="h-12 w-11 sm:w-12 rounded-2xl border border-slate-200 bg-slate-50 text-center text-lg font-bold text-slate-900 outline-none focus:ring-2 focus:ring-teal-500"
                             maxLength={1}
                             aria-label={`OTP digit ${i + 1}`}
+                            onPaste={handleOtpPaste}
+
                           />
                         ))}
                       </div>

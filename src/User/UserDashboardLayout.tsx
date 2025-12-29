@@ -65,7 +65,7 @@ const logout = async () => {
     sessionStorage.removeItem("token");
 
     // ✅ history replace (dashboard back me nahi aayega)
-    window.location.replace("/user/login");
+    window.location.replace("/");
   }
 };
 

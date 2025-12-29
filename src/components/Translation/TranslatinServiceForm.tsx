@@ -85,11 +85,9 @@ interface TranslationFormData {
   country: string;
 
   category: TranslationCategory | "";
-  // Certificate flow:
   certGroup: CertificateGroup | "";
   certDocType: string;
 
-  // Immigration flow:
   immGroup: ImmigrationGroup | "";
   immDocType: string;
 
@@ -112,6 +110,18 @@ const TranslationServiceForm: React.FC = () => {
 
   const [files, setFiles] = useState<(File | null)[]>([null]);
   const [submittedData, setSubmittedData] = useState<any>(null);
+
+  // ✅ ONLY: login helpers
+  const getToken = () =>
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const redirectToLogin = () => {
+    const next =
+      typeof window !== "undefined"
+        ? encodeURIComponent(window.location.pathname + window.location.search)
+        : "";
+    window.location.href = `/login?next=${next}`;
+  };
 
   useEffect(() => {
     AOS.init({ duration: 800, once: false, offset: 80, easing: "ease-in-out" });
@@ -139,7 +149,6 @@ const TranslationServiceForm: React.FC = () => {
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
-    // Main category switch -> reset dependent fields
     if (name === "category") {
       setFormData((prev) => ({
         ...prev,
@@ -152,7 +161,6 @@ const TranslationServiceForm: React.FC = () => {
       return;
     }
 
-    // Certificate group -> reset doc type
     if (name === "certGroup") {
       setFormData((prev) => ({
         ...prev,
@@ -162,7 +170,6 @@ const TranslationServiceForm: React.FC = () => {
       return;
     }
 
-    // Immigration group -> reset doc type
     if (name === "immGroup") {
       setFormData((prev) => ({
         ...prev,
@@ -172,7 +179,6 @@ const TranslationServiceForm: React.FC = () => {
       return;
     }
 
-    // No of documents -> sync upload fields
     if (name === "noOfDocuments") {
       const onlyNum = value.replace(/[^\d]/g, "");
       const n = Math.min(Math.max(Number(onlyNum || "1"), 1), 20);
@@ -198,7 +204,6 @@ const TranslationServiceForm: React.FC = () => {
     if (!formData.country) return false;
     if (!formData.category) return false;
 
-    // category dependent validation
     if (formData.category === "Certificate Translation") {
       if (!formData.certGroup) return false;
       if (!formData.certDocType) return false;
@@ -218,6 +223,13 @@ const TranslationServiceForm: React.FC = () => {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    // ✅ ONLY: login check
+    const token = getToken();
+    if (!token) {
+      redirectToLogin();
+      return;
+    }
 
     const payload = {
       ...formData,
@@ -247,21 +259,26 @@ const TranslationServiceForm: React.FC = () => {
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/translationheader.jpg')" }}
       />
-      
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center text-white">
-          <h1 data-aos="fade-down" className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
+          <h1
+            data-aos="fade-down"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight"
+          >
             Translation Services
           </h1>
-          <p data-aos="fade-left" className="mt-3 text-sm sm:text-base text-slate-100/90 max-w-3xl mx-auto leading-relaxed">
-            Certificate translations and immigration translations with accurate formatting and terminology.
+          <p
+            data-aos="fade-left"
+            className="mt-3 text-sm sm:text-base text-slate-100/90 max-w-3xl mx-auto leading-relaxed"
+          >
+            Certificate translations and immigration translations with accurate
+            formatting and terminology.
           </p>
         </div>
 
         <div className="mt-10 flex justify-center" data-aos="zoom-in">
           <div className="w-full lg:w-[75%] bg-white/95 backdrop-blur rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.45)] border border-white/20 px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-9">
-            {/* Logo + subtitle */}
             <div className="flex flex-col items-center mb-6">
               <div className="h-11 w-11 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 flex items-center justify-center text-white font-bold text-lg shadow-md">
                 EGS
@@ -272,11 +289,11 @@ const TranslationServiceForm: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Inputs */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Name optional */}
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">Name (optional)</label>
+                  <label className="text-xs font-semibold text-slate-600">
+                    Name (optional)
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -287,7 +304,6 @@ const TranslationServiceForm: React.FC = () => {
                   />
                 </div>
 
-                {/* Email */}
                 <div>
                   <label className="text-xs font-semibold text-slate-600">
                     Email <span className="text-rose-500">*</span>
@@ -303,7 +319,6 @@ const TranslationServiceForm: React.FC = () => {
                   />
                 </div>
 
-                {/* Contact */}
                 <div>
                   <label className="text-xs font-semibold text-slate-600">
                     Contact <span className="text-rose-500">*</span>
@@ -319,10 +334,10 @@ const TranslationServiceForm: React.FC = () => {
                   />
                 </div>
 
-                {/* Country */}
                 <div className="lg:col-span-2">
                   <label className="text-xs font-semibold text-slate-600">
-                    Country (where you will use the translation) <span className="text-rose-500">*</span>
+                    Country (where you will use the translation){" "}
+                    <span className="text-rose-500">*</span>
                   </label>
                   <select
                     name="country"
@@ -340,7 +355,6 @@ const TranslationServiceForm: React.FC = () => {
                   </select>
                 </div>
 
-                {/* Translation category */}
                 <div>
                   <label className="text-xs font-semibold text-slate-600">
                     Translation Category <span className="text-rose-500">*</span>
@@ -353,12 +367,15 @@ const TranslationServiceForm: React.FC = () => {
                     required
                   >
                     <option value="">Select Category</option>
-                    <option value="Certificate Translation">Certificate Translation</option>
-                    <option value="Immigration Translation">Immigration Translation</option>
+                    <option value="Certificate Translation">
+                      Certificate Translation
+                    </option>
+                    <option value="Immigration Translation">
+                      Immigration Translation
+                    </option>
                   </select>
                 </div>
 
-                {/* Conditional: Certificate Translation flow */}
                 {formData.category === "Certificate Translation" && (
                   <>
                     <div className="lg:col-span-2">
@@ -392,7 +409,9 @@ const TranslationServiceForm: React.FC = () => {
                         required
                       >
                         <option value="">
-                          {formData.certGroup ? "Select Document Type" : "Select Group first"}
+                          {formData.certGroup
+                            ? "Select Document Type"
+                            : "Select Group first"}
                         </option>
                         {certificateDocOptions.map((t) => (
                           <option key={t} value={t}>
@@ -404,7 +423,6 @@ const TranslationServiceForm: React.FC = () => {
                   </>
                 )}
 
-                {/* Conditional: Immigration Translation flow */}
                 {formData.category === "Immigration Translation" && (
                   <>
                     <div className="lg:col-span-2">
@@ -419,9 +437,15 @@ const TranslationServiceForm: React.FC = () => {
                         required
                       >
                         <option value="">Select Group</option>
-                        <option value="Visa & Residency Applications">Visa & Residency Applications</option>
-                        <option value="Identity & Civil Status">Identity & Civil Status</option>
-                        <option value="Supporting Documents">Supporting Documents</option>
+                        <option value="Visa & Residency Applications">
+                          Visa & Residency Applications
+                        </option>
+                        <option value="Identity & Civil Status">
+                          Identity & Civil Status
+                        </option>
+                        <option value="Supporting Documents">
+                          Supporting Documents
+                        </option>
                       </select>
                     </div>
 
@@ -438,7 +462,9 @@ const TranslationServiceForm: React.FC = () => {
                         required
                       >
                         <option value="">
-                          {formData.immGroup ? "Select Document Type" : "Select Group first"}
+                          {formData.immGroup
+                            ? "Select Document Type"
+                            : "Select Group first"}
                         </option>
                         {immigrationDocOptions.map((t) => (
                           <option key={t} value={t}>
@@ -450,7 +476,6 @@ const TranslationServiceForm: React.FC = () => {
                   </>
                 )}
 
-                {/* No of docs */}
                 <div>
                   <label className="text-xs font-semibold text-slate-600">
                     No. of Documents <span className="text-rose-500">*</span>
@@ -464,11 +489,12 @@ const TranslationServiceForm: React.FC = () => {
                     className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     required
                   />
-                  <p className="mt-1 text-[11px] text-slate-500">Max 20 files.</p>
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Max 20 files.
+                  </p>
                 </div>
               </div>
 
-              {/* Uploads */}
               <div>
                 <p className="text-xs font-semibold text-slate-600 mb-2">
                   Attach Documents <span className="text-rose-500">*</span>
@@ -476,14 +502,23 @@ const TranslationServiceForm: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {files.map((file, idx) => (
-                    <div key={idx} className="rounded-md border border-slate-200 bg-white px-3 py-3">
+                    <div
+                      key={idx}
+                      className="rounded-md border border-slate-200 bg-white px-3 py-3"
+                    >
                       <p className="text-[11px] font-semibold text-slate-600 mb-2">
-                        File {idx + 1} <span className="text-rose-500">*</span>
+                        File {idx + 1}{" "}
+                        <span className="text-rose-500">*</span>
                       </p>
                       <input
                         type="file"
                         accept={ACCEPTED_FILE_TYPES}
-                        onChange={(e) => handleFileChange(idx, e.target.files?.[0] ?? null)}
+                        onChange={(e) =>
+                          handleFileChange(
+                            idx,
+                            e.target.files?.[0] ?? null
+                          )
+                        }
                         className="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:opacity-90"
                         required
                       />
@@ -503,7 +538,11 @@ const TranslationServiceForm: React.FC = () => {
                 type="submit"
                 disabled={!isValid}
                 className={`w-full rounded-md text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 transition-colors shadow-md
-                  ${isValid ? "bg-emerald-600 hover:bg-emerald-700" : "bg-slate-300 cursor-not-allowed"}`}
+                  ${
+                    isValid
+                      ? "bg-emerald-600 hover:bg-emerald-700"
+                      : "bg-slate-300 cursor-not-allowed"
+                  }`}
               >
                 Submit Enquiry
               </button>
@@ -511,7 +550,9 @@ const TranslationServiceForm: React.FC = () => {
 
             {submittedData && (
               <div className="mt-6 border-t border-slate-200 pt-4">
-                <p className="text-xs font-semibold text-slate-600 mb-2">Submitted Data (preview)</p>
+                <p className="text-xs font-semibold text-slate-600 mb-2">
+                  Submitted Data (preview)
+                </p>
                 <pre className="text-[11px] sm:text-xs bg-slate-50 border border-slate-200 rounded-md p-3 overflow-x-auto">
                   {JSON.stringify(submittedData, null, 2)}
                 </pre>

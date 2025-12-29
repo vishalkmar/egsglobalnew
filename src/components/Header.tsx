@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -14,6 +14,69 @@ export default function Header() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [mobileVisaOpen, setMobileVisaOpen] = useState(false);
+
+  // ✅ AUTH STATE (LOGIN/LOGOUT BUTTON)
+  const getToken = () => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("token") || sessionStorage.getItem("token");
+  };
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!getToken());
+
+  // ✅ user menu dropdown (desktop)
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+  // ✅ keep header state in sync if token changes in other tabs/windows
+  useEffect(() => {
+    const syncAuth = () => setIsLoggedIn(!!getToken());
+    window.addEventListener("storage", syncAuth);
+    return () => window.removeEventListener("storage", syncAuth);
+  }, []);
+
+  // ✅ also sync on route change (wouter location) — safe fallback
+  useEffect(() => {
+    setIsLoggedIn(!!getToken());
+  }, [location]);
+
+  // ✅ close user menu on outside click
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!userMenuRef.current) return;
+      if (!target.closest("[data-user-menu-root='true']")) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    if (userMenuOpen) {
+      document.addEventListener("click", onDocClick);
+      return () => document.removeEventListener("click", onDocClick);
+    }
+  }, [userMenuOpen]);
+
+  // ✅ LOGOUT (your API + redirect to "/")
+  const logout = async () => {
+    try {
+      await fetch(
+        `${
+          import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+        }/auth/user/logout`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    } catch (e) {
+      // ignore
+    } finally {
+      localStorage.removeItem("token");
+      sessionStorage.removeItem("token");
+
+      // ✅ redirect to home "/"
+      window.location.replace("/");
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,7 +100,6 @@ export default function Header() {
     }
   }, [openDropdown]);
 
-
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "About", path: "/about" },
@@ -50,7 +112,7 @@ export default function Header() {
   ];
 
   const serviceItems = [
-        { name: "MEA Attestation", path: "/MEA-Attention" },
+    { name: "MEA Attestation", path: "/MEA-Attention" },
     { name: "PCC Legalisation & Appostille", path: "/PCC-Legalisation" },
     { name: "Translation Services", path: "/Translation-services" },
     { name: "Visa", children: visaSubItems },
@@ -194,16 +256,63 @@ export default function Header() {
               ))}
             </nav>
 
-            {/* Desktop Login */}
-            <Link href="/user/login">
-              <Button
-                data-testid="button-login"
-                size="sm"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white cursor-pointer"
+            {/* Desktop Login / User Menu */}
+            {isLoggedIn ? (
+              <div
+                ref={userMenuRef}
+                data-user-menu-root="true"
+                className="relative"
               >
-                Login
-              </Button>
-            </Link>
+                <button
+                  type="button"
+                  data-testid="button-user-menu"
+                  onClick={() => setUserMenuOpen((v) => !v)}
+                  className="h-9 w-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/15 transition"
+                  aria-haspopup="menu"
+                  aria-expanded={userMenuOpen}
+                >
+                  <User className="h-5 w-5" />
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-52 bg-slate-900/95 border border-slate-700 rounded-md shadow-lg py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <button
+                      type="button"
+                      data-testid="menu-visit-dashboard"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        window.location.href = "/user/login";
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-slate-100 hover:bg-white/10 cursor-pointer"
+                    >
+                      Visit Dashboard
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="menu-logout"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        logout();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-slate-100 hover:bg-white/10 cursor-pointer"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link href="/user/login">
+                <Button
+                  data-testid="button-login"
+                  size="sm"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white cursor-pointer"
+                >
+                  Login
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu */}
@@ -351,17 +460,43 @@ export default function Header() {
                       )}
                     </div>
 
-                    {/* Mobile Login Button */}
+                    {/* Mobile Login / Logout Button */}
                     <div className="pt-4">
-                      <Link href="/login">
-                        <Button
-                          data-testid="button-mobile-login"
-                          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white cursor-pointer"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          Login
-                        </Button>
-                      </Link>
+                      {isLoggedIn ? (
+                        <div className="space-y-2">
+                          <Button
+                            data-testid="button-mobile-visit-dashboard"
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white cursor-pointer"
+                            onClick={() => {
+                              setIsMobileMenuOpen(false);
+                              window.location.href = "/user/login";
+                            }}
+                          >
+                            Visit Dashboard
+                          </Button>
+
+                          <Button
+                            data-testid="button-mobile-logout"
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white cursor-pointer"
+                            onClick={() => {
+                              setIsMobileMenuOpen(false);
+                              logout();
+                            }}
+                          >
+                            Logout
+                          </Button>
+                        </div>
+                      ) : (
+                        <Link href="/login">
+                          <Button
+                            data-testid="button-mobile-login"
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white cursor-pointer"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            Login
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </nav>

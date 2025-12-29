@@ -1,9 +1,8 @@
-import React, { useMemo, useState, ChangeEvent, FormEvent } from "react";
-import { useEffect } from "react";
+"use client";
+
+import React, { useMemo, useState, ChangeEvent, FormEvent, useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-
-
 
 type DocCategory =
   | "Educational Documents"
@@ -82,6 +81,24 @@ const MeaAttestationHero: React.FC = () => {
   const [files, setFiles] = useState<(File | null)[]>([null]);
   const [submittedData, setSubmittedData] = useState<any>(null);
 
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // ✅ API base (env)
+  const API_BASE =
+    "http://localhost:5000/api";
+
+  // ✅ token key (change if different)
+  const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+
+  const redirectToLogin = () => {
+    const current =
+      typeof window !== "undefined"
+        ? encodeURIComponent(window.location.pathname + window.location.search)
+        : "";
+    window.location.href = `/login?next=${current}`;
+  };
+
   const docTypeOptions = useMemo(() => {
     if (!formData.docCategory) return [];
     return DOC_TYPES[formData.docCategory];
@@ -142,65 +159,135 @@ const MeaAttestationHero: React.FC = () => {
     return true;
   }, [formData, files]);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-
-    const payload = {
-      ...formData,
-      noOfDocuments: Number(formData.noOfDocuments),
-      files: files.map((f, i) => ({
-        index: i + 1,
-        name: f?.name,
-        type: f?.type,
-        size: f?.size,
-      })),
-    };
-
-    console.log("MEA Attestation form payload:", payload);
-    console.log("RAW FILES (send via FormData):", files);
-
-    setSubmittedData(payload);
-    alert("Your enquiry has been submitted. Check console for data.");
-  };
-
-    useEffect(() => {
+  useEffect(() => {
     AOS.init({
       duration: 800,
-      once: false,   // ✅ repeat on every scroll in/out
+      once: false,
       offset: 80,
       easing: "ease-in-out",
-     
     });
   }, []);
-  
+
+  // ✅ Submit API (FormData because files)
+  const submitMeaEnquiry = async (token: string) => {
+    const fd = new FormData();
+
+    fd.append("name", formData.name || "");
+    fd.append("email", formData.email);
+    fd.append("contact", formData.contact);
+    fd.append("country", formData.country);
+    fd.append("docCategory", String(formData.docCategory));
+    fd.append("docType", formData.docType);
+    fd.append("noOfDocuments", String(Number(formData.noOfDocuments || "0")));
+
+    files.forEach((f, idx) => {
+      if (f) fd.append("files", f, f.name); // backend should read array: req.files
+      fd.append("fileIndex", String(idx + 1)); // optional
+    });
+
+    const res = await fetch(`${API_BASE}/mea-attestation/enquiry`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // DO NOT set Content-Type for FormData
+      },
+      credentials: "include",
+      body: fd,
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.message || "Failed to submit enquiry.");
+    return data;
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    // ✅ 1) login check first
+    const token = getToken();
+    if (!token) {
+      redirectToLogin();
+      return;
+    }
+
+    // ✅ 2) validate (same as button disable, but safety)
+    if (!isValid) {
+      setError("Please fill all required fields and upload all documents.");
+      return;
+    }
+
+    // ✅ 3) submit
+    setSubmitting(true);
+    try {
+      const apiResp = await submitMeaEnquiry(token);
+
+      // preview payload (optional)
+      const payloadPreview = {
+        ...formData,
+        noOfDocuments: Number(formData.noOfDocuments),
+        files: files.map((f, i) => ({
+          index: i + 1,
+          name: f?.name,
+          type: f?.type,
+          size: f?.size,
+        })),
+        apiResp,
+      };
+
+      setSubmittedData(payloadPreview);
+
+      alert("Your enquiry has been submitted successfully. Our team will contact you shortly.");
+
+      // optional reset
+      setFormData({
+        name: "",
+        email: "",
+        contact: "",
+        country: "",
+        docCategory: "",
+        docType: "",
+        noOfDocuments: "",
+      });
+      setFiles([null]);
+    } catch (err: any) {
+      const msg = err?.message || "Something went wrong. Please try again.";
+      setError(msg);
+
+      // optional: if token invalid/expired
+      if (/401|unauthorized|token/i.test(msg)) {
+        localStorage.removeItem("token");
+        redirectToLogin();
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <section className="relative w-full overflow-hidden bg-black py-14 md:pt-36 md:pb-20">
-      {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/meattestationheader.jpg')" }}
       />
-      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/30" />
 
-      {/* CONTENT */}
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Center heading */}
         <div className="text-center text-white">
           <h1 data-aos="fade-down" className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
             Ministry of External Affairs – MEA Attestation
           </h1>
-          <p data-aos="fade-left" className="mt-3 text-sm sm:text-base text-slate-100/90 max-w-3xl mx-auto leading-relaxed">
+          <p
+            data-aos="fade-left"
+            className="mt-3 text-sm sm:text-base text-slate-100/90 max-w-3xl mx-auto leading-relaxed"
+          >
             EGS Group provides end-to-end support for MEA attestation of personal, educational and commercial documents.
             From authentication to MEA stamping and safe delivery, we manage the entire process.
           </p>
         </div>
 
-        {/* Form 75% width centered */}
         <div className="mt-10 flex justify-center" data-aos="zoom-in">
           <div className="w-full lg:w-[75%] bg-white/95 backdrop-blur rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.45)] border border-white/20 px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-9">
-            {/* Logo + subtitle */}
             <div className="flex flex-col items-center mb-6">
               <div className="h-11 w-11 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 flex items-center justify-center text-white font-bold text-lg shadow-md">
                 EGS
@@ -211,13 +298,15 @@ const MeaAttestationHero: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Inputs: 2–3 per row */}
+              {error && (
+                <div className="rounded-md bg-rose-50 border border-rose-200 px-3 py-2 text-xs sm:text-sm text-rose-700">
+                  {error}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Name optional */}
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">
-                    Name (optional)
-                  </label>
+                  <label className="text-xs font-semibold text-slate-600">Name (optional)</label>
                   <input
                     type="text"
                     name="name"
@@ -228,7 +317,6 @@ const MeaAttestationHero: React.FC = () => {
                   />
                 </div>
 
-                {/* Email required */}
                 <div>
                   <label className="text-xs font-semibold text-slate-600">
                     Email <span className="text-rose-500">*</span>
@@ -244,7 +332,6 @@ const MeaAttestationHero: React.FC = () => {
                   />
                 </div>
 
-                {/* Contact required */}
                 <div>
                   <label className="text-xs font-semibold text-slate-600">
                     Contact <span className="text-rose-500">*</span>
@@ -260,11 +347,9 @@ const MeaAttestationHero: React.FC = () => {
                   />
                 </div>
 
-                {/* Country required */}
                 <div className="lg:col-span-2">
                   <label className="text-xs font-semibold text-slate-600">
-                    Country (where you will use the document){" "}
-                    <span className="text-rose-500">*</span>
+                    Country (where you will use the document) <span className="text-rose-500">*</span>
                   </label>
                   <select
                     name="country"
@@ -282,7 +367,6 @@ const MeaAttestationHero: React.FC = () => {
                   </select>
                 </div>
 
-                {/* Doc category */}
                 <div>
                   <label className="text-xs font-semibold text-slate-600">
                     Document Category <span className="text-rose-500">*</span>
@@ -301,7 +385,6 @@ const MeaAttestationHero: React.FC = () => {
                   </select>
                 </div>
 
-                {/* Doc type */}
                 <div className="lg:col-span-2">
                   <label className="text-xs font-semibold text-slate-600">
                     Document Type <span className="text-rose-500">*</span>
@@ -325,7 +408,6 @@ const MeaAttestationHero: React.FC = () => {
                   </select>
                 </div>
 
-                {/* No of documents */}
                 <div>
                   <label className="text-xs font-semibold text-slate-600">
                     No. of Documents <span className="text-rose-500">*</span>
@@ -343,7 +425,6 @@ const MeaAttestationHero: React.FC = () => {
                 </div>
               </div>
 
-              {/* Upload grid: 2–3 per row */}
               <div>
                 <p className="text-xs font-semibold text-slate-600 mb-2">
                   Upload Documents <span className="text-rose-500">*</span>
@@ -351,19 +432,14 @@ const MeaAttestationHero: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {files.map((file, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-md border border-slate-200 bg-white px-3 py-3"
-                    >
+                    <div key={idx} className="rounded-md border border-slate-200 bg-white px-3 py-3">
                       <p className="text-[11px] font-semibold text-slate-600 mb-2">
                         File {idx + 1} <span className="text-rose-500">*</span>
                       </p>
                       <input
                         type="file"
                         accept={ACCEPTED_FILE_TYPES}
-                        onChange={(e) =>
-                          handleFileChange(idx, e.target.files?.[0] ?? null)
-                        }
+                        onChange={(e) => handleFileChange(idx, e.target.files?.[0] ?? null)}
                         className="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:opacity-90"
                         required
                       />
@@ -379,23 +455,22 @@ const MeaAttestationHero: React.FC = () => {
                 </p>
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
-                disabled={!isValid}
-                className={`w-full rounded-md text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 transition-colors shadow-md
-                  ${isValid ? "bg-sky-600 hover:bg-sky-700" : "bg-slate-300 cursor-not-allowed"}`}
+                disabled={!isValid || submitting}
+                className={`w-full rounded-md text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 transition-colors shadow-md ${
+                  !isValid || submitting
+                    ? "bg-slate-300 cursor-not-allowed"
+                    : "bg-sky-600 hover:bg-sky-700"
+                }`}
               >
-                Submit Enquiry
+                {submitting ? "Submitting..." : "Submit Enquiry"}
               </button>
             </form>
 
-            {/* Preview (optional) */}
             {submittedData && (
               <div className="mt-6 border-t border-slate-200 pt-4">
-                <p className="text-xs font-semibold text-slate-600 mb-2">
-                  Submitted Data (preview)
-                </p>
+                <p className="text-xs font-semibold text-slate-600 mb-2">Submitted Data (preview)</p>
                 <pre className="text-[11px] sm:text-xs bg-slate-50 border border-slate-200 rounded-md p-3 overflow-x-auto">
                   {JSON.stringify(submittedData, null, 2)}
                 </pre>

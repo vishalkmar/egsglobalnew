@@ -9,8 +9,6 @@ import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-
-
 const DOCUMENT_OPTIONS: Record<string, string[]> = {
   "Commercial Documents": [
     "Hiring documents",
@@ -52,9 +50,9 @@ type FormState = {
   state: string;
   message: string;
 
-  docType: string;        // Commercial / Personal / Educational
-  documents: string[];    // selected docs (checkboxes)
-  docCount: string;       // total number of documents
+  docType: string; // Commercial / Personal / Educational
+  documents: string[]; // selected docs (checkboxes)
+  docCount: string; // total number of documents
 };
 
 const initialFormState: FormState = {
@@ -75,17 +73,26 @@ function generateCaptcha() {
 }
 
 export default function HRDAttestationSection() {
-
-    useEffect(() => {
+  useEffect(() => {
     AOS.init({
       duration: 800,
-      once: false,   // ✅ repeat on every scroll in/out
+      once: false, // ✅ repeat on every scroll in/out
       offset: 80,
       easing: "ease-in-out",
-     
     });
   }, []);
-  
+
+  // ✅ LOGIN HELPERS (ONLY LOGIC)
+  const getToken = () =>
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const redirectToLogin = () => {
+    const next =
+      typeof window !== "undefined"
+        ? encodeURIComponent(window.location.pathname + window.location.search)
+        : "";
+    window.location.href = `/login?next=${next}`;
+  };
 
   const [form, setForm] = useState<FormState>(initialFormState);
   const [captcha, setCaptcha] = useState<string>(generateCaptcha);
@@ -117,6 +124,13 @@ export default function HRDAttestationSection() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // ✅ LOGIN CHECK (ONLY ADDITION)
+    const token = getToken();
+    if (!token) {
+      redirectToLogin();
+      return;
+    }
+
     // basic validation for new fields
     if (!form.docType) {
       alert("Please select document type.");
@@ -143,16 +157,14 @@ export default function HRDAttestationSection() {
     setCaptcha(generateCaptcha());
   };
 
-  const currentDocList = form.docType
-    ? DOCUMENT_OPTIONS[form.docType] || []
-    : [];
+  const currentDocList = form.docType ? DOCUMENT_OPTIONS[form.docType] || [] : [];
 
   return (
     <section className="md:py-20 bg-white py-[100px] bg-gray">
       <div className="max-w-6xl mx-auto px-4 md:px-6">
         <div className="grid gap-10 md:grid-cols-[1.1fr,1fr] items-start">
           {/* LEFT: Content */}
-          <div data-aos="fade-right" >
+          <div data-aos="fade-right">
             <h2 className="text-3xl md:text-5xl text-[#10b9e8] font-semibold text-slate-900 mb-3">
               HRD Attestation Services
             </h2>
@@ -160,9 +172,9 @@ export default function HRDAttestationSection() {
 
             <p className="text-sm md:text-base text-slate-700 leading-relaxed mb-4">
               Attestation of educational documents is essential for individuals
-              who wish to pursue higher education or seek employment abroad.
-              HRD Attestation is a crucial process that validates the
-              authenticity of educational certificates issued in India.
+              who wish to pursue higher education or seek employment abroad. HRD
+              Attestation is a crucial process that validates the authenticity
+              of educational certificates issued in India.
               <span className="font-medium"> EGS Group</span> understands the
               significance of this procedure and is here to guide you through it
               seamlessly.
@@ -172,9 +184,9 @@ export default function HRDAttestationSection() {
               HRD Attestation service offered by{" "}
               <span className="font-medium">EGS Group</span> ensures that your
               educational documents meet the necessary requirements set by
-              government authorities and are recognised internationally. Our
-              team has an in-depth understanding of the attestation process, and
-              we offer reliable and efficient services to simplify the entire
+              government authorities and are recognised internationally. Our team
+              has an in-depth understanding of the attestation process, and we
+              offer reliable and efficient services to simplify the entire
               procedure.
             </p>
 
@@ -187,7 +199,10 @@ export default function HRDAttestationSection() {
           </div>
 
           {/* RIGHT: Form card */}
-          <div  data-aos="fade-left"  className="rounded-2xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-lg">
+          <div
+            data-aos="fade-left"
+            className="rounded-2xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-lg"
+          >
             <div className="rounded-2xl bg-gradient-to-b from-sky-500/80 via-blue-600/90 to-indigo-700/95 p-6 md:p-7 text-white">
               <h3 className="text-xl md:text-2xl font-semibold mb-2">
                 Looking for Services Related to your Attestation Needs?
@@ -278,9 +293,7 @@ export default function HRDAttestationSection() {
                     <option value="Commercial Documents">
                       Commercial Documents
                     </option>
-                    <option value="Personal Documents">
-                      Personal Documents
-                    </option>
+                    <option value="Personal Documents">Personal Documents</option>
                     <option value="Educational Documents">
                       Educational Documents
                     </option>
@@ -344,10 +357,7 @@ export default function HRDAttestationSection() {
 
                 {/* Submit + Success message */}
                 <div className="pt-2 space-y-3">
-                  <Button
-                    type="submit"
-                    className="w-full rounded-full  "
-                  >
+                  <Button type="submit" className="w-full rounded-full">
                     Submit
                   </Button>
 

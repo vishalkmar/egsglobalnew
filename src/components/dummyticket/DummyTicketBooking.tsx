@@ -14,11 +14,12 @@ const COUNTRY_OPTIONS = [
   "Belarus",
 ];
 
+type TabType = "dummyTicket" | "insurance";
+type TripType = "oneWay" | "roundTrip";
+
 const DummyTicketBooking = () => {
-  const [activeTab, setActiveTab] = useState<"dummyTicket" | "insurance">(
-    "dummyTicket"
-  );
-  const [tripType, setTripType] = useState<"oneWay" | "roundTrip">("oneWay");
+  const [activeTab, setActiveTab] = useState<TabType>("dummyTicket");
+  const [tripType, setTripType] = useState<TripType>("oneWay");
 
   const [flightForm, setFlightForm] = useState({
     name: "",
@@ -42,6 +43,18 @@ const DummyTicketBooking = () => {
   });
 
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // ✅ API base (set in env)
+  const API_BASE =
+
+    "http://localhost:5000/api";
+
+  // ✅ token getter
+  const getToken = () => {
+    // change key if your app uses a different key
+    return typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  };
 
   useEffect(() => {
     AOS.init({
@@ -53,7 +66,6 @@ const DummyTicketBooking = () => {
     });
   }, []);
 
-  // refresh animation on tab change (simple + clean)
   useEffect(() => {
     AOS.refresh();
   }, [activeTab, tripType]);
@@ -79,67 +91,187 @@ const DummyTicketBooking = () => {
     setInsuranceForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  // ✅ redirect helper (works in Next + normal SPA)
+  const redirectToLogin = () => {
+    const current =
+      typeof window !== "undefined"
+        ? encodeURIComponent(window.location.pathname + window.location.search)
+        : "";
+    // If you have login route different, update it
+    window.location.href = `/login?next=${current}`;
+  };
 
-    let payload: any = { tab: activeTab };
-
+  // ✅ validate + build payload
+  const buildPayloadOrError = (): { ok: true; payload: any } | { ok: false; message: string } => {
     if (activeTab === "dummyTicket") {
       const { name, email, mobile, startLocation, departureDate, returnDate } =
         flightForm;
 
       if (!name || !email || !mobile || !startLocation || !departureDate) {
-        setError("Please fill all required fields in the dummy ticket form.");
-        return;
+        return { ok: false, message: "Please fill all required fields in the dummy ticket form." };
       }
       if (tripType === "roundTrip" && !returnDate) {
-        setError("Please select a return date for round trip.");
-        return;
+        return { ok: false, message: "Please select a return date for round trip." };
       }
 
-      payload = {
-        ...payload,
-        tripType,
-        ...flightForm,
-        amount: 1000,
+      return {
+        ok: true,
+        payload: {
+          tripType,
+          ...flightForm,
+          amount: 1000,
+        },
       };
-    } else {
-      const {
-        name,
-        email,
-        mobile,
-        insuranceType,
-        travelStart,
-        travelEnd,
-        destination,
-        dob,
-        passportFile,
-      } = insuranceForm;
-
-      if (
-        !name ||
-        !email ||
-        !mobile ||
-        !insuranceType ||
-        !travelStart ||
-        !travelEnd ||
-        !destination ||
-        !dob ||
-        !passportFile
-      ) {
-        setError("Please fill all required fields in the insurance form.");
-        return;
-      }
-
-      payload = { ...payload, ...insuranceForm };
     }
 
-    console.log("Dummy ticket / Insurance form submit payload:", payload);
+    const {
+      name,
+      email,
+      mobile,
+      insuranceType,
+      travelStart,
+      travelEnd,
+      destination,
+      dob,
+      passportFile,
+    } = insuranceForm;
 
-    alert(
-      "Your request has been submitted successfully. Our team will coordinate with you shortly."
-    );
+    if (
+      !name ||
+      !email ||
+      !mobile ||
+      !insuranceType ||
+      !travelStart ||
+      !travelEnd ||
+      !destination ||
+      !dob ||
+      !passportFile
+    ) {
+      return { ok: false, message: "Please fill all required fields in the insurance form." };
+    }
+
+    // We'll send as FormData to support file upload
+    return {
+      ok: true,
+      payload: {
+        ...insuranceForm,
+      },
+    };
+  };
+
+  // ✅ API calls (two different endpoints)
+  const submitDummyTicket = async (token: string, payload: any) => {
+    // Change endpoint as per your backend
+    const res = await fetch(`${API_BASE}/dummy-ticket/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.message || "Failed to submit dummy ticket request.");
+    }
+    return data;
+  };
+
+  const submitInsurance = async (token: string, payload: any) => {
+    // Change endpoint as per your backend
+    // Use FormData because passportFile is a file
+    const fd = new FormData();
+    fd.append("name", payload.name);
+    fd.append("email", payload.email);
+    fd.append("mobile", payload.mobile);
+    fd.append("insuranceType", payload.insuranceType);
+    fd.append("travelStart", payload.travelStart);
+    fd.append("travelEnd", payload.travelEnd);
+    fd.append("destination", payload.destination);
+    fd.append("dob", payload.dob);
+    if (payload.passportFile) fd.append("passportFile", payload.passportFile);
+
+    const res = await fetch(`${API_BASE}/insurance/request`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // NOTE: do NOT set Content-Type for FormData; browser sets boundary
+      },
+      credentials: "include",
+      body: fd,
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.message || "Failed to submit insurance request.");
+    }
+    return data;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    // ✅ 1) check login first
+    const token = getToken();
+    if (!token) {
+      redirectToLogin();
+      return;
+    }
+
+    // ✅ 2) validate + build payload
+    const built = buildPayloadOrError();
+    if (!built.ok) {
+      setError(built.message);
+      return;
+    }
+
+    // ✅ 3) call correct API based on tab
+    setSubmitting(true);
+    try {
+      if (activeTab === "dummyTicket") {
+        await submitDummyTicket(token, built.payload);
+        alert("Dummy ticket request submitted successfully. Our team will coordinate with you shortly.");
+        // optional reset
+        setFlightForm({
+          name: "",
+          email: "",
+          mobile: "",
+          startLocation: "",
+          departureDate: "",
+          returnDate: "",
+        });
+        setTripType("oneWay");
+      } else {
+        await submitInsurance(token, built.payload);
+        alert("Insurance request submitted successfully. Our team will coordinate with you shortly.");
+        // optional reset
+        setInsuranceForm({
+          name: "",
+          email: "",
+          mobile: "",
+          insuranceType: "",
+          travelStart: "",
+          travelEnd: "",
+          destination: "",
+          dob: "",
+          passportFile: null,
+        });
+      }
+    } catch (err: any) {
+      const msg = err?.message || "Something went wrong. Please try again.";
+      setError(msg);
+
+      // Optional: if backend says token invalid/expired, remove and redirect
+      if (/401|unauthorized|token/i.test(msg)) {
+        localStorage.removeItem("token");
+        redirectToLogin();
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -147,11 +279,7 @@ const DummyTicketBooking = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           {/* LEFT SIDE */}
-          <div
-            className="space-y-6"
-            data-aos="fade-right"
-            data-aos-delay="60"
-          >
+          <div className="space-y-6" data-aos="fade-right" data-aos-delay="60">
             <div>
               <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
                 Book Your Dummy Ticket in Minutes
@@ -197,7 +325,7 @@ const DummyTicketBooking = () => {
                     key={tab.id}
                     type="button"
                     onClick={() => {
-                      setActiveTab(tab.id as any);
+                      setActiveTab(tab.id as TabType);
                       setError(null);
                     }}
                     className={`flex-1 py-2.5 text-sm sm:text-base font-medium border-b-2 transition-colors ${
@@ -211,10 +339,7 @@ const DummyTicketBooking = () => {
                 ))}
               </div>
 
-              <form
-                onSubmit={handleSubmit}
-                className="p-4 sm:p-6 space-y-4 sm:space-y-5"
-              >
+              <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-5">
                 {/* Error message */}
                 {error && (
                   <div
@@ -506,11 +631,16 @@ const DummyTicketBooking = () => {
                 {/* Submit button */}
                 <button
                   type="submit"
-                  className="mt-4 w-full rounded-md bg-sky-600 hover:bg-sky-700 text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 transition-colors"
+                  disabled={submitting}
+                  className={`mt-4 w-full rounded-md text-white text-sm sm:text-base font-semibold py-2.5 sm:py-3 transition-colors ${
+                    submitting ? "bg-sky-300 cursor-not-allowed" : "bg-sky-600 hover:bg-sky-700"
+                  }`}
                   data-aos="fade-up"
                   data-aos-delay="650"
                 >
-                  {activeTab === "dummyTicket"
+                  {submitting
+                    ? "Submitting..."
+                    : activeTab === "dummyTicket"
                     ? "Buy Dummy Ticket"
                     : "Submit Insurance Request"}
                 </button>

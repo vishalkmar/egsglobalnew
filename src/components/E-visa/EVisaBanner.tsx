@@ -50,6 +50,18 @@ type FormState = {
 const ACCEPTED_FILE_TYPES = "image/*,application/pdf";
 
 export default function VisaBannerWithEVisaForm() {
+  // ✅ LOGIN HELPERS (ONLY LOGIC ADDED)
+  const getToken = () =>
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const redirectToLogin = () => {
+    const next =
+      typeof window !== "undefined"
+        ? encodeURIComponent(window.location.pathname + window.location.search)
+        : "";
+    window.location.href = `/login?next=${next}`;
+  };
+
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
@@ -108,6 +120,13 @@ export default function VisaBannerWithEVisaForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // ✅ LOGIN CHECK (ONLY ADDITION)
+    const token = getToken();
+    if (!token) {
+      redirectToLogin();
+      return;
+    }
+
     const payload = {
       ...form,
       days: Number(form.days),
@@ -144,10 +163,7 @@ export default function VisaBannerWithEVisaForm() {
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
             {/* LEFT: whole block left->right, inside content fade-down */}
-            <div
-              data-aos="fade-right"
-              className="text-white pt-10 md:pt-14"
-            >
+            <div data-aos="fade-right" className="text-white pt-10 md:pt-14">
               <span
                 data-aos="fade-down"
                 data-aos-delay="80"

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState ,useEffect} from "react";
 import { ShieldCheck, BarChart3, Users, Settings, GraduationCap, LogIn, Mail, Lock, Crown } from "lucide-react";
 import { z } from "zod";
 
@@ -101,6 +101,38 @@ export default function AdminLogin() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+  const token = localStorage.getItem("admin_token"); // 👈 admin token key (change if yours is "token")
+  if (!token) return;
+
+  const verifyAdminTokenAndRedirect = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/admin/me`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        window.location.replace("/admin/dashboard");
+        return;
+      }
+
+      // token invalid
+      localStorage.removeItem("admin_token");
+    } catch (e) {
+      // network issue -> optional: token remove mat karo
+      // localStorage.removeItem("admin_token");
+    }
+  };
+
+  verifyAdminTokenAndRedirect();
+}, [API_BASE]);
+
 
   return (
     <div className="min-h-screen w-full bg-[#0b7b78] flex items-center justify-center px-4 py-10">
