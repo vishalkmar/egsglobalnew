@@ -32,7 +32,8 @@ type MeaRow = {
 
   status: "Pending" | "Approved" | "Rejected" | "Dispatched" | "Received";
   payment: "Paid" | "Pending";
-  createdAt: string;
+
+  createdAt: string; // ISO
 };
 
 const CATEGORY_OPTIONS = [
@@ -44,14 +45,13 @@ const CATEGORY_OPTIONS = [
 
 const DOC_TYPE_BY_CATEGORY: Record<string, string[]> = {
   "Educational Documents": [
-    "Select Document Type",
-    "Degree Certificate",
-    "Marksheet",
-    "Diploma",
-    "Transcript",
+    "Degree certificate",
+    "Diploma certificate",
+    "Mark sheets",
+    "Transfer Certificate",
+    "Nursing Certificate",
   ],
   "Personal Documents": [
-    "Select Document Type",
     "Birth certificate",
     "Marriage certificate",
     "Death certificate",
@@ -59,11 +59,11 @@ const DOC_TYPE_BY_CATEGORY: Record<string, string[]> = {
     "PCC Certificate",
   ],
   "Commercial Documents": [
-    "Select Document Type",
-    "Invoice",
-    "COO (Certificate of Origin)",
-    "Authorization Letter",
-    "Company Registration",
+    "Power of Attorney",
+    "Company Invoices",
+    "Export Documentation",
+    "Certificates of Incorporation",
+    "Memorandum of Association",
   ],
 };
 
@@ -78,55 +78,117 @@ const STATUS_OPTIONS: Array<MeaRow["status"] | "All"> = [
 
 const PAYMENT_OPTIONS: Array<MeaRow["payment"] | "All"> = ["All", "Paid", "Pending"];
 
+// ---------- API types ----------
+type ApiDoc = {
+  index: number;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  url: string;
+};
+
+type ApiItem = {
+  _id: string;
+  name?: string;
+  email: string;
+  contact: string;
+  country: string;
+  docCategory: string;
+  docType: string;
+  noOfDocuments: number;
+  documents: ApiDoc[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ApiResp = {
+  count: number;
+  items: ApiItem[];
+};
+
+const fileTypeFrom = (mimeType?: string, url?: string): DocFile["type"] => {
+  const mt = (mimeType || "").toLowerCase();
+  if (mt.includes("pdf")) return "pdf";
+  if (mt.startsWith("image/")) return "image";
+
+  const u = (url || "").toLowerCase();
+  if (u.endsWith(".pdf")) return "pdf";
+  if (u.match(/\.(png|jpg|jpeg|webp|gif)$/)) return "image";
+
+  return "other";
+};
+
+const formatDateTime = (iso: string) => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString();
+};
+
 export default function MEAAttestation() {
-  // ---------- Mock Data (replace with API later) ----------
-  const [rows] = useState<MeaRow[]>([
-    {
-      id: "MEA-1001",
-      email: "user1@example.com",
-      contact: "9876543210",
-      country: "UAE",
-      category: "Personal Documents",
-      docType: "Birth certificate",
-      noOfDocs: 2,
-      files: [
-        { name: "birth.pdf", url: "#", type: "pdf" },
-        { name: "passport.jpg", url: "#", type: "image" },
-      ],
-      status: "Pending",
-      payment: "Pending",
-      createdAt: "Just now",
-    },
-    {
-      id: "MEA-1002",
-      email: "user2@example.com",
-      contact: "9999999999",
-      country: "Qatar",
-      category: "Educational Documents",
-      docType: "Degree Certificate",
-      noOfDocs: 1,
-      files: [{ name: "degree.pdf", url: "#", type: "pdf" }],
-      status: "Approved",
-      payment: "Paid",
-      createdAt: "2 hours ago",
-    },
-    {
-      id: "MEA-1003",
-      email: "user3@example.com",
-      contact: "8888888888",
-      country: "Oman",
-      category: "Commercial Documents",
-      docType: "Invoice",
-      noOfDocs: 3,
-      files: [
-        { name: "invoice1.pdf", url: "#", type: "pdf" },
-        { name: "invoice2.pdf", url: "#", type: "pdf" },
-      ],
-      status: "Dispatched",
-      payment: "Paid",
-      createdAt: "6 hours ago",
-    },
-  ]);
+  const API_BASE = "http://localhost:5000/api";
+
+  const getToken = () =>
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const [rows, setRows] = useState<MeaRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  // ---------- Fetch API ----------
+  const fetchMea = async () => {
+    setLoading(true);
+    setApiError(null);
+
+    try {
+      const token = getToken(); // if your GET is protected
+      const res = await fetch(`${API_BASE}/mea/mea-attestation/enquiry`, {
+        method: "GET",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+      });
+
+      const data: ApiResp = await res.json().catch(() => ({ count: 0, items: [] } as any));
+      if (!res.ok) throw new Error((data as any)?.message || "Failed to fetch enquiries");
+
+      const mapped: MeaRow[] = (data.items || []).map((it) => {
+        const files: DocFile[] = (it.documents || []).map((d) => ({
+          name: d.originalName || `Document ${d.index}`,
+          url: d.url,
+          type: fileTypeFrom(d.mimeType, d.url),
+        }));
+
+        return {
+          id: it._id, // ✅ use Mongo _id
+          email: it.email,
+          contact: it.contact,
+          country: it.country,
+          category: it.docCategory,
+          docType: it.docType,
+          noOfDocs: Number(it.noOfDocuments || 0),
+          files,
+
+          // ✅ keep these (backend me nahi aa rahe abhi)
+          status: "Pending",
+          payment: "Pending",
+
+          createdAt: it.createdAt || it.updatedAt || new Date().toISOString(),
+        };
+      });
+
+      setRows(mapped);
+    } catch (e: any) {
+      setApiError(e?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMea();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ---------- Filters ----------
   const [searchText, setSearchText] = useState("");
@@ -153,14 +215,10 @@ export default function MEAAttestation() {
   useEffect(() => {
     const calc = () => {
       const h = window.innerHeight;
-
-      // compact layout, reserved kam
       const reserved = 300;
       const rowH = 56;
-
       const usable = Math.max(320, h - reserved);
       const size = Math.floor(usable / rowH);
-
       const clamped = Math.max(10, Math.min(15, size));
       setPageSize(clamped);
     };
@@ -170,7 +228,6 @@ export default function MEAAttestation() {
     return () => window.removeEventListener("resize", calc);
   }, []);
 
-  // reset doc type when category changes
   useEffect(() => {
     setDocType("Select Document Type");
   }, [category]);
@@ -334,6 +391,19 @@ export default function MEAAttestation() {
           <div className="text-2xl font-semibold text-slate-900">{stats.byType}</div>
           <div className="mt-0.5 text-xs text-slate-600">Type wise</div>
         </div>
+      </div>
+
+      {/* API Status bar */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 flex items-center justify-between">
+        <div className="text-sm text-slate-700">
+          {loading ? "Loading enquiries..." : apiError ? `Error: ${apiError}` : `Loaded: ${rows.length}`}
+        </div>
+        <button
+          onClick={fetchMea}
+          className="h-9 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm font-semibold"
+        >
+          Refresh
+        </button>
       </div>
 
       {/* Compact Filters */}
@@ -559,7 +629,7 @@ export default function MEAAttestation() {
               {pagedRows.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-4 py-10 text-center text-slate-600">
-                    No records found.
+                    {loading ? "Loading..." : "No records found."}
                   </td>
                 </tr>
               ) : (
@@ -575,6 +645,9 @@ export default function MEAAttestation() {
                           {r.files.length} file(s)
                         </span>
                       </button>
+                      <div className="mt-1 text-[11px] text-slate-500">
+                        {formatDateTime(r.createdAt)}
+                      </div>
                     </td>
 
                     <td className="px-4 py-3 text-slate-900">{r.email}</td>
@@ -662,8 +735,7 @@ export default function MEAAttestation() {
 
             <div className="p-5">
               <div className="text-sm text-slate-600">
-                Request ID:{" "}
-                <span className="font-semibold text-slate-900">{openDocsRow.id}</span>
+                Request ID: <span className="font-semibold text-slate-900">{openDocsRow.id}</span>
               </div>
 
               <div className="mt-4 space-y-2">
@@ -682,9 +754,7 @@ export default function MEAAttestation() {
                       )}
 
                       <div className="min-w-0">
-                        <div className="text-sm font-semibold text-slate-900 truncate">
-                          {f.name}
-                        </div>
+                        <div className="text-sm font-semibold text-slate-900 truncate">{f.name}</div>
                         <div className="text-xs text-slate-600">Click open to view/download</div>
                       </div>
                     </div>
@@ -703,8 +773,7 @@ export default function MEAAttestation() {
               </div>
 
               <div className="mt-5 text-xs text-slate-500">
-                Note: Abhi links dummy hain. Backend se file URLs aayenge to yahin render ho
-                jayenge.
+                Note: Ye links backend se aa rahe hain (Cloudinary URLs).
               </div>
             </div>
           </div>
