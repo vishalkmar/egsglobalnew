@@ -190,10 +190,8 @@ export default function Contact() {
                       <Mail className="w-5 h-5 text-sky-100" />
                     </span>
                     <div className="text-slate-100/95">
-                      <p>info@egsgroup.com</p>
-                      <p className="text-xs text-slate-300">
-                        General & documentation support
-                      </p>
+                      <p>info@evrenglobalsolutions.com</p>
+                     
                     </div>
                   </div>
                   <div className="hidden sm:block h-8 w-px bg-white/20" />
@@ -202,10 +200,9 @@ export default function Contact() {
                       <Phone className="w-5 h-5 text-sky-100" />
                     </span>
                     <div className="text-slate-100/95">
-                      <p>+91-98765-43210</p>
-                      <p className="text-xs text-slate-300">
-                        Mon–Sat, 10:00 AM – 6:30 PM
-                      </p>
+                      <p>+91 8199050506</p>
+                        <p>+91 8199050507</p>
+                     
                     </div>
                   </div>
                 </div>
@@ -395,11 +392,8 @@ export default function Contact() {
                     <div>
                       <h3 className="font-semibold mb-1">Email</h3>
                       <p className="text-sm text-muted-foreground">
-                        info@egsgroup.com
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        support@egsgroup.com
-                      </p>
+                       info@evrenglobalsolutions.com
+                      </p>         
                     </div>
                   </div>
                 </Card>
@@ -412,10 +406,10 @@ export default function Contact() {
                     <div>
                       <h3 className="font-semibold mb-1">Phone</h3>
                       <p className="text-sm text-muted-foreground">
-                        +91-98765-43210
+                        +91 8199050506
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        +91-98765-43211
+                       +91 8199050507
                       </p>
                     </div>
                   </div>
@@ -429,31 +423,29 @@ export default function Contact() {
                     <div>
                       <h3 className="font-semibold mb-1">Office</h3>
                       <p className="text-sm text-muted-foreground">
-                        EGS Group – Documentation & Visa Services
+                       128-A, First Floor, D-Mall,
                         <br />
-                        123 Business Avenue, Tower A, 4th Floor
+                       Netaji Subhash Place, New
                         <br />
-                        New Delhi, India
+                       Delhi -110034, India
                       </p>
                     </div>
                   </div>
                 </Card>
 
-                <Card className="p-5 sm:p-6" data-aos="fade-right">
+                <Card className="p-5 sm:p-6" data-aos="fade-left">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-md bg-gradient-to-br from-sky-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                      <Clock className="w-6 h-6 text-white" />
+                    <div className="w-12 h-12 rounded-md bg-gradient-to-br from-sky-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold mb-1">Business Hours</h3>
+                      <h3 className="font-semibold mb-1">Office</h3>
                       <p className="text-sm text-muted-foreground">
-                        Monday – Friday: 10:00 AM – 6:30 PM
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Saturday: 10:00 AM – 2:30 PM
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Sunday: Closed
+                      103, First Floor, D-Mall,
+                        <br />
+                     Netaji Subhash Place, New
+                        <br />
+                      Delhi -110034, India
                       </p>
                     </div>
                   </div>

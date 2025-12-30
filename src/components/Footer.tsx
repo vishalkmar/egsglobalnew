@@ -41,15 +41,19 @@ export default function Footer() {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-slate-400">
                 <Mail className="w-4 h-4 text-blue-400" />
-                <span data-testid="text-email">info@egsgroup.com</span>
+                <span data-testid="text-email">info@evrenglobalsolutions.com</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-400">
                 <Phone className="w-4 h-4 text-blue-400" />
-                <span data-testid="text-phone">+1 (555) 123-4567</span>
+                <span data-testid="text-phone">+91 8199050506, +91 8199050507</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-400">
                 <MapPin className="w-4 h-4 text-blue-400" />
-                <span data-testid="text-address">123 Business Street, City</span>
+                <span data-testid="text-address">128-A, First Floor, D-Mall,Netaji Subhash Place, New, Delhi -110034, India</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-slate-400">
+                <MapPin className="w-4 h-4 text-blue-400" />
+                <span data-testid="text-address">103, First Floor, D-Mall,Netaji Subhash Place, New, Delhi -110034, India</span>
               </div>
             </div>
           </div>

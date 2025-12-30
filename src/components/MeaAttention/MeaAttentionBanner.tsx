@@ -1,6 +1,11 @@
-"use client";
 
-import React, { useMemo, useState, ChangeEvent, FormEvent, useEffect } from "react";
+import React, {
+  useMemo,
+  useState,
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+} from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -33,8 +38,6 @@ const DOC_TYPES: Record<DocCategory, string[]> = {
   ],
 };
 
-const ACCEPTED_FILE_TYPES = "image/*,application/pdf";
-
 const ALL_COUNTRIES = [
   "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria",
   "Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia",
@@ -57,6 +60,10 @@ const ALL_COUNTRIES = [
   "Yemen","Zambia","Zimbabwe",
 ];
 
+const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_DOC_TYPES = "application/pdf,image/jpeg,image/png,image/jpg";
+const ACCEPTED_IMG_TYPES = "image/jpeg,image/png,image/jpg";
+
 interface MeaFormData {
   name: string; // optional
   email: string;
@@ -65,7 +72,18 @@ interface MeaFormData {
   docCategory: DocCategory | "";
   docType: string;
   noOfDocuments: string;
+
+  // ✅ tracking / extra fields
+  enquiryDate: string; // yyyy-mm-dd (user selected)
 }
+
+type UploadedDoc = {
+  index: number;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  url: string;
+};
 
 const MeaAttestationHero: React.FC = () => {
   const [formData, setFormData] = useState<MeaFormData>({
@@ -76,20 +94,32 @@ const MeaAttestationHero: React.FC = () => {
     docCategory: "",
     docType: "",
     noOfDocuments: "",
+    enquiryDate: "",
   });
 
+  // multiple documents
   const [files, setFiles] = useState<(File | null)[]>([null]);
-  const [submittedData, setSubmittedData] = useState<any>(null);
 
+  // ✅ two extra image fields (required)
+
+
+  const [submittedData, setSubmittedData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // ✅ API base (env)
-  const API_BASE =
-    "http://localhost:5000/api";
+  const API_BASE = "http://localhost:5000/api";
 
-  // ✅ token key (change if different)
-  const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+  // ✅ Cloudinary env (set these in .env)
+  const CLOUDINARY_CLOUD_NAME =
+  import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
+
+const CLOUDINARY_UPLOAD_PRESET =
+  import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "";
+
+
+  const getToken = () =>
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const redirectToLogin = () => {
     const current =
@@ -136,13 +166,46 @@ const MeaAttestationHero: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const validateFileSize = (file: File, label: string) => {
+    if (file.size > MAX_FILE_BYTES) {
+      const mb = (file.size / (1024 * 1024)).toFixed(2);
+      throw new Error(`${label} is ${mb} MB. Max allowed is 5 MB.`);
+    }
+  };
+
   const handleFileChange = (index: number, file: File | null) => {
+    setError(null);
+
+    if (!file) {
+      setFiles((prev) => {
+        const next = [...prev];
+        next[index] = null;
+        return next;
+      });
+      return;
+    }
+
+    try {
+      validateFileSize(file, `File ${index + 1}`);
+    } catch (e: any) {
+      setError(e?.message || "File too large. Max 5 MB.");
+      // reset this input slot
+      setFiles((prev) => {
+        const next = [...prev];
+        next[index] = null;
+        return next;
+      });
+      return;
+    }
+
     setFiles((prev) => {
       const next = [...prev];
       next[index] = file;
       return next;
     });
   };
+
+  
 
   const isValid = useMemo(() => {
     if (!formData.email.trim()) return false;
@@ -156,6 +219,10 @@ const MeaAttestationHero: React.FC = () => {
     if (files.length !== n) return false;
     if (files.some((f) => !f)) return false;
 
+    // ✅ extra required fields
+    if (!formData.enquiryDate) return false;
+  
+
     return true;
   }, [formData, files]);
 
@@ -168,36 +235,103 @@ const MeaAttestationHero: React.FC = () => {
     });
   }, []);
 
-  // ✅ Submit API (FormData because files)
-  const submitMeaEnquiry = async (token: string) => {
+  // ✅ Cloudinary upload (returns secure_url)
+  const uploadToCloudinary = async (file: File) => {
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+      throw new Error(
+        "Cloudinary is not configured. Please set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET."
+      );
+    }
+
     const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
-    fd.append("name", formData.name || "");
-    fd.append("email", formData.email);
-    fd.append("contact", formData.contact);
-    fd.append("country", formData.country);
-    fd.append("docCategory", String(formData.docCategory));
-    fd.append("docType", formData.docType);
-    fd.append("noOfDocuments", String(Number(formData.noOfDocuments || "0")));
+    // auto => handles pdf/images
+    const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
 
-    files.forEach((f, idx) => {
-      if (f) fd.append("files", f, f.name); // backend should read array: req.files
-      fd.append("fileIndex", String(idx + 1)); // optional
-    });
-
-    const res = await fetch(`${API_BASE}/mea-attestation/enquiry`, {
+    const res = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // DO NOT set Content-Type for FormData
-      },
-      credentials: "include",
       body: fd,
     });
 
     const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.error?.message || "Cloud upload failed.");
+    }
+    return String(data?.secure_url || data?.url || "");
+  };
+
+  // ✅ Submit API (JSON: form data + urls + tracking fields)
+  const submitMeaEnquiry = async (token: string) => {
+    // safety: size check again at submit time
+    files.forEach((f, idx) => {
+      if (f) validateFileSize(f, `File ${idx + 1}`);
+    });
+   
+
+    // ✅ 1) upload all docs to cloudinary
+    const uploadedDocs: UploadedDoc[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      if (!f) continue;
+      const url = await uploadToCloudinary(f);
+      uploadedDocs.push({
+        index: i + 1,
+        originalName: f.name,
+        mimeType: f.type,
+        size: f.size,
+        url,
+      });
+    }
+
+
+    // ✅ 3) tracking fields
+    const submittedAt = new Date().toISOString();
+    const pageUrl =
+      typeof window !== "undefined" ? window.location.href : "";
+    const userAgent =
+      typeof navigator !== "undefined" ? navigator.userAgent : "";
+
+    // ✅ 4) final payload
+    const payload = {
+      // existing form fields (same data goes)
+      name: formData.name || "",
+      email: formData.email,
+      contact: formData.contact,
+      country: formData.country,
+      docCategory: String(formData.docCategory),
+      docType: formData.docType,
+      noOfDocuments: Number(formData.noOfDocuments || "0"),
+
+      // ✅ new: urls
+      documents: uploadedDocs, // array of doc urls + metadata
+   
+
+      // ✅ new: date + timestamp + tracking
+      enquiryDate: formData.enquiryDate, // selected date
+      submittedAt, // ISO timestamp
+      tracking: {
+        pageUrl,
+        userAgent,
+      },
+    };
+    console.log(payload)
+
+    const res = await fetch(`${API_BASE}/mea/mea-attestation/enquiry`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    console.log(data)
     if (!res.ok) throw new Error(data?.message || "Failed to submit enquiry.");
-    return data;
+    return { api: data, payload };
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -213,31 +347,20 @@ const MeaAttestationHero: React.FC = () => {
 
     // ✅ 2) validate (same as button disable, but safety)
     if (!isValid) {
-      setError("Please fill all required fields and upload all documents.");
+      setError("Please fill all required fields and upload all documents (max 5 MB each).");
       return;
     }
 
     // ✅ 3) submit
     setSubmitting(true);
     try {
-      const apiResp = await submitMeaEnquiry(token);
+      const resp = await submitMeaEnquiry(token);
 
-      // preview payload (optional)
-      const payloadPreview = {
-        ...formData,
-        noOfDocuments: Number(formData.noOfDocuments),
-        files: files.map((f, i) => ({
-          index: i + 1,
-          name: f?.name,
-          type: f?.type,
-          size: f?.size,
-        })),
-        apiResp,
-      };
+      setSubmittedData(resp); // preview (payload + api)
 
-      setSubmittedData(payloadPreview);
-
-      alert("Your enquiry has been submitted successfully. Our team will contact you shortly.");
+      alert(
+        "Your enquiry has been submitted successfully. Our team will contact you shortly."
+      );
 
       // optional reset
       setFormData({
@@ -248,17 +371,16 @@ const MeaAttestationHero: React.FC = () => {
         docCategory: "",
         docType: "",
         noOfDocuments: "",
+        enquiryDate: "",
       });
       setFiles([null]);
+     
     } catch (err: any) {
       const msg = err?.message || "Something went wrong. Please try again.";
       setError(msg);
 
       // optional: if token invalid/expired
-      if (/401|unauthorized|token/i.test(msg)) {
-        localStorage.removeItem("token");
-        redirectToLogin();
-      }
+  
     } finally {
       setSubmitting(false);
     }
@@ -274,15 +396,19 @@ const MeaAttestationHero: React.FC = () => {
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center text-white">
-          <h1 data-aos="fade-down" className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
+          <h1
+            data-aos="fade-down"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight"
+          >
             Ministry of External Affairs – MEA Attestation
           </h1>
           <p
             data-aos="fade-left"
             className="mt-3 text-sm sm:text-base text-slate-100/90 max-w-3xl mx-auto leading-relaxed"
           >
-            EGS Group provides end-to-end support for MEA attestation of personal, educational and commercial documents.
-            From authentication to MEA stamping and safe delivery, we manage the entire process.
+            EGS Group provides end-to-end support for MEA attestation of personal,
+            educational and commercial documents. From authentication to MEA
+            stamping and safe delivery, we manage the entire process.
           </p>
         </div>
 
@@ -306,7 +432,9 @@ const MeaAttestationHero: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">Name (optional)</label>
+                  <label className="text-xs font-semibold text-slate-600">
+                    Name (optional)
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -349,7 +477,8 @@ const MeaAttestationHero: React.FC = () => {
 
                 <div className="lg:col-span-2">
                   <label className="text-xs font-semibold text-slate-600">
-                    Country (where you will use the document) <span className="text-rose-500">*</span>
+                    Country (where you will use the document){" "}
+                    <span className="text-rose-500">*</span>
                   </label>
                   <select
                     name="country"
@@ -379,9 +508,13 @@ const MeaAttestationHero: React.FC = () => {
                     required
                   >
                     <option value="">Select Category</option>
-                    <option value="Educational Documents">Educational Documents</option>
+                    <option value="Educational Documents">
+                      Educational Documents
+                    </option>
                     <option value="Personal Documents">Personal Documents</option>
-                    <option value="Commercial Documents">Commercial Documents</option>
+                    <option value="Commercial Documents">
+                      Commercial Documents
+                    </option>
                   </select>
                 </div>
 
@@ -398,7 +531,9 @@ const MeaAttestationHero: React.FC = () => {
                     required
                   >
                     <option value="">
-                      {formData.docCategory ? "Select Document Type" : "Select Category first"}
+                      {formData.docCategory
+                        ? "Select Document Type"
+                        : "Select Category first"}
                     </option>
                     {docTypeOptions.map((t) => (
                       <option key={t} value={t}>
@@ -421,10 +556,28 @@ const MeaAttestationHero: React.FC = () => {
                     className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                     required
                   />
-                  <p className="mt-1 text-[11px] text-slate-500">Max 20 files.</p>
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Max 20 files. Max size 5 MB per file.
+                  </p>
+                </div>
+
+                {/* ✅ Date field */}
+                <div className="lg:col-span-3">
+                  <label className="text-xs font-semibold text-slate-600">
+                    Enquiry Date <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="enquiryDate"
+                    value={formData.enquiryDate}
+                    onChange={handleChange}
+                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                    required
+                  />
                 </div>
               </div>
 
+              {/* ✅ Upload Documents */}
               <div>
                 <p className="text-xs font-semibold text-slate-600 mb-2">
                   Upload Documents <span className="text-rose-500">*</span>
@@ -432,29 +585,41 @@ const MeaAttestationHero: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {files.map((file, idx) => (
-                    <div key={idx} className="rounded-md border border-slate-200 bg-white px-3 py-3">
+                    <div
+                      key={idx}
+                      className="rounded-md border border-slate-200 bg-white px-3 py-3"
+                    >
                       <p className="text-[11px] font-semibold text-slate-600 mb-2">
                         File {idx + 1} <span className="text-rose-500">*</span>
                       </p>
                       <input
                         type="file"
-                        accept={ACCEPTED_FILE_TYPES}
-                        onChange={(e) => handleFileChange(idx, e.target.files?.[0] ?? null)}
+                        accept={ACCEPTED_DOC_TYPES}
+                        onChange={(e) =>
+                          handleFileChange(
+                            idx,
+                            e.target.files?.[0] ?? null
+                          )
+                        }
                         className="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:opacity-90"
                         required
                       />
                       <p className="mt-2 text-[11px] text-slate-500 truncate">
                         {file ? `Selected: ${file.name}` : "No file selected"}
                       </p>
+                      <p className="mt-1 text-[11px] text-slate-500">
+                        Max 5 MB per file.
+                      </p>
                     </div>
                   ))}
                 </div>
 
                 <p className="mt-2 text-[11px] text-slate-500">
-                  Supported: images + PDF. All fields required except Name.
+                  Supported: PDF, JPG, JPEG, PNG.
                 </p>
               </div>
 
+             
               <button
                 type="submit"
                 disabled={!isValid || submitting}
@@ -470,7 +635,9 @@ const MeaAttestationHero: React.FC = () => {
 
             {submittedData && (
               <div className="mt-6 border-t border-slate-200 pt-4">
-                <p className="text-xs font-semibold text-slate-600 mb-2">Submitted Data (preview)</p>
+                <p className="text-xs font-semibold text-slate-600 mb-2">
+                  Submitted Data (preview)
+                </p>
                 <pre className="text-[11px] sm:text-xs bg-slate-50 border border-slate-200 rounded-md p-3 overflow-x-auto">
                   {JSON.stringify(submittedData, null, 2)}
                 </pre>
