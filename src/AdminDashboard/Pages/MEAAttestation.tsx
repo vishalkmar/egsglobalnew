@@ -169,9 +169,9 @@ export default function MEAAttestation() {
           noOfDocs: Number(it.noOfDocuments || 0),
           files,
 
-          // ✅ keep these (backend me nahi aa rahe abhi)
-          status: "Pending",
-          payment: "Pending",
+          // ✅ get from DB now
+          status: it.status || "Pending",
+          payment: it.payment || "Pending",
 
           createdAt: it.createdAt || it.updatedAt || new Date().toISOString(),
         };
@@ -362,7 +362,70 @@ export default function MEAAttestation() {
   };
 
   const onEdit = (row: MeaRow) => alert(`Edit: ${row.id} (wire this to edit modal/page)`);
-  const onDelete = (row: MeaRow) => alert(`Delete: ${row.id} (wire this to delete confirm + API)`);
+  const onDelete = async (row: MeaRow) => {
+    if (!window.confirm(`Delete MEA enquiry for ${row.email}?`)) return;
+
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/mea/mea-attestation/enquiry/${row.id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete");
+      alert("Deleted successfully");
+      setRows((prev) => prev.filter((r) => r.id !== row.id));
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    }
+  };
+
+  const onUpdateStatus = async (row: MeaRow, newStatus: string) => {
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/mea/mea-attestation/enquiry/${row.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update status");
+      alert("Status updated successfully");
+      setRows((prev) =>
+        prev.map((r) => (r.id === row.id ? { ...r, status: newStatus as any } : r))
+      );
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    }
+  };
+
+  const onUpdatePayment = async (row: MeaRow, newPayment: string) => {
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/mea/mea-attestation/enquiry/${row.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+        body: JSON.stringify({ payment: newPayment }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update payment");
+      alert("Payment updated successfully");
+      setRows((prev) =>
+        prev.map((r) => (r.id === row.id ? { ...r, payment: newPayment as any } : r))
+      );
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    }
+  };
 
   const clearExactFind = () => {
     setFindCountry("All");
@@ -658,23 +721,36 @@ export default function MEAAttestation() {
                     <td className="px-4 py-3 text-slate-900">{r.noOfDocs}</td>
 
                     <td className="px-4 py-3">
-                      <span className={pill(r.status, "status")}>{r.status}</span>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={r.status}
+                          onChange={(e) => onUpdateStatus(r, e.target.value)}
+                          className="h-9 px-2 rounded-lg border border-sky-200 bg-sky-50 text-sm font-medium text-sky-900 outline-none hover:border-sky-300"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Approved">Approved</option>
+                          <option value="Rejected">Rejected</option>
+                          <option value="Dispatched">Dispatched</option>
+                          <option value="Received">Received</option>
+                        </select>
+                      </div>
                     </td>
 
                     <td className="px-4 py-3">
-                      <span className={pill(r.payment, "payment")}>{r.payment}</span>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={r.payment}
+                          onChange={(e) => onUpdatePayment(r, e.target.value)}
+                          className="h-9 px-2 rounded-lg border border-emerald-200 bg-emerald-50 text-sm font-medium text-emerald-900 outline-none hover:border-emerald-300"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Paid">Paid</option>
+                        </select>
+                      </div>
                     </td>
 
                     <td className="px-4 py-3">
                       <div className="inline-flex rounded-xl overflow-hidden border border-slate-200 bg-white">
-                        <button
-                          onClick={() => onEdit(r)}
-                          className="h-9 w-11 grid place-items-center hover:bg-slate-50"
-                          title="Edit"
-                        >
-                          <Pencil className="h-4 w-4 text-sky-700" />
-                        </button>
-                        <div className="w-px bg-slate-200" />
                         <button
                           onClick={() => onDelete(r)}
                           className="h-9 w-11 grid place-items-center hover:bg-rose-50"

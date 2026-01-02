@@ -57,11 +57,47 @@ export default function AdminDashboard() {
   // Loader on page change
   const [loading, setLoading] = useState(false);
 
+  // Dynamic data for services
+  const [serviceData, setServiceData] = useState<Record<string, any[]>>({
+    mea: [],
+    pcc: [],
+  });
+  const [dataLoading, setDataLoading] = useState(false);
+
   // if user switches pages => show loader briefly
   useEffect(() => {
     setLoading(true);
     const t = setTimeout(() => setLoading(false), 450);
     return () => clearTimeout(t);
+  }, [activeKey]);
+
+  // Fetch service data when activeKey changes
+  useEffect(() => {
+    if (activeKey === "mea" || activeKey === "pcc") {
+      const fetchData = async () => {
+        try {
+          setDataLoading(true);
+          const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+          const endpoint = activeKey === "mea" ? "mea-attestation" : "pcc-legalization";
+          const url = `${apiUrl}/${activeKey}/${endpoint}/enquiry`;
+
+          const response = await fetch(url);
+          if (response.ok) {
+            const data = await response.json();
+            setServiceData((prev) => ({
+              ...prev,
+              [activeKey]: data.items || [],
+            }));
+          }
+        } catch (error) {
+          console.error("Failed to fetch data:", error);
+        } finally {
+          setDataLoading(false);
+        }
+      };
+
+      fetchData();
+    }
   }, [activeKey]);
 
   const activeItem = navItems.find((n) => n.key === activeKey);
@@ -260,109 +296,213 @@ export default function AdminDashboard() {
                     <div className="space-y-6">
                       {/* Dashboard-like summary blocks (placeholder) */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {[
-                          { title: "Total Requests", value: "—" },
-                          { title: "Pending", value: "—" },
-                          { title: "In Process", value: "—" },
-                          { title: "Completed", value: "—" },
-                        ].map((c, idx) => (
-                          <div
-                            key={idx}
-                            className="rounded-2xl border border-slate-200 bg-slate-50 p-5"
-                          >
-                            <div className="text-2xl font-semibold text-slate-900">
-                              {c.value}
+                        {activeKey === "mea" || activeKey === "pcc" ? (
+                          <>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                              <div className="text-2xl font-semibold text-slate-900">
+                                {(activeKey === "mea" ? serviceData.mea : serviceData.pcc).length}
+                              </div>
+                              <div className="text-sm text-slate-600 mt-1">Total Requests</div>
                             </div>
-                            <div className="text-sm text-slate-600 mt-1">
-                              {c.title}
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                              <div className="text-2xl font-semibold text-slate-900">—</div>
+                              <div className="text-sm text-slate-600 mt-1">Pending</div>
                             </div>
-                          </div>
-                        ))}
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                              <div className="text-2xl font-semibold text-slate-900">—</div>
+                              <div className="text-sm text-slate-600 mt-1">In Process</div>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                              <div className="text-2xl font-semibold text-slate-900">—</div>
+                              <div className="text-sm text-slate-600 mt-1">Completed</div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                              <div className="text-2xl font-semibold text-slate-900">—</div>
+                              <div className="text-sm text-slate-600 mt-1">Total Requests</div>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                              <div className="text-2xl font-semibold text-slate-900">—</div>
+                              <div className="text-sm text-slate-600 mt-1">Pending</div>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                              <div className="text-2xl font-semibold text-slate-900">—</div>
+                              <div className="text-sm text-slate-600 mt-1">In Process</div>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                              <div className="text-2xl font-semibold text-slate-900">—</div>
+                              <div className="text-sm text-slate-600 mt-1">Completed</div>
+                            </div>
+                          </>
+                        )}
                       </div>
+
+                      {/* Service-specific table */}
+                      {(activeKey === "mea" || activeKey === "pcc") && dataLoading ? (
+                        <div className="py-8 flex flex-col items-center justify-center gap-4">
+                          <div className="h-8 w-8 rounded-full border-4 border-slate-200 border-t-teal-900 animate-spin" />
+                          <div className="text-sm text-slate-600">Loading data...</div>
+                        </div>
+                      ) : (activeKey === "mea" || activeKey === "pcc") && (activeKey === "mea" ? serviceData.mea : serviceData.pcc).length > 0 ? (
+                        <div className="rounded-2xl border border-slate-200 overflow-hidden">
+                          <div className="bg-teal-900 text-white px-5 py-4 font-semibold">
+                            {activeKey === "mea" ? "MEA Attestation" : "PCC Legalization"} Enquiries
+                          </div>
+
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead className="bg-slate-50 text-slate-600">
+                                <tr>
+                                  <th className="text-left px-5 py-3 font-medium">Email</th>
+                                  <th className="text-left px-5 py-3 font-medium">
+                                    {activeKey === "mea" ? "Country" : "Company"}
+                                  </th>
+                                  <th className="text-left px-5 py-3 font-medium">Documents</th>
+                                  <th className="text-left px-5 py-3 font-medium">Submitted</th>
+                                  <th className="text-left px-5 py-3 font-medium">Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(activeKey === "mea" ? serviceData.mea : serviceData.pcc).map((item: any) => (
+                                  <tr key={item._id} className="border-t border-slate-100 hover:bg-slate-50">
+                                    <td className="px-5 py-4 font-medium text-slate-900">{item.email}</td>
+                                    <td className="px-5 py-4 text-slate-600">
+                                      {activeKey === "mea" ? item.country : item.companyName}
+                                    </td>
+                                    <td className="px-5 py-4 text-slate-600">
+                                      {item.documents?.length || 0} files
+                                      {item.documents && item.documents.length > 0 && (
+                                        <div className="text-xs mt-1 space-y-0.5">
+                                          {item.documents.slice(0, 2).map((doc: any, idx: number) => (
+                                            <div key={idx}>
+                                              <a
+                                                href={doc.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-sky-600 hover:underline"
+                                              >
+                                                📄 {doc.originalName}
+                                              </a>
+                                            </div>
+                                          ))}
+                                          {item.documents.length > 2 && (
+                                            <div className="text-slate-500">+{item.documents.length - 2} more</div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="px-5 py-4 text-slate-600">
+                                      {new Date(item.submittedAt).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-5 py-4">
+                                      <span className="inline-flex items-center rounded-full bg-blue-50 text-blue-900 px-3 py-1 text-xs font-semibold">
+                                        {item.emails?.adminSent ? "Notified" : "Pending"}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                          <div className="text-sm font-semibold text-slate-900">
+                            No {activeKey === "mea" ? "MEA Attestation" : "PCC Legalization"} enquiries yet
+                          </div>
+                          <div className="mt-2 text-sm text-slate-600">
+                            Enquiries will appear here once users submit them.
+                          </div>
+                        </div>
+                      )}
 
                       {/* Recent Activity table (placeholder) */}
-                      <div className="rounded-2xl border border-slate-200 overflow-hidden">
-                        <div className="bg-teal-900 text-white px-5 py-4 font-semibold">
-                          Recent Activity
-                        </div>
+                      {activeKey !== "mea" && activeKey !== "pcc" && (
+                        <div className="rounded-2xl border border-slate-200 overflow-hidden">
+                          <div className="bg-teal-900 text-white px-5 py-4 font-semibold">
+                            Recent Activity
+                          </div>
 
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead className="bg-slate-50 text-slate-600">
-                              <tr>
-                                <th className="text-left px-5 py-3 font-medium">
-                                  Type
-                                </th>
-                                <th className="text-left px-5 py-3 font-medium">
-                                  Service
-                                </th>
-                                <th className="text-left px-5 py-3 font-medium">
-                                  Details
-                                </th>
-                                <th className="text-left px-5 py-3 font-medium">
-                                  Timestamp
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {[
-                                {
-                                  type: "New",
-                                  service: activeItem?.label || "Dashboard",
-                                  details: "Sample activity row",
-                                  time: "Just now",
-                                },
-                                {
-                                  type: "Update",
-                                  service: "PCC Legalization",
-                                  details: "Document verification completed",
-                                  time: "2 hours ago",
-                                },
-                                {
-                                  type: "Inquiry",
-                                  service: "Meetgreet",
-                                  details: "New inquiry received",
-                                  time: "6 hours ago",
-                                },
-                              ].map((r, i) => (
-                                <tr
-                                  key={i}
-                                  className="border-t border-slate-100"
-                                >
-                                  <td className="px-5 py-4">
-                                    <span className="inline-flex items-center rounded-full bg-teal-50 text-teal-900 px-3 py-1 text-xs font-semibold">
-                                      {r.type}
-                                    </span>
-                                  </td>
-                                  <td className="px-5 py-4 font-medium text-slate-900">
-                                    {r.service}
-                                  </td>
-                                  <td className="px-5 py-4 text-slate-600">
-                                    {r.details}
-                                  </td>
-                                  <td className="px-5 py-4 text-slate-600">
-                                    {r.time}
-                                  </td>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead className="bg-slate-50 text-slate-600">
+                                <tr>
+                                  <th className="text-left px-5 py-3 font-medium">
+                                    Type
+                                  </th>
+                                  <th className="text-left px-5 py-3 font-medium">
+                                    Service
+                                  </th>
+                                  <th className="text-left px-5 py-3 font-medium">
+                                    Details
+                                  </th>
+                                  <th className="text-left px-5 py-3 font-medium">
+                                    Timestamp
+                                  </th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {[
+                                  {
+                                    type: "New",
+                                    service: activeItem?.label || "Dashboard",
+                                    details: "Sample activity row",
+                                    time: "Just now",
+                                  },
+                                  {
+                                    type: "Update",
+                                    service: "PCC Legalization",
+                                    details: "Document verification completed",
+                                    time: "2 hours ago",
+                                  },
+                                  {
+                                    type: "Inquiry",
+                                    service: "Meetgreet",
+                                    details: "New inquiry received",
+                                    time: "6 hours ago",
+                                  },
+                                ].map((r, i) => (
+                                  <tr
+                                    key={i}
+                                    className="border-t border-slate-100"
+                                  >
+                                    <td className="px-5 py-4">
+                                      <span className="inline-flex items-center rounded-full bg-teal-50 text-teal-900 px-3 py-1 text-xs font-semibold">
+                                        {r.type}
+                                      </span>
+                                    </td>
+                                    <td className="px-5 py-4 font-medium text-slate-900">
+                                      {r.service}
+                                    </td>
+                                    <td className="px-5 py-4 text-slate-600">
+                                      {r.details}
+                                    </td>
+                                    <td className="px-5 py-4 text-slate-600">
+                                      {r.time}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Page-specific placeholder */}
-                      <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                        <div className="text-sm font-semibold text-slate-900">
-                          {activeItem?.label} Content Area
+                      {activeKey !== "mea" && activeKey !== "pcc" && (
+                        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                          <div className="text-sm font-semibold text-slate-900">
+                            {activeItem?.label} Content Area
+                          </div>
+                          <div className="mt-2 text-sm text-slate-600">
+                            Yahan par aap each page ka actual content (forms, tables,
+                            filters, CRUD etc.) add karoge. Sidebar se jo bhi page
+                            open ho, same layout, topbar, loader sab same rahega.
+                          </div>
                         </div>
-                        <div className="mt-2 text-sm text-slate-600">
-                          Yahan par aap each page ka actual content (forms, tables,
-                          filters, CRUD etc.) add karoge. Sidebar se jo bhi page
-                          open ho, same layout, topbar, loader sab same rahega.
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                      )}
                 </div>
               </div>
 

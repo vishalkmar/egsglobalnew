@@ -1,11 +1,9 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Paperclip,
   FileText,
   Image as ImageIcon,
   ExternalLink,
-  Pencil,
   Trash2,
   Search,
   Filter,
@@ -20,23 +18,16 @@ type DocFile = {
 
 type PccRow = {
   id: string;
-
-  // Name optional - table me nahi show
   email: string;
-  contact: string;
-  company: string;
-
+  phone: string;
+  companyName: string;
   country: string;
-
-  files: DocFile[];
   noOfDocs: number;
-
+  files: DocFile[];
   status: "Pending" | "Approved" | "Rejected" | "Dispatched" | "Received";
   payment: "Paid" | "Pending";
   createdAt: string;
 };
-
-const COUNTRY_OPTIONS = ["All", "India", "Nepal", "Bangladesh"];
 
 const STATUS_OPTIONS: Array<PccRow["status"] | "All"> = [
   "All",
@@ -49,76 +40,130 @@ const STATUS_OPTIONS: Array<PccRow["status"] | "All"> = [
 
 const PAYMENT_OPTIONS: Array<PccRow["payment"] | "All"> = ["All", "Paid", "Pending"];
 
-export default function PCCLegalization() {
-  // ---------- Mock Data (replace with API later) ----------
-  const [rows] = useState<PccRow[]>([
-    {
-      id: "PCC-2001",
-      email: "user1@example.com",
-      contact: "9876543210",
-      company: "EGS Pvt Ltd",
-      country: "India",
-      files: [
-        { name: "pcc_form.pdf", url: "#", type: "pdf" },
-        { name: "passport.jpg", url: "#", type: "image" },
-      ],
-      noOfDocs: 2,
-      status: "Pending",
-      payment: "Pending",
-      createdAt: "Just now",
-    },
-    {
-      id: "PCC-2002",
-      email: "user2@example.com",
-      contact: "9999999999",
-      company: "Vision Corp",
-      country: "Nepal",
-      files: [{ name: "authorization.pdf", url: "#", type: "pdf" }],
-      noOfDocs: 1,
-      status: "Approved",
-      payment: "Paid",
-      createdAt: "2 hours ago",
-    },
-    {
-      id: "PCC-2003",
-      email: "user3@example.com",
-      contact: "8888888888",
-      company: "Blue Horizon",
-      country: "Bangladesh",
-      files: [
-        { name: "company_letter.pdf", url: "#", type: "pdf" },
-        { name: "id_card.png", url: "#", type: "image" },
-        { name: "support.pdf", url: "#", type: "pdf" },
-      ],
-      noOfDocs: 3,
-      status: "Dispatched",
-      payment: "Paid",
-      createdAt: "6 hours ago",
-    },
-  ]);
+type ApiDoc = {
+  index: number;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  url: string;
+};
 
-  // ---------- Filters ----------
+type ApiItem = {
+  _id: string;
+  name?: string;
+  email: string;
+  phone: string;
+  country: string;
+  companyName: string;
+  noOfDocuments: number;
+  documents: ApiDoc[];
+  createdAt: string;
+  updatedAt: string;
+  status?: string;
+  payment?: string;
+};
+
+type ApiResp = {
+  count: number;
+  items: ApiItem[];
+};
+
+const fileTypeFrom = (mimeType?: string, url?: string): DocFile["type"] => {
+  const mt = (mimeType || "").toLowerCase();
+  if (mt.includes("pdf")) return "pdf";
+  if (mt.startsWith("image/")) return "image";
+
+  const u = (url || "").toLowerCase();
+  if (u.endsWith(".pdf")) return "pdf";
+  if (u.match(/\.(png|jpg|jpeg|webp|gif)$/)) return "image";
+
+  return "other";
+};
+
+const formatDateTime = (iso: string) => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString();
+};
+
+export default function PCCLegalization() {
+  const API_BASE = "http://localhost:5000/api";
+
+  const getToken = () =>
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const [rows, setRows] = useState<PccRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const fetchPcc = async () => {
+    setLoading(true);
+    setApiError(null);
+
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/pcc/pcc-legalization/enquiry`, {
+        method: "GET",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+      });
+
+      const data: ApiResp = await res.json().catch(() => ({ count: 0, items: [] } as any));
+      if (!res.ok) throw new Error((data as any)?.message || "Failed to fetch enquiries");
+
+      const mapped: PccRow[] = (data.items || []).map((it) => {
+        const files: DocFile[] = (it.documents || []).map((d) => ({
+          name: d.originalName || `Document ${d.index}`,
+          url: d.url,
+          type: fileTypeFrom(d.mimeType, d.url),
+        }));
+
+        return {
+          id: it._id,
+          email: it.email,
+          phone: it.phone,
+          companyName: it.companyName,
+          country: it.country,
+          noOfDocs: Number(it.noOfDocuments || 0),
+          files,
+          status: (it.status || "Pending") as PccRow["status"],
+          payment: (it.payment || "Pending") as PccRow["payment"],
+          createdAt: it.createdAt || it.updatedAt || new Date().toISOString(),
+        };
+      });
+
+      setRows(mapped);
+    } catch (e: any) {
+      setApiError(e?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPcc();
+  }, []);
+
   const [searchText, setSearchText] = useState("");
   const [country, setCountry] = useState<string>("All");
   const [status, setStatus] = useState<(typeof STATUS_OPTIONS)[number]>("All");
   const [payment, setPayment] = useState<(typeof PAYMENT_OPTIONS)[number]>("All");
 
-  // Exact Find (collapsible): only Country + button
   const [showExact, setShowExact] = useState(false);
   const [findCountry, setFindCountry] = useState<string>("All");
   const [useExactFind, setUseExactFind] = useState(false);
 
-  // Docs modal
   const [openDocsRow, setOpenDocsRow] = useState<PccRow | null>(null);
 
-  // ---------- Pagination (min 10 max 15) ----------
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
   useEffect(() => {
     const calc = () => {
       const h = window.innerHeight;
-      const reserved = 280; // compact
+      const reserved = 280;
       const rowH = 56;
       const usable = Math.max(320, h - reserved);
       const size = Math.floor(usable / rowH);
@@ -131,13 +176,11 @@ export default function PCCLegalization() {
     return () => window.removeEventListener("resize", calc);
   }, []);
 
-  // ---------- Derived lists ----------
   const countriesList = useMemo(() => {
     const set = new Set(rows.map((r) => r.country));
     return ["All", ...Array.from(set).sort()];
   }, [rows]);
 
-  // ---------- Filtering ----------
   const filtered = useMemo(() => {
     let data = [...rows];
 
@@ -147,8 +190,8 @@ export default function PCCLegalization() {
         return (
           r.id.toLowerCase().includes(q) ||
           r.email.toLowerCase().includes(q) ||
-          r.contact.toLowerCase().includes(q) ||
-          r.company.toLowerCase().includes(q) ||
+          r.phone.toLowerCase().includes(q) ||
+          r.companyName.toLowerCase().includes(q) ||
           r.country.toLowerCase().includes(q)
         );
       });
@@ -158,28 +201,25 @@ export default function PCCLegalization() {
     if (status !== "All") data = data.filter((r) => r.status === status);
     if (payment !== "All") data = data.filter((r) => r.payment === payment);
 
-    if (useExactFind) {
-      if (findCountry !== "All") data = data.filter((r) => r.country === findCountry);
+    if (useExactFind && findCountry !== "All") {
+      data = data.filter((r) => r.country === findCountry);
     }
 
     return data;
   }, [rows, searchText, country, status, payment, useExactFind, findCountry]);
 
-  // ---------- Stats ----------
   const stats = useMemo(() => {
     const total = rows.length;
     const byCountry =
       (useExactFind ? findCountry : country) !== "All"
         ? rows.filter((r) => r.country === (useExactFind ? findCountry : country)).length
         : rows.length;
-
     const pending = rows.filter((r) => r.status === "Pending").length;
     const completed = rows.filter((r) => r.status === "Approved" || r.status === "Received").length;
 
     return { total, byCountry, pending, completed };
   }, [rows, country, useExactFind, findCountry]);
 
-  // ---------- Pagination ----------
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
 
   useEffect(() => {
@@ -206,8 +246,70 @@ export default function PCCLegalization() {
     return `${base} bg-slate-100 text-slate-700`;
   };
 
-  const onEdit = (row: PccRow) => alert(`Edit: ${row.id} (wire this to edit modal/page)`);
-  const onDelete = (row: PccRow) => alert(`Delete: ${row.id} (wire this to delete confirm + API)`);
+  const onDelete = async (row: PccRow) => {
+    if (!window.confirm(`Delete PCC enquiry for ${row.email}?`)) return;
+
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/pcc/pcc-legalization/enquiry/${row.id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete");
+      alert("Deleted successfully");
+      setRows((prev) => prev.filter((r) => r.id !== row.id));
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    }
+  };
+
+  const onUpdateStatus = async (row: PccRow, newStatus: string) => {
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/pcc/pcc-legalization/enquiry/${row.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update status");
+      alert("Status updated successfully");
+      setRows((prev) =>
+        prev.map((r) => (r.id === row.id ? { ...r, status: newStatus as any } : r))
+      );
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    }
+  };
+
+  const onUpdatePayment = async (row: PccRow, newPayment: string) => {
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/pcc/pcc-legalization/enquiry/${row.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+        body: JSON.stringify({ payment: newPayment }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update payment");
+      alert("Payment updated successfully");
+      setRows((prev) =>
+        prev.map((r) => (r.id === row.id ? { ...r, payment: newPayment as any } : r))
+      );
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    }
+  };
 
   const clearExactFind = () => {
     setFindCountry("All");
@@ -216,7 +318,6 @@ export default function PCCLegalization() {
 
   return (
     <div className="space-y-4">
-      {/* Compact Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="text-2xl font-semibold text-slate-900">{stats.total}</div>
@@ -236,7 +337,18 @@ export default function PCCLegalization() {
         </div>
       </div>
 
-      {/* Filters */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 flex items-center justify-between">
+        <div className="text-sm text-slate-700">
+          {loading ? "Loading enquiries..." : apiError ? `Error: ${apiError}` : `Loaded: ${rows.length}`}
+        </div>
+        <button
+          onClick={fetchPcc}
+          className="h-9 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm font-semibold"
+        >
+          Refresh
+        </button>
+      </div>
+
       <div className="rounded-2xl border border-slate-200 bg-white p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-slate-900 font-semibold text-sm">
@@ -253,7 +365,6 @@ export default function PCCLegalization() {
         </div>
 
         <div className="mt-3 grid grid-cols-1 lg:grid-cols-6 gap-2">
-          {/* Search */}
           <div className="lg:col-span-2">
             <label className="text-xs font-medium text-slate-600">Search</label>
             <div className="mt-1 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 h-10">
@@ -261,13 +372,12 @@ export default function PCCLegalization() {
               <input
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                placeholder="Search by email, contact, company, country..."
+                placeholder="Search..."
                 className="w-full outline-none text-sm"
               />
             </div>
           </div>
 
-          {/* Country */}
           <div>
             <label className="text-xs font-medium text-slate-600">Country</label>
             <select
@@ -283,7 +393,6 @@ export default function PCCLegalization() {
             </select>
           </div>
 
-          {/* Status */}
           <div>
             <label className="text-xs font-medium text-slate-600">Status</label>
             <select
@@ -299,7 +408,6 @@ export default function PCCLegalization() {
             </select>
           </div>
 
-          {/* Payment */}
           <div>
             <label className="text-xs font-medium text-slate-600">Payment</label>
             <select
@@ -315,17 +423,13 @@ export default function PCCLegalization() {
             </select>
           </div>
 
-          {/* spacer */}
           <div className="hidden lg:block" />
         </div>
 
-        {/* Exact Find: Country only */}
         {showExact && (
           <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
-              <div className="text-sm font-semibold text-slate-900">
-                Exact Find (Country)
-              </div>
+              <div className="text-sm font-semibold text-slate-900">Exact Find (Country)</div>
 
               <div className="flex items-center gap-2">
                 {useExactFind && (
@@ -372,7 +476,6 @@ export default function PCCLegalization() {
         )}
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200 overflow-hidden">
         <div className="bg-teal-900 text-white px-4 py-3 font-semibold flex items-center justify-between">
           <span>PCC Legalization Enquiries</span>
@@ -385,7 +488,7 @@ export default function PCCLegalization() {
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Documents</th>
                 <th className="text-left px-4 py-3 font-medium">Email</th>
-                <th className="text-left px-4 py-3 font-medium">Contact</th>
+                <th className="text-left px-4 py-3 font-medium">Phone</th>
                 <th className="text-left px-4 py-3 font-medium">Company</th>
                 <th className="text-left px-4 py-3 font-medium">Country</th>
                 <th className="text-left px-4 py-3 font-medium">No. of Docs</th>
@@ -399,7 +502,7 @@ export default function PCCLegalization() {
               {pagedRows.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="px-4 py-10 text-center text-slate-600">
-                    No records found.
+                    {loading ? "Loading..." : "No records found."}
                   </td>
                 </tr>
               ) : (
@@ -415,32 +518,48 @@ export default function PCCLegalization() {
                           {r.files.length} file(s)
                         </span>
                       </button>
+                      <div className="mt-1 text-[11px] text-slate-500">
+                        {formatDateTime(r.createdAt)}
+                      </div>
                     </td>
 
                     <td className="px-4 py-3 text-slate-900">{r.email}</td>
-                    <td className="px-4 py-3 text-slate-900">{r.contact}</td>
-                    <td className="px-4 py-3 text-slate-900">{r.company}</td>
+                    <td className="px-4 py-3 text-slate-900">{r.phone}</td>
+                    <td className="px-4 py-3 text-slate-900">{r.companyName}</td>
                     <td className="px-4 py-3 text-slate-900">{r.country}</td>
                     <td className="px-4 py-3 text-slate-900">{r.noOfDocs}</td>
 
                     <td className="px-4 py-3">
-                      <span className={pill(r.status, "status")}>{r.status}</span>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={r.status}
+                          onChange={(e) => onUpdateStatus(r, e.target.value)}
+                          className="h-9 px-2 rounded-lg border border-sky-200 bg-sky-50 text-sm font-medium text-sky-900 outline-none hover:border-sky-300"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Approved">Approved</option>
+                          <option value="Rejected">Rejected</option>
+                          <option value="Dispatched">Dispatched</option>
+                          <option value="Received">Received</option>
+                        </select>
+                      </div>
                     </td>
 
                     <td className="px-4 py-3">
-                      <span className={pill(r.payment, "payment")}>{r.payment}</span>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={r.payment}
+                          onChange={(e) => onUpdatePayment(r, e.target.value)}
+                          className="h-9 px-2 rounded-lg border border-emerald-200 bg-emerald-50 text-sm font-medium text-emerald-900 outline-none hover:border-emerald-300"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Paid">Paid</option>
+                        </select>
+                      </div>
                     </td>
 
                     <td className="px-4 py-3">
                       <div className="inline-flex rounded-xl overflow-hidden border border-slate-200 bg-white">
-                        <button
-                          onClick={() => onEdit(r)}
-                          className="h-9 w-11 grid place-items-center hover:bg-slate-50"
-                          title="Edit"
-                        >
-                          <Pencil className="h-4 w-4 text-sky-700" />
-                        </button>
-                        <div className="w-px bg-slate-200" />
                         <button
                           onClick={() => onDelete(r)}
                           className="h-9 w-11 grid place-items-center hover:bg-rose-50"
@@ -457,7 +576,6 @@ export default function PCCLegalization() {
           </table>
         </div>
 
-        {/* Pagination */}
         <div className="px-4 py-3 border-t border-slate-100 bg-white flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
           <div className="text-sm text-slate-600">
             Page {page} of {totalPages} • Rows per page: {pageSize}
@@ -482,7 +600,6 @@ export default function PCCLegalization() {
         </div>
       </div>
 
-      {/* Documents Modal */}
       {openDocsRow && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpenDocsRow(null)} />
@@ -520,9 +637,7 @@ export default function PCCLegalization() {
                       )}
 
                       <div className="min-w-0">
-                        <div className="text-sm font-semibold text-slate-900 truncate">
-                          {f.name}
-                        </div>
+                        <div className="text-sm font-semibold text-slate-900 truncate">{f.name}</div>
                         <div className="text-xs text-slate-600">Click open to view/download</div>
                       </div>
                     </div>
@@ -541,7 +656,7 @@ export default function PCCLegalization() {
               </div>
 
               <div className="mt-5 text-xs text-slate-500">
-                Note: Abhi links dummy hain. Backend se file URLs aayenge to yahin render ho jayenge.
+                Note: Backend se file URLs aa rahe hain (Cloudinary URLs).
               </div>
             </div>
           </div>
