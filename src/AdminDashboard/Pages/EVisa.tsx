@@ -73,48 +73,81 @@ const PAYMENT_OPTIONS = ["All Payments", "Paid", "Pending"] as const;
 /* ---------- COMPONENT ---------- */
 
 export default function EVisa() {
-  /* ---------- MOCK DATA (API later) ---------- */
-  const [rows] = useState<EVisaRow[]>([
-    {
-      id: "EV-2001",
-      email: "user1@mail.com",
-      contact: "9876543210",
-      country: "Thailand",
-      visaType: "Tourist",
-      noOfDays: 15,
-      files: [
-        { name: "passport.pdf", url: "#", type: "pdf" },
-        { name: "photo.jpg", url: "#", type: "image" },
-      ],
-      status: "Pending",
-      payment: "Pending",
-      createdAt: "Just now",
-    },
-    {
-      id: "EV-2002",
-      email: "user2@mail.com",
-      contact: "9999999999",
-      country: "Vietnam",
-      visaType: "Business",
-      noOfDays: 30,
-      files: [{ name: "passport.pdf", url: "#", type: "pdf" }],
-      status: "Approved",
-      payment: "Paid",
-      createdAt: "2 hours ago",
-    },
-    {
-      id: "EV-2003",
-      email: "user3@mail.com",
-      contact: "8888888888",
-      country: "Singapore",
-      visaType: "Work",
-      noOfDays: 60,
-      files: [{ name: "passport.pdf", url: "#", type: "pdf" }],
-      status: "Dispatched",
-      payment: "Paid",
-      createdAt: "6 hours ago",
-    },
-  ]);
+    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+  const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("admin_token") || localStorage.getItem("token") : null);
+
+  const [rows, setRows] = useState<EVisaRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const fileTypeFrom = (mimeType?: string, url?: string): DocFile["type"] => {
+    const mt = (mimeType || "").toLowerCase();
+    if (mt.includes("pdf")) return "pdf";
+    if (mt.startsWith("image/")) return "image";
+
+    const u = (url || "").toLowerCase();
+    if (u.endsWith(".pdf")) return "pdf";
+    if (u.match(/\.(png|jpg|jpeg|webp|gif)$/)) return "image";
+
+    return "other";
+  };
+
+  const formatDateTime = (iso: string) => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString();
+  };
+
+  const fetchEVisas = async () => {
+    setLoading(true);
+    setApiError(null);
+
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/evisa/e-visa/enquiry`, {
+        method: "GET",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+      });
+
+      const data = await res.json().catch(() => ({ count: 0, items: [] } as any));
+      if (!res.ok) throw new Error((data as any)?.message || "Failed to fetch enquiries");
+
+      const mapped: EVisaRow[] = (data.items || []).map((it: any) => {
+        const files: DocFile[] = (it.documents || []).map((d: any) => ({
+          name: d.originalName || `Document ${d.index}`,
+          url: d.url,
+          type: fileTypeFrom(d.mimeType, d.url),
+        }));
+
+        return {
+          id: it._id,
+          email: it.email,
+          contact: it.contact || it.phone || "",
+          country: it.country || "",
+          visaType: (it.visaType || "") as EVisaRow["visaType"],
+          noOfDays: Number(it.noOfDays || 0),
+          files,
+          status: (it.status || "Pending") as EVisaRow["status"],
+          payment: (it.payment || "Pending") as EVisaRow["payment"],
+          createdAt: it.createdAt || it.updatedAt || new Date().toISOString(),
+        };
+      });
+
+      setRows(mapped);
+    } catch (e: any) {
+      setApiError(e?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchEVisas();
+  }, []);
 
   /* ---------- FILTER STATES ---------- */
   const [searchText, setSearchText] = useState("");
@@ -213,7 +246,84 @@ export default function EVisa() {
   };
 
   const onEdit = (row: EVisaRow) => alert(`Edit: ${row.id} (wire to modal/page)`);
-  const onDelete = (row: EVisaRow) => alert(`Delete: ${row.id} (wire to confirm + API)`);
+
+  const onDelete = async (row: EVisaRow) => {
+    if (!window.confirm(`Delete e-visa enquiry for ${row.email}?`)) return;
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/evisa/e-visa/enquiry/${row.id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || "Delete failed");
+      fetchEVisas();
+    } catch (e: any) {
+      alert(e?.message || "Delete failed");
+    }
+  };
+
+  const onResend = async (row: EVisaRow) => {
+    if (!window.confirm(`Resend emails for ${row.email}?`)) return;
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/evisa/e-visa/enquiry/${row.id}/resend-email`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || "Resend failed");
+      alert("Emails resent");
+      fetchEVisas();
+    } catch (e: any) {
+      alert(e?.message || "Resend failed");
+    }
+  };
+
+  const onUpdateStatus = async (row: EVisaRow, newStatus: string) => {
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/evisa/e-visa/enquiry/${row.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || "Failed to update status");
+      alert("Status updated successfully");
+      setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, status: newStatus as any } : r)));
+    } catch (e: any) {
+      alert(e?.message || "Update failed");
+    }
+  };
+
+  const onUpdatePayment = async (row: EVisaRow, newPayment: string) => {
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/evisa/e-visa/enquiry/${row.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+        body: JSON.stringify({ payment: newPayment }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || "Failed to update payment");
+      alert("Payment updated successfully");
+      setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, payment: newPayment as any } : r)));
+    } catch (e: any) {
+      alert(e?.message || "Update failed");
+    }
+  };
 
   const clearFilters = () => {
     setSearchText("");
@@ -398,11 +508,32 @@ export default function EVisa() {
                       <td className="px-4 py-3 text-slate-900">{r.noOfDays}</td>
 
                       <td className="px-4 py-3">
-                        <span className={pill(r.status, "status")}>{r.status}</span>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={r.status}
+                            onChange={(e) => onUpdateStatus(r, e.target.value)}
+                            className="h-9 px-2 rounded-lg border border-sky-200 bg-sky-50 text-sm font-medium text-sky-900 outline-none hover:border-sky-300"
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Dispatched">Dispatched</option>
+                            <option value="Received">Received</option>
+                          </select>
+                        </div>
                       </td>
 
                       <td className="px-4 py-3">
-                        <span className={pill(r.payment, "payment")}>{r.payment}</span>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={r.payment}
+                            onChange={(e) => onUpdatePayment(r, e.target.value)}
+                            className="h-9 px-2 rounded-lg border border-amber-200 bg-amber-50 text-sm font-medium text-amber-900 outline-none hover:border-amber-300"
+                          >
+                            <option value="Paid">Paid</option>
+                            <option value="Pending">Pending</option>
+                          </select>
+                        </div>
                       </td>
 
                       <td className="px-4 py-3">

@@ -10,8 +10,9 @@ export default function UserDashboard() {
   const [pccItems, setPccItems] = useState([]);
   const [translationItems, setTranslationItems] = useState([]);
   const [stickerItems, setStickerItems] = useState([]);
+  const [evisaItems, setEvisaItems] = useState([]);
   const [err, setErr] = useState(null);
-  const [activeTab, setActiveTab] = useState("mea"); // "mea" or "pcc" or "translation" or "sticker"
+  const [activeTab, setActiveTab] = useState("mea"); // "mea" or "pcc" or "translation" or "sticker" or "evisa"
 
   useEffect(() => {
     const fetchMyEnquiries = async () => {
@@ -38,6 +39,10 @@ export default function UserDashboard() {
         const stickerUrl = `${API_BASE}/sticker/sticker-visa/enquiry/my`;
         const stickerRes = await fetch(stickerUrl, { credentials: "include" });
 
+        // Fetch E-Visa enquiries
+        const evisaUrl = `${API_BASE}/evisa/e-visa/enquiry/my`;
+        const evisaRes = await fetch(evisaUrl, { credentials: "include" });
+
         if (meaRes.status === 401 || pccRes.status === 401 || translationRes.status === 401 || stickerRes.status === 401) {
           window.location.replace("/user/login");
           return;
@@ -47,6 +52,7 @@ export default function UserDashboard() {
         let pccData = { items: [] };
         let translationData = { items: [] };
         let stickerData = { items: [] };
+        let evisaData = { items: [] };
 
         if (meaRes.ok) {
           meaData = await meaRes.json();
@@ -76,10 +82,18 @@ export default function UserDashboard() {
           console.error("Sticker API error:", stickerRes.status, errData);
         }
 
+        if (evisaRes.ok) {
+          evisaData = await evisaRes.json();
+        } else {
+          const errData = await evisaRes.json().catch(() => ({}));
+          console.error("E-Visa API error:", evisaRes.status, errData);
+        }
+
         setMeaItems(meaData.items || []);
         setPccItems(pccData.items || []);
         setTranslationItems(translationData.items || []);
         setStickerItems(stickerData.items || []);
+        setEvisaItems(evisaData.items || []);
       } catch (e) {
         console.error("Network error:", e);
         setErr("Network error");
@@ -95,8 +109,8 @@ export default function UserDashboard() {
   if (err) return <div className="text-red-600">{err}</div>;
 
   const displayItems =
-    activeTab === "mea" ? meaItems : activeTab === "pcc" ? pccItems : activeTab === "translation" ? translationItems : stickerItems;
-  const totalSubmissions = meaItems.length + pccItems.length + translationItems.length + stickerItems.length;
+    activeTab === "mea" ? meaItems : activeTab === "pcc" ? pccItems : activeTab === "translation" ? translationItems : activeTab === "sticker" ? stickerItems : evisaItems;
+  const totalSubmissions = meaItems.length + pccItems.length + translationItems.length + stickerItems.length + evisaItems.length;
 
   return (
     <div className="text-slate-700">
@@ -166,16 +180,26 @@ export default function UserDashboard() {
         >
           Sticker Visa ({stickerItems.length})
         </button>
+        <button
+          onClick={() => setActiveTab("evisa")}
+          className={`px-4 py-3 font-medium border-b-2 transition ${
+            activeTab === "evisa"
+              ? "border-teal-900 text-teal-900"
+              : "border-transparent text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          E-Visa ({evisaItems.length})
+        </button>
       </div>
 
       {/* Enquiries List */}
       <div className="text-slate-700">
         <h2 className="text-xl font-semibold mb-4">
-          {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : activeTab === "translation" ? "Translation" : "Sticker Visa"} Enquiries
+          {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : activeTab === "translation" ? "Translation" : activeTab === "sticker" ? "Sticker Visa" : "E-Visa"} Enquiries
         </h2>
         {displayItems.length === 0 ? (
           <div className="bg-slate-50 rounded-lg border border-slate-200 p-6 text-center text-slate-600">
-            No {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : activeTab === "translation" ? "Translation" : "Sticker Visa"} enquiries found.
+            No {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : activeTab === "translation" ? "Translation" : activeTab === "sticker" ? "Sticker Visa" : "E-Visa"} enquiries found.
           </div>
         ) : (
           <div className="space-y-4">
@@ -205,6 +229,15 @@ export default function UserDashboard() {
                       <>
                         <div className="font-semibold text-lg">
                           {item.selectedDocType || item.docType || "Translation"}
+                        </div>
+                        <div className="text-sm text-slate-500">
+                          Country: <strong>{item.country || "-"}</strong>
+                        </div>
+                      </>
+                    ) : activeTab === "sticker" ? (
+                      <>
+                        <div className="font-semibold text-lg">
+                          {item.visaType} — {item.noOfDays} days
                         </div>
                         <div className="text-sm text-slate-500">
                           Country: <strong>{item.country || "-"}</strong>

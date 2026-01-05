@@ -120,29 +120,90 @@ export default function VisaBannerWithEVisaForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ✅ LOGIN CHECK (ONLY ADDITION)
-    const token = getToken();
-    if (!token) {
-      redirectToLogin();
-      return;
-    }
+    (async () => {
+      // ✅ LOGIN CHECK (ONLY ADDITION)
+      const token = getToken();
+      if (!token) {
+        redirectToLogin();
+        return;
+      }
 
-    const payload = {
-      ...form,
-      days: Number(form.days),
-      attachments: attachments
-        .filter(Boolean)
-        .map((f) => ({
-          name: (f as File).name,
-          type: (f as File).type,
-          size: (f as File).size,
-        })),
-    };
+      try {
+        if (attachments.length === 0 || attachments.some((f) => !f)) throw new Error("Please attach all required documents.");
 
-    console.log("E-Visa Form Payload:", payload);
-    console.log("Raw Files (FormData):", attachments);
+        const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
+        const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "";
+        if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) throw new Error("Cloudinary not configured");
 
-    alert("Form submitted (check console).");
+        const uploaded = [] as any[];
+        for (let i = 0; i < attachments.length; i++) {
+          const f = attachments[i];
+          if (!f) throw new Error(`Document ${i + 1} is required`);
+          const fd = new FormData();
+          fd.append("file", f);
+          fd.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+          const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+          const res = await fetch(endpoint, { method: "POST", body: fd });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.error?.message || "Cloudinary upload failed");
+          uploaded.push({ index: i + 1, url: data.secure_url || data.url, originalName: f.name, mimeType: f.type, size: f.size });
+        }
+
+        const payload = {
+          name: form.name,
+          email: form.email,
+          contact: form.phone,
+          country: form.country,
+          visaType: form.visaType,
+          noOfDays: Number(form.days),
+          noOfDocuments: uploaded.length,
+          documents: uploaded,
+          submittedAt: new Date().toISOString(),
+          enquiryDate: new Date().toISOString().split("T")[0],
+          tracking: {
+            pageUrl: typeof window !== "undefined" ? window.location.href : "",
+            userAgent: typeof window !== "undefined" ? navigator.userAgent : "",
+          },
+        };
+
+        console.log("E-Visa Form Payload:", payload);
+        const API_BASE =
+          import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || import.meta.env.API_BASE_URL || "http://localhost:5000/api";
+
+        const res = await fetch(`${API_BASE}/evisa/e-visa/enquiry`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          alert("Unauthorized. Please login to submit the application.");
+          redirectToLogin();
+          return;
+        }
+
+        if (!res.ok) {
+          console.error("E-Visa submit failed", data);
+          throw new Error(data?.message || "Submission failed");
+        }
+
+        alert("Application submitted successfully. Check your email for confirmation.");
+
+        setForm({ name: "", email: "", phone: "", visaType: "", country: "", days: "" });
+        setAttachments([null]);
+      } catch (err: any) {
+        console.error("E-Visa submit error:", err);
+        alert(err?.message || "Submission failed. Please try again.");
+      }
+    })().catch((err) => {
+      console.error("Unhandled error in E-Visa submit:", err);
+      alert(err?.message || "Submission failed. Please try again.");
+    });
   };
 
   return (
