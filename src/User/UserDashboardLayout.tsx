@@ -36,7 +36,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       { label: "Track Applications", to: "/user/applications", icon: ClipboardList },
       { label: "Payments", to: "/user/payments", icon: Wallet },
       { label: "Profile", to: "/user/profile", icon: UserCircle2 },
-      { label: "Settings", to: "/user/settings", icon: Settings },
+      
     ],
     []
   );
@@ -86,7 +86,7 @@ const logout = async () => {
 
         {(isMobile || !collapsed) && (
           <div className="leading-tight">
-            <div className="font-semibold">User Portal</div>
+            <div className="font-semibold">User Dashboard</div>
             <div className="text-xs text-white/70">Track your requests</div>
           </div>
         )}
@@ -98,7 +98,7 @@ const logout = async () => {
           <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
             <div className="text-xs text-white/70">Quick actions</div>
 
-            <div className="mt-2 grid grid-cols-2 gap-2">
+            {/* <div className="mt-2 grid grid-cols-2 gap-2">
               <Link href="/user/profile/edit">
                 <a
                   onClick={() => isMobile && setMobileOpen(false)}
@@ -118,11 +118,11 @@ const logout = async () => {
                 <Trash2 className="h-4 w-4" />
                 Delete
               </button>
-            </div>
+            </div> */}
 
-            <div className="mt-2 text-[11px] text-white/70 leading-relaxed">
+            {/* <div className="mt-2 text-[11px] text-white/70 leading-relaxed">
               Note: Delete is demo only. Add confirmation modal + backend later.
-            </div>
+            </div> */}
           </div>
         </div>
       )}

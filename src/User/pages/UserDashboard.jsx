@@ -8,6 +8,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [meaItems, setMeaItems] = useState([]);
   const [pccItems, setPccItems] = useState([]);
+  const [translationItems, setTranslationItems] = useState([]);
   const [err, setErr] = useState(null);
   const [activeTab, setActiveTab] = useState("mea"); // "mea" or "pcc"
 
@@ -27,6 +28,10 @@ export default function UserDashboard() {
         const pccRes = await fetch(pccUrl, {
           credentials: "include",
         });
+
+        // Fetch Translation enquiries
+        const translationUrl = `${API_BASE}/translation/translation/enquiry/my`;
+        const translationRes = await fetch(translationUrl, { credentials: "include" });
 
         if (meaRes.status === 401 || pccRes.status === 401) {
           window.location.replace("/user/login");
@@ -50,8 +55,17 @@ export default function UserDashboard() {
           console.error("PCC API error:", pccRes.status, errData);
         }
 
+        let translationData = { items: [] };
+        if (translationRes.ok) {
+          translationData = await translationRes.json();
+        } else {
+          const errData = await translationRes.json().catch(() => ({}));
+          console.error("Translation API error:", translationRes.status, errData);
+        }
+
         setMeaItems(meaData.items || []);
         setPccItems(pccData.items || []);
+        setTranslationItems(translationData.items || []);
       } catch (e) {
         console.error("Network error:", e);
         setErr("Network error");
@@ -66,8 +80,8 @@ export default function UserDashboard() {
   if (loading) return <div className="text-slate-700">Loading your enquiries...</div>;
   if (err) return <div className="text-red-600">{err}</div>;
 
-  const displayItems = activeTab === "mea" ? meaItems : pccItems;
-  const totalSubmissions = meaItems.length + pccItems.length;
+  const displayItems = activeTab === "mea" ? meaItems : activeTab === "pcc" ? pccItems : translationItems;
+  const totalSubmissions = meaItems.length + pccItems.length + translationItems.length;
 
   return (
     <div className="text-slate-700">
@@ -84,6 +98,10 @@ export default function UserDashboard() {
         <div className="bg-white rounded-lg border border-slate-200 p-4">
           <div className="text-3xl font-bold text-purple-900">{pccItems.length}</div>
           <div className="text-sm text-slate-600 mt-1">PCC Legalization</div>
+        </div>
+        <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="text-3xl font-bold text-purple-900">{translationItems.length}</div>
+          <div className="text-sm text-slate-600 mt-1">Translation</div>
         </div>
       </div>
 
@@ -109,16 +127,26 @@ export default function UserDashboard() {
         >
           PCC Legalization ({pccItems.length})
         </button>
+        <button
+          onClick={() => setActiveTab("translation")}
+          className={`px-4 py-3 font-medium border-b-2 transition ${
+            activeTab === "translation"
+              ? "border-teal-900 text-teal-900"
+              : "border-transparent text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          Translation ({translationItems.length})
+        </button>
       </div>
 
       {/* Enquiries List */}
       <div className="text-slate-700">
         <h2 className="text-xl font-semibold mb-4">
-          {activeTab === "mea" ? "MEA Attestation" : "PCC Legalization"} Enquiries
+          {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : "Translation"} Enquiries
         </h2>
-        {displayItems.length === 0 ? (
+          {displayItems.length === 0 ? (
           <div className="bg-slate-50 rounded-lg border border-slate-200 p-6 text-center text-slate-600">
-            No {activeTab === "mea" ? "MEA Attestation" : "PCC Legalization"} enquiries found.
+            No {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : "Translation"} enquiries found.
           </div>
         ) : (
           <div className="space-y-4">
@@ -135,13 +163,22 @@ export default function UserDashboard() {
                           Country: <strong>{item.country}</strong>
                         </div>
                       </>
-                    ) : (
+                    ) : activeTab === "pcc" ? (
                       <>
                         <div className="font-semibold text-lg">
                           PCC for <strong>{item.country}</strong>
                         </div>
                         <div className="text-sm text-slate-500">
                           Company: <strong>{item.companyName}</strong>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="font-semibold text-lg">
+                          {item.selectedDocType || item.docType || "Translation"}
+                        </div>
+                        <div className="text-sm text-slate-500">
+                          Country: <strong>{item.country || "-"}</strong>
                         </div>
                       </>
                     )}

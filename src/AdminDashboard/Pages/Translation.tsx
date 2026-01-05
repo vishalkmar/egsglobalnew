@@ -6,10 +6,11 @@ import {
   ExternalLink,
   Pencil,
   Trash2,
+  Mail,
   Search,
   Filter,
   X,
-} from "lucide-react";
+} from "lucide-react"; 
 
 type DocFile = {
   name: string;
@@ -145,57 +146,85 @@ const ALL_COUNTRIES = [
 
 
 
-  // ---------- Mock Data (replace with API later) ----------
-  const [rows] = useState<TranslationRow[]>([
-    {
-      id: "TR-2001",
-      email: "user1@example.com",
-      contact: "9876543210",
-      country: "UAE",
-      category: "Certificate Translation",
-      group: "Personal",
-      docType: "Birth Certificate",
-      noOfDocs: 2,
-      files: [
-        { name: "birth.pdf", url: "#", type: "pdf" },
-        { name: "passport.jpg", url: "#", type: "image" },
-      ],
-      status: "Pending",
-      payment: "Pending",
-      createdAt: "Just now",
-    },
-    {
-      id: "TR-2002",
-      email: "user2@example.com",
-      contact: "9999999999",
-      country: "Qatar",
-      category: "Immigration Translation",
-      group: "Visa & Residency Applications",
-      docType: "Invitation Letters",
-      noOfDocs: 1,
-      files: [{ name: "invite.pdf", url: "#", type: "pdf" }],
-      status: "Approved",
-      payment: "Paid",
-      createdAt: "2 hours ago",
-    },
-    {
-      id: "TR-2003",
-      email: "user3@example.com",
-      contact: "8888888888",
-      country: "Oman",
-      category: "Certificate Translation",
-      group: "Educational",
-      docType: "Degree Certificate",
-      noOfDocs: 3,
-      files: [
-        { name: "degree.pdf", url: "#", type: "pdf" },
-        { name: "marksheet.pdf", url: "#", type: "pdf" },
-      ],
-      status: "Dispatched",
-      payment: "Paid",
-      createdAt: "6 hours ago",
-    },
-  ]);
+  // ---------- API-backed data ----------
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+  const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+
+  const [rows, setRows] = useState<TranslationRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const fileTypeFrom = (mimeType?: string, url?: string): DocFile["type"] => {
+    const mt = (mimeType || "").toLowerCase();
+    if (mt.includes("pdf")) return "pdf";
+    if (mt.startsWith("image/")) return "image";
+
+    const u = (url || "").toLowerCase();
+    if (u.endsWith(".pdf")) return "pdf";
+    if (u.match(/\.(png|jpg|jpeg|webp|gif)$/)) return "image";
+
+    return "other";
+  };
+
+  const formatDateTime = (iso: string) => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString();
+  };
+
+  const fetchTranslations = async () => {
+    setLoading(true);
+    setApiError(null);
+
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE}/translation/translation/enquiry`, {
+        method: "GET",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+      });
+
+      const data = await res.json().catch(() => ({ count: 0, items: [] } as any));
+      if (!res.ok) throw new Error((data as any)?.message || "Failed to fetch enquiries");
+
+      const mapped: TranslationRow[] = (data.items || []).map((it: any) => {
+        const files: DocFile[] = (it.documents || []).map((d: any) => ({
+          name: d.originalName || `Document ${d.index}`,
+          url: d.url,
+          type: fileTypeFrom(d.mimeType, d.url),
+        }));
+
+        return {
+          id: it._id,
+          email: it.email,
+          contact: it.contact || it.phone || "",
+          country: it.country || "",
+          category: (it.category || "") as TranslationCategory,
+          group: it.group || "",
+          docType: it.selectedDocType || it.docType || "",
+          noOfDocs: Number(it.noOfDocuments || 0),
+          files,
+          status: (it.status || "Pending") as TranslationRow["status"],
+          payment: (it.payment || "Pending") as TranslationRow["payment"],
+          createdAt: it.createdAt || it.updatedAt || new Date().toISOString(),
+        };
+      });
+
+      setRows(mapped);
+    } catch (e: any) {
+      setApiError(e?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTranslations();
+  }, []);
+  
 
   // ---------- Filters ----------
   const [searchText, setSearchText] = useState("");
@@ -711,11 +740,70 @@ const ALL_COUNTRIES = [
                     <td className="px-4 py-3 text-slate-900">{r.noOfDocs}</td>
 
                     <td className="px-4 py-3">
-                      <span className={pill(r.status, "status")}>{r.status}</span>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={r.status}
+                          onChange={async (e) => {
+                            const newStatus = e.target.value;
+                            try {
+                              const token = getToken();
+                              const res = await fetch(`${API_BASE}/translation/translation/enquiry/${r.id}`, {
+                                method: "PATCH",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                                },
+                                credentials: "include",
+                                body: JSON.stringify({ status: newStatus }),
+                              });
+                              if (!res.ok) throw new Error("Failed to update status");
+                              alert("Status updated successfully");
+                              setRows((prev) => prev.map((x) => (x.id === r.id ? { ...x, status: newStatus as any } : x)));
+                            } catch (err: any) {
+                              alert(`Error: ${err.message}`);
+                            }
+                          }}
+                          className="h-9 px-2 rounded-lg border border-sky-200 bg-sky-50 text-sm font-medium text-sky-900 outline-none hover:border-sky-300"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Approved">Approved</option>
+                          <option value="Rejected">Rejected</option>
+                          <option value="Dispatched">Dispatched</option>
+                          <option value="Received">Received</option>
+                        </select>
+                      </div>
                     </td>
 
                     <td className="px-4 py-3">
-                      <span className={pill(r.payment, "payment")}>{r.payment}</span>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={r.payment}
+                          onChange={async (e) => {
+                            const newPayment = e.target.value;
+                            try {
+                              const token = getToken();
+                              const res = await fetch(`${API_BASE}/translation/translation/enquiry/${r.id}`, {
+                                method: "PATCH",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                                },
+                                credentials: "include",
+                                body: JSON.stringify({ payment: newPayment }),
+                              });
+                              if (!res.ok) throw new Error("Failed to update payment");
+                              alert("Payment updated successfully");
+                              setRows((prev) => prev.map((x) => (x.id === r.id ? { ...x, payment: newPayment as any } : x)));
+                            } catch (err: any) {
+                              alert(`Error: ${err.message}`);
+                            }
+                          }}
+                          className="h-9 px-2 rounded-lg border border-emerald-200 bg-emerald-50 text-sm font-medium text-emerald-900 outline-none hover:border-emerald-300"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Paid">Paid</option>
+                        </select>
+                      </div>
                     </td>
 
                     <td className="px-4 py-3">
@@ -729,7 +817,46 @@ const ALL_COUNTRIES = [
                         </button>
                         <div className="w-px bg-slate-200" />
                         <button
-                          onClick={() => onDelete(r)}
+                          onClick={async () => {
+                            if (!window.confirm(`Resend emails for ${r.email}?`)) return;
+                            try {
+                              const token = getToken();
+                              const res = await fetch(`${API_BASE}/translation/translation/enquiry/${r.id}/resend-email`, {
+                                method: "POST",
+                                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                                credentials: "include",
+                              });
+                              const data = await res.json().catch(() => ({}));
+                              if (!res.ok) throw new Error(data?.message || "Failed to resend emails");
+                              alert("Emails attempted (check logs)");
+                              // optionally refresh
+                            } catch (e: any) {
+                              alert(`Error: ${e.message}`);
+                            }
+                          }}
+                          className="h-9 w-11 grid place-items-center hover:bg-yellow-50"
+                          title="Resend Emails"
+                        >
+                          <Mail className="h-4 w-4 text-amber-700" />
+                        </button>
+                        <div className="w-px bg-slate-200" />
+                        <button
+                          onClick={async () => {
+                            if (!window.confirm(`Delete translation enquiry for ${r.email}?`)) return;
+                            try {
+                              const token = getToken();
+                              const res = await fetch(`${API_BASE}/translation/translation/enquiry/${r.id}`, {
+                                method: "DELETE",
+                                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                                credentials: "include",
+                              });
+                              if (!res.ok) throw new Error("Failed to delete");
+                              alert("Deleted successfully");
+                              setRows((prev) => prev.filter((x) => x.id !== r.id));
+                            } catch (e: any) {
+                              alert(`Error: ${e.message}`);
+                            }
+                          }}
                           className="h-9 w-11 grid place-items-center hover:bg-rose-50"
                           title="Delete"
                         >

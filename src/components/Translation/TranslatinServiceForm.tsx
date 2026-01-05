@@ -56,6 +56,121 @@ const IMMIGRATION_DOCS: Record<ImmigrationGroup, string[]> = {
 
 const ACCEPTED_FILE_TYPES = "image/*,application/pdf";
 
+const ALL_LANGUAGES = [
+  "Afghan",
+  "Afrikaans",
+  "Albanian",
+  "Amharic",
+  "Arabic",
+  "Armenian",
+  "Azerbaijani",
+  "Basque",
+  "Belarusian",
+  "Bengali",
+  "Bosnian",
+  "Bulgarian",
+  "Catalan",
+  "Cebuano",
+  "Central Khmer",
+  "Chichewa",
+  "Chinese",
+  "Corsican",
+  "Croatian",
+  "Czech",
+  "Danish",
+  "Dari",
+  "Dutch",
+  "English",
+  "Esperanto",
+  "Estonian",
+  "Finnish",
+  "French",
+  "Galician",
+  "Georgian",
+  "German",
+  "Greek",
+  "Gujarati",
+  "Haitian Creole",
+  "Hausa",
+  "Hawaiian",
+  "Hebrew",
+  "Hindi",
+  "Hmong",
+  "Hungarian",
+  "Icelandic",
+  "Igbo",
+  "Indonesian",
+  "Irish",
+  "Italian",
+  "Japanese",
+  "Javanese",
+  "Kannada",
+  "Kazakh",
+  "Kinyarwanda",
+  "Korean",
+  "Kurdish",
+  "Kyrgyz",
+  "Lao",
+  "Latin",
+  "Latvian",
+  "Lithuanian",
+  "Luxembourgish",
+  "Macedonian",
+  "Malagasy",
+  "Malay",
+  "Malayalam",
+  "Maltese",
+  "Maori",
+  "Marathi",
+  "Mongolian",
+  "Myanmar (Burmese)",
+  "Nepali",
+  "Norwegian",
+  "Pashto",
+  "Persian",
+  "Polish",
+  "Portuguese",
+  "Punjabi",
+  "Quechua",
+  "Romanian",
+  "Russian",
+  "Samoan",
+  "Scots Gaelic",
+  "Serbian",
+  "Sesotho",
+  "Shona",
+  "Sindhi",
+  "Sinhala",
+  "Slovak",
+  "Slovenian",
+  "Somali",
+  "Spanish",
+  "Sundanese",
+  "Swahili",
+  "Swedish",
+  "Tajik",
+  "Tamil",
+  "Tatar",
+  "Telugu",
+  "Thai",
+  "Turkish",
+  "Turkmen",
+  "Ukrainian",
+  "Urdu",
+  "Uyghur",
+  "Uzbek",
+  "Vietnamese",
+  "Welsh",
+  "Xhosa",
+  "Yiddish",
+  "Yoruba",
+  "Zulu",
+];
+
+const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "";
+
 const ALL_COUNTRIES = [
   "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria",
   "Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia",
@@ -84,6 +199,10 @@ interface TranslationFormData {
   contact: string;
   country: string;
 
+  // new: languages
+  sourceLanguage: string;
+  targetLanguage: string;
+
   category: TranslationCategory | "";
   certGroup: CertificateGroup | "";
   certDocType: string;
@@ -100,6 +219,8 @@ const TranslationServiceForm: React.FC = () => {
     email: "",
     contact: "",
     country: "",
+    sourceLanguage: "",
+    targetLanguage: "",
     category: "",
     certGroup: "",
     certDocType: "",
@@ -110,6 +231,8 @@ const TranslationServiceForm: React.FC = () => {
 
   const [files, setFiles] = useState<(File | null)[]>([null]);
   const [submittedData, setSubmittedData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   // ✅ ONLY: login helpers
   const getToken = () =>
@@ -204,6 +327,8 @@ const TranslationServiceForm: React.FC = () => {
     if (!formData.country) return false;
     if (!formData.category) return false;
 
+    if (!formData.sourceLanguage || !formData.targetLanguage) return false;
+
     if (formData.category === "Certificate Translation") {
       if (!formData.certGroup) return false;
       if (!formData.certDocType) return false;
@@ -220,36 +345,105 @@ const TranslationServiceForm: React.FC = () => {
 
     return true;
   }, [formData, files]);
+  // API base
+  const API_BASE = "http://localhost:5000/api";
 
-  const handleSubmit = (e: FormEvent) => {
+  // Cloudinary config
+  const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
+  const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "";
+  const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
+
+  const validateFileSize = (file: File, label: string) => {
+    if (file.size > MAX_FILE_BYTES) {
+      const mb = (file.size / (1024 * 1024)).toFixed(2);
+      throw new Error(`${label} is ${mb} MB. Max allowed is 5 MB.`);
+    }
+  };
+
+  const uploadToCloudinary = async (file: File) => {
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+      throw new Error("Cloudinary not configured. Set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET");
+    }
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+    const res = await fetch(endpoint, { method: "POST", body: fd });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || "Cloud upload failed");
+    return String(data?.secure_url || data?.url || "");
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // ✅ ONLY: login check
     const token = getToken();
     if (!token) {
       redirectToLogin();
       return;
     }
 
-    const payload = {
-      ...formData,
-      noOfDocuments: Number(formData.noOfDocuments),
-      selectedDocType:
-        formData.category === "Certificate Translation"
-          ? formData.certDocType
-          : formData.immDocType,
-      files: files.map((f, i) => ({
-        index: i + 1,
-        name: f?.name,
-        type: f?.type,
-        size: f?.size,
-      })),
-    };
+    if (!isValid) {
+      alert("Please fill all required fields and upload all documents.");
+      return;
+    }
 
-    console.log("Translation form payload:", payload);
-    console.log("RAW FILES (send via FormData):", files);
-    setSubmittedData(payload);
-    alert("Your enquiry has been submitted. Check console for data.");
+    try {
+      // validate sizes
+      files.forEach((f, idx) => {
+        if (f) validateFileSize(f, `File ${idx + 1}`);
+      });
+
+      // upload files
+      const uploadedDocs: { index: number; originalName: string; mimeType: string; size: number; url: string }[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        if (!f) continue;
+        const url = await uploadToCloudinary(f);
+        uploadedDocs.push({ index: i + 1, originalName: f.name, mimeType: f.type, size: f.size, url });
+      }
+
+      const submittedAt = new Date().toISOString();
+      const payload: any = {
+        name: formData.name || "",
+        email: formData.email,
+        contact: formData.contact,
+        country: formData.country,
+        sourceLanguage: formData.sourceLanguage || null,
+        targetLanguage: formData.targetLanguage || null,
+        category: formData.category,
+        selectedDocType: formData.category === "Certificate Translation" ? formData.certDocType : formData.immDocType,
+        noOfDocuments: Number(formData.noOfDocuments || "0"),
+        documents: uploadedDocs,
+        enquiryDate: new Date().toISOString().slice(0,10),
+        submittedAt,
+        tracking: { pageUrl: typeof window !== "undefined" ? window.location.href : "", userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "" },
+      };
+
+      const res = await fetch(`${API_BASE}/translation/translation/enquiry`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        alert("Unauthorized. Please login again.");
+        redirectToLogin();
+        return;
+      }
+      if (!res.ok) throw new Error(data?.message || "Submission failed");
+
+      setSubmittedData({ api: data, payload });
+      alert("Your enquiry has been submitted successfully. Check your email for confirmation.");
+
+      // reset
+      setFormData({ name: "", email: "", contact: "", country: "", sourceLanguage: "", targetLanguage: "", category: "", certGroup: "", certDocType: "", immGroup: "", immDocType: "", noOfDocuments: "" } as TranslationFormData);
+      setFiles([null]);
+    } catch (err: any) {
+      alert(err?.message || "Something went wrong");
+    }
   };
 
   return (
@@ -396,6 +590,40 @@ const TranslationServiceForm: React.FC = () => {
                       </select>
                     </div>
 
+                {/* New: Source Language */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Source Language <span className="text-rose-500">*</span></label>
+                  <select
+                    name="sourceLanguage"
+                    value={formData.sourceLanguage}
+                    onChange={handleChange}
+                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    required
+                  >
+                    <option value="">Select Source Language</option>
+                    {ALL_LANGUAGES.map((l) => (
+                      <option key={l} value={l}>{l}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* New: Target Language */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Target Language <span className="text-rose-500">*</span></label>
+                  <select
+                    name="targetLanguage"
+                    value={formData.targetLanguage}
+                    onChange={handleChange}
+                    className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    required
+                  >
+                    <option value="">Select Target Language</option>
+                    {ALL_LANGUAGES.map((l) => (
+                      <option key={l} value={l}>{l}</option>
+                    ))}
+                  </select>
+                </div>
+
                     <div className="lg:col-span-3">
                       <label className="text-xs font-semibold text-slate-600">
                         Document Type <span className="text-rose-500">*</span>
@@ -408,15 +636,9 @@ const TranslationServiceForm: React.FC = () => {
                         className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-slate-100"
                         required
                       >
-                        <option value="">
-                          {formData.certGroup
-                            ? "Select Document Type"
-                            : "Select Group first"}
-                        </option>
+                        <option value="">{formData.certGroup ? "Select Document Type" : "Select Group first"}</option>
                         {certificateDocOptions.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
-                          </option>
+                          <option key={t} value={t}>{t}</option>
                         ))}
                       </select>
                     </div>
