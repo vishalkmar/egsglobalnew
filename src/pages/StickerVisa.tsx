@@ -11,8 +11,12 @@ export default function StickerVisa() {
 
         <Header/>
         <StickerVisaBanner/>
-        <StickerVisaDestinations/>
-        <StickerVisaProcess/>      
+       
+              <StickerVisaDestinations />
+              <StickerVisaProcess />
+           
+           
+        
         <Footer/>
        
       </>

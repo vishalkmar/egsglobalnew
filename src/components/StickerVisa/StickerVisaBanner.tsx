@@ -54,6 +54,12 @@ export default function VisaStickerCard() {
     window.location.href = `/login?next=${next}`;
   };
 
+  const API_BASE =
+    import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || import.meta.env.API_BASE_URL || "http://localhost:5000/api";
+
+  const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
+  const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "";
+
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
@@ -109,33 +115,93 @@ export default function VisaStickerCard() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const uploadToCloudinary = async (file: File) => {
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+      throw new Error("Cloudinary not configured. Set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET");
+    }
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+    const res = await fetch(endpoint, { method: "POST", body: fd });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || "Cloudinary upload failed");
+    return { url: data.secure_url || data.url, originalName: file.name, mimeType: file.type, size: file.size };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ✅ LOGIN CHECK (ONLY ADDITION)
+    console.log("Sticker banner submit start", { form, attachments });
+
+    // do not pre-redirect; let backend tell us 401
     const token = getToken();
-    if (!token) {
-      redirectToLogin();
-      return;
+
+    try {
+      if (attachments.length === 0 || attachments.some((f) => !f)) throw new Error("Please attach all required documents.");
+
+      const uploaded = [] as any[];
+      for (let i = 0; i < attachments.length; i++) {
+        const f = attachments[i];
+        if (!f) throw new Error(`Document ${i + 1} is required`);
+        console.log(`Uploading attachment ${i + 1}:`, f.name);
+        const d = await uploadToCloudinary(f);
+        console.log(`Uploaded ${i + 1}:`, d.url);
+        uploaded.push({ index: i + 1, ...d });
+      }
+
+      const payload = {
+        name: form.name,
+        email: form.email,
+        contact: form.phone,
+        country: form.country,
+        visaType: form.visaType,
+        noOfDays: Number(form.days),
+        noOfDocuments: uploaded.length,
+        documents: uploaded,
+        submittedAt: new Date().toISOString(),
+        enquiryDate: new Date().toISOString().split("T")[0],
+        tracking: {
+          pageUrl: typeof window !== "undefined" ? window.location.href : "",
+          userAgent: typeof window !== "undefined" ? navigator.userAgent : "",
+        },
+      };
+
+      console.log("Posting Sticker payload to backend", payload);
+
+      const res = await fetch(`${API_BASE}/sticker/sticker-visa/enquiry`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        alert("Unauthorized. Please login to submit the application.");
+        console.warn("Sticker banner submit: 401", data);
+        redirectToLogin();
+        return;
+      }
+
+      if (!res.ok) {
+        console.error("Sticker banner submit failed", data);
+        throw new Error(data?.message || "Submission failed");
+      }
+
+      console.log("Sticker banner submit success", data);
+      alert("Application submitted successfully. Check your email for confirmation.");
+
+      // reset
+      setForm({ name: "", email: "", phone: "", visaType: "", country: "", days: "" });
+      setAttachments([null]);
+    } catch (err: any) {
+      console.error("Sticker banner submit error:", err);
+      alert(err?.message || "Submission failed. Please try again.");
     }
-
-    const payload = {
-      ...form,
-      days: Number(form.days),
-      attachments: attachments
-        .filter(Boolean)
-        .map((f) => ({
-          name: (f as File).name,
-          type: (f as File).type,
-          size: (f as File).size,
-        })),
-    };
-
-    console.log("Visa Sticker Form Payload:", payload);
-    console.log("Raw Files:", attachments);
-
-    alert("Submitted! Check console.");
-    // yahan API call aayega
   };
 
   return (

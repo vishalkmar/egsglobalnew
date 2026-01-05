@@ -9,8 +9,9 @@ export default function UserDashboard() {
   const [meaItems, setMeaItems] = useState([]);
   const [pccItems, setPccItems] = useState([]);
   const [translationItems, setTranslationItems] = useState([]);
+  const [stickerItems, setStickerItems] = useState([]);
   const [err, setErr] = useState(null);
-  const [activeTab, setActiveTab] = useState("mea"); // "mea" or "pcc"
+  const [activeTab, setActiveTab] = useState("mea"); // "mea" or "pcc" or "translation" or "sticker"
 
   useEffect(() => {
     const fetchMyEnquiries = async () => {
@@ -33,13 +34,19 @@ export default function UserDashboard() {
         const translationUrl = `${API_BASE}/translation/translation/enquiry/my`;
         const translationRes = await fetch(translationUrl, { credentials: "include" });
 
-        if (meaRes.status === 401 || pccRes.status === 401) {
+        // Fetch Sticker enquiries
+        const stickerUrl = `${API_BASE}/sticker/sticker-visa/enquiry/my`;
+        const stickerRes = await fetch(stickerUrl, { credentials: "include" });
+
+        if (meaRes.status === 401 || pccRes.status === 401 || translationRes.status === 401 || stickerRes.status === 401) {
           window.location.replace("/user/login");
           return;
         }
 
         let meaData = { items: [] };
         let pccData = { items: [] };
+        let translationData = { items: [] };
+        let stickerData = { items: [] };
 
         if (meaRes.ok) {
           meaData = await meaRes.json();
@@ -55,7 +62,6 @@ export default function UserDashboard() {
           console.error("PCC API error:", pccRes.status, errData);
         }
 
-        let translationData = { items: [] };
         if (translationRes.ok) {
           translationData = await translationRes.json();
         } else {
@@ -63,9 +69,17 @@ export default function UserDashboard() {
           console.error("Translation API error:", translationRes.status, errData);
         }
 
+        if (stickerRes.ok) {
+          stickerData = await stickerRes.json();
+        } else {
+          const errData = await stickerRes.json().catch(() => ({}));
+          console.error("Sticker API error:", stickerRes.status, errData);
+        }
+
         setMeaItems(meaData.items || []);
         setPccItems(pccData.items || []);
         setTranslationItems(translationData.items || []);
+        setStickerItems(stickerData.items || []);
       } catch (e) {
         console.error("Network error:", e);
         setErr("Network error");
@@ -80,13 +94,14 @@ export default function UserDashboard() {
   if (loading) return <div className="text-slate-700">Loading your enquiries...</div>;
   if (err) return <div className="text-red-600">{err}</div>;
 
-  const displayItems = activeTab === "mea" ? meaItems : activeTab === "pcc" ? pccItems : translationItems;
-  const totalSubmissions = meaItems.length + pccItems.length + translationItems.length;
+  const displayItems =
+    activeTab === "mea" ? meaItems : activeTab === "pcc" ? pccItems : activeTab === "translation" ? translationItems : stickerItems;
+  const totalSubmissions = meaItems.length + pccItems.length + translationItems.length + stickerItems.length;
 
   return (
     <div className="text-slate-700">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
         <div className="bg-white rounded-lg border border-slate-200 p-4">
           <div className="text-3xl font-bold text-teal-900">{totalSubmissions}</div>
           <div className="text-sm text-slate-600 mt-1">Total Submissions</div>
@@ -102,6 +117,10 @@ export default function UserDashboard() {
         <div className="bg-white rounded-lg border border-slate-200 p-4">
           <div className="text-3xl font-bold text-purple-900">{translationItems.length}</div>
           <div className="text-sm text-slate-600 mt-1">Translation</div>
+        </div>
+        <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="text-3xl font-bold text-indigo-900">{stickerItems.length}</div>
+          <div className="text-sm text-slate-600 mt-1">Sticker Visa</div>
         </div>
       </div>
 
@@ -137,16 +156,26 @@ export default function UserDashboard() {
         >
           Translation ({translationItems.length})
         </button>
+        <button
+          onClick={() => setActiveTab("sticker")}
+          className={`px-4 py-3 font-medium border-b-2 transition ${
+            activeTab === "sticker"
+              ? "border-teal-900 text-teal-900"
+              : "border-transparent text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          Sticker Visa ({stickerItems.length})
+        </button>
       </div>
 
       {/* Enquiries List */}
       <div className="text-slate-700">
         <h2 className="text-xl font-semibold mb-4">
-          {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : "Translation"} Enquiries
+          {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : activeTab === "translation" ? "Translation" : "Sticker Visa"} Enquiries
         </h2>
-          {displayItems.length === 0 ? (
+        {displayItems.length === 0 ? (
           <div className="bg-slate-50 rounded-lg border border-slate-200 p-6 text-center text-slate-600">
-            No {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : "Translation"} enquiries found.
+            No {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : activeTab === "translation" ? "Translation" : "Sticker Visa"} enquiries found.
           </div>
         ) : (
           <div className="space-y-4">
@@ -172,10 +201,19 @@ export default function UserDashboard() {
                           Company: <strong>{item.companyName}</strong>
                         </div>
                       </>
-                    ) : (
+                    ) : activeTab === "translation" ? (
                       <>
                         <div className="font-semibold text-lg">
                           {item.selectedDocType || item.docType || "Translation"}
+                        </div>
+                        <div className="text-sm text-slate-500">
+                          Country: <strong>{item.country || "-"}</strong>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="font-semibold text-lg">
+                          {item.visaType} — {item.noOfDays} days
                         </div>
                         <div className="text-sm text-slate-500">
                           Country: <strong>{item.country || "-"}</strong>
