@@ -42,12 +42,47 @@ const DOCUMENT_OPTIONS: Record<string, string[]> = {
   ],
 };
 
+// Full list of India states (28)
+const STATES = [
+  "",
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+];
+
+
 type FormState = {
   firstName: string;
   lastName: string;
   email: string;
   mobile: string;
   state: string;
+  district: string;
   message: string;
 
   docType: string; // Commercial / Personal / Educational
@@ -61,6 +96,7 @@ const initialFormState: FormState = {
   email: "",
   mobile: "",
   state: "",
+  district: "",
   message: "",
 
   docType: "",
@@ -95,8 +131,19 @@ export default function HRDAttestationSection() {
   };
 
   const [form, setForm] = useState<FormState>(initialFormState);
+  const [files, setFiles] = useState<(File | null)[]>([]);
+  const [districts, setDistricts] = useState<string[]>([]);
   const [captcha, setCaptcha] = useState<string>(generateCaptcha);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const syncFilesCount = (count: number) => {
+    setFiles((prev) => {
+      const next = [...prev];
+      if (next.length < count) while (next.length < count) next.push(null);
+      if (next.length > count) next.length = count;
+      return next;
+    });
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -104,57 +151,183 @@ export default function HRDAttestationSection() {
     >
   ) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
     setSuccessMessage(null);
+
+    // When docCount changes, trim selected documents to the allowed number and sync file inputs
+    if (name === "docCount") {
+      const n = Number(value || "0");
+      setForm((prev) => ({ ...prev, [name]: value, documents: prev.documents.slice(0, n) }));
+      syncFilesCount(n);
+      return;
+    }
+
+    // Replace district select with free text input logic (no dependent districts)
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleDocumentToggle = (doc: string) => {
     setForm((prev) => {
       const alreadySelected = prev.documents.includes(doc);
-      return {
-        ...prev,
-        documents: alreadySelected
-          ? prev.documents.filter((d) => d !== doc)
-          : [...prev.documents, doc],
-      };
+      const n = Number(prev.docCount || "0");
+
+      if (!alreadySelected) {
+        // prevent selecting more than docCount
+        if (n && prev.documents.length >= n) {
+          alert(`You can only select up to ${n} document(s).`);
+          return prev;
+        }
+        return { ...prev, documents: [...prev.documents, doc] };
+      }
+
+      return { ...prev, documents: prev.documents.filter((d) => d !== doc) };
     });
     setSuccessMessage(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileChangeAt = (index: number, file: File | null) => {
+    setSuccessMessage(null);
+
+    if (!file) {
+      setFiles((prev) => {
+        const next = [...prev];
+        next[index] = null;
+        return next;
+      });
+      return;
+    }
+
+    try {
+      validateFileSize(file, `File ${index + 1}`);
+    } catch (e: any) {
+      alert(e?.message || "File too large. Max 5 MB.");
+      setFiles((prev) => {
+        const next = [...prev];
+        next[index] = null;
+        return next;
+      });
+      return;
+    }
+
+    setFiles((prev) => {
+      const next = [...prev];
+      next[index] = file;
+      return next;
+    });
+  };
+
+  // Cloudinary
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
+  const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "";
+  const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
+
+  const validateFileSize = (file: File, label: string) => {
+    if (file.size > MAX_FILE_BYTES) {
+      const mb = (file.size / (1024 * 1024)).toFixed(2);
+      throw new Error(`${label} is ${mb} MB. Max allowed is 5 MB.`);
+    }
+  };
+
+  const uploadToCloudinary = async (file: File) => {
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+      throw new Error("Cloudinary not configured. Set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET");
+    }
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+    const res = await fetch(endpoint, { method: "POST", body: fd });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || "Cloud upload failed");
+    return String(data?.secure_url || data?.url || "");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ✅ LOGIN CHECK (ONLY ADDITION)
+    // ✅ LOGIN CHECK
     const token = getToken();
     if (!token) {
       redirectToLogin();
       return;
     }
 
-    // basic validation for new fields
+    // validation
     if (!form.docType) {
       alert("Please select document type.");
       return;
     }
-    if (!form.documents.length) {
-      alert("Please select at least one document.");
+    const n = Number(form.docCount || "0");
+    if (!n || n < 1) {
+      alert("Please enter a valid total number of documents.");
       return;
     }
-    if (!form.docCount) {
-      alert("Please enter the total number of documents.");
+    if (form.documents.length !== n) {
+      alert(`Please select exactly ${n} document(s). You selected ${form.documents.length}.`);
+      return;
+    }
+    if (files.length !== n) {
+      alert(`Please upload exactly ${n} file(s). You uploaded ${files.length}.`);
       return;
     }
 
-    console.log("HRD Attestation Enquiry:", {
-      ...form,
-      captchaShownToUser: captcha,
-    });
+    try {
+      // validate file presence and sizes
+      files.forEach((f, idx) => {
+        if (!f) throw new Error(`File ${idx + 1} is missing.`);
+        validateFileSize(f, `File ${idx + 1}`);
+      });
 
-    setSuccessMessage(
-      "Thank you for reaching out. Our EGS Group team will contact you shortly regarding your attestation requirements."
-    );
-    setForm(initialFormState);
-    setCaptcha(generateCaptcha());
+      // upload
+      const uploadedDocs: { index: number; originalName: string; mimeType: string; size: number; url: string }[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i] as File;
+        const url = await uploadToCloudinary(f);
+        uploadedDocs.push({ index: i + 1, originalName: f.name, mimeType: f.type, size: f.size, url });
+      }
+
+      const submittedAt = new Date().toISOString();
+      const payload: any = {
+        firstName: form.firstName || "",
+        lastName: form.lastName || "",
+        email: form.email,
+        mobile: form.mobile,
+        state: form.state || "",
+        district: form.district || "",
+        docType: form.docType,
+        selectedDocs: form.documents || [],
+        docCount: Number(form.docCount || 0),
+        message: form.message || "",
+        documents: uploadedDocs,
+        enquiryDate: new Date().toISOString().slice(0,10),
+        submittedAt,
+        tracking: { pageUrl: typeof window !== "undefined" ? window.location.href : "", userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "" },
+      };
+
+      const res = await fetch(`${API_BASE}/hrd/hrd-attestation/enquiry`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        alert("Unauthorized. Please login again.");
+        redirectToLogin();
+        return;
+      }
+      if (!res.ok) throw new Error(data?.message || "Submission failed");
+
+      setSuccessMessage("Your HRD enquiry has been submitted successfully. Check your email for confirmation.");
+
+      // reset
+      setForm(initialFormState);
+      setFiles([]);
+      setCaptcha(generateCaptcha());
+    } catch (err: any) {
+      alert(err?.message || "Something went wrong");
+    }
   };
 
   const currentDocList = form.docType ? DOCUMENT_OPTIONS[form.docType] || [] : [];
@@ -268,12 +441,31 @@ export default function HRDAttestationSection() {
                 {/* State */}
                 <div className="space-y-1">
                   <label className="text-xs font-medium">State</label>
-                  <Input
+                  <select
                     name="state"
-                    placeholder="State"
                     value={form.state}
                     onChange={handleChange}
+                    className="w-full rounded-full px-3 py-2 text-sm bg-white/90 text-slate-900 border-none outline-none"
+                  >
+                    <option value="">Select state</option>
+                    {STATES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* District / City (free text) */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">District / City</label>
+                  <Input
+                    name="district"
+                    placeholder="District or City"
+                    value={form.district}
+                    onChange={handleChange}
                     className="bg-white/90 border-none text-slate-900 placeholder:text-slate-400"
+                    required
                   />
                 </div>
 
@@ -304,8 +496,9 @@ export default function HRDAttestationSection() {
                 {form.docType && (
                   <div className="space-y-2">
                     <p className="text-[11px] font-medium">
-                      Select the document(s) you want to attest
+                      Select the document(s) you want to attest (select up to {form.docCount || "N"})
                     </p>
+                    <div className="text-xs text-slate-200">Selected: {form.documents.length}</div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
                       {currentDocList.map((doc) => (
                         <label
@@ -325,7 +518,7 @@ export default function HRDAttestationSection() {
                   </div>
                 )}
 
-                {/* Number of documents */}
+                {/* Number of documents + file upload */}
                 {form.docType && (
                   <div className="space-y-1">
                     <label className="text-xs font-medium">
@@ -340,6 +533,26 @@ export default function HRDAttestationSection() {
                       onChange={handleChange}
                       className="bg-white/90 border-none text-slate-900 placeholder:text-slate-400"
                     />
+
+                    <label className="text-xs font-medium mt-2">Upload Documents</label>
+                    {Number(form.docCount || 0) > 0 ? (
+                      <div className="space-y-2">
+                        {files.length === 0 && <div className="text-xs text-slate-200">No files selected</div>}
+                        {files.map((f, idx) => (
+                          <div key={idx} className="flex items-center gap-3">
+                            <input
+                              type="file"
+                              onChange={(e) => handleFileChangeAt(idx, e.target.files?.[0] || null)}
+                              className="text-sm file:rounded-full file:px-3 file:py-1 file:bg-white/90"
+                            />
+                            <div className="text-xs text-slate-200">{f ? f.name : `File ${idx + 1} (required)`}</div>
+                          </div>
+                        ))}
+                        <div className="text-xs text-slate-200">Allowed: PDF, images. Max 5 MB per file.</div>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-slate-200">Enter total number of documents to upload.</div>
+                    )}
                   </div>
                 )}
 

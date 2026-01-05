@@ -11,8 +11,9 @@ export default function UserDashboard() {
   const [translationItems, setTranslationItems] = useState([]);
   const [stickerItems, setStickerItems] = useState([]);
   const [evisaItems, setEvisaItems] = useState([]);
+  const [hrdItems, setHrdItems] = useState([]);
   const [err, setErr] = useState(null);
-  const [activeTab, setActiveTab] = useState("mea"); // "mea" or "pcc" or "translation" or "sticker" or "evisa"
+  const [activeTab, setActiveTab] = useState("mea"); // "mea" or "pcc" or "translation" or "sticker" or "evisa" or "hrd"
 
   useEffect(() => {
     const fetchMyEnquiries = async () => {
@@ -43,6 +44,10 @@ export default function UserDashboard() {
         const evisaUrl = `${API_BASE}/evisa/e-visa/enquiry/my`;
         const evisaRes = await fetch(evisaUrl, { credentials: "include" });
 
+        // Fetch HRD enquiries
+        const hrdUrl = `${API_BASE}/hrd/hrd-attestation/enquiry/my`;
+        const hrdRes = await fetch(hrdUrl, { credentials: "include" });
+
         if (meaRes.status === 401 || pccRes.status === 401 || translationRes.status === 401 || stickerRes.status === 401) {
           window.location.replace("/user/login");
           return;
@@ -53,6 +58,7 @@ export default function UserDashboard() {
         let translationData = { items: [] };
         let stickerData = { items: [] };
         let evisaData = { items: [] };
+        let hrdData = { items: [] };
 
         if (meaRes.ok) {
           meaData = await meaRes.json();
@@ -89,11 +95,19 @@ export default function UserDashboard() {
           console.error("E-Visa API error:", evisaRes.status, errData);
         }
 
+        if (hrdRes.ok) {
+          hrdData = await hrdRes.json();
+        } else {
+          const errData = await hrdRes.json().catch(() => ({}));
+          console.error("HRD API error:", hrdRes.status, errData);
+        }
+
         setMeaItems(meaData.items || []);
         setPccItems(pccData.items || []);
         setTranslationItems(translationData.items || []);
         setStickerItems(stickerData.items || []);
         setEvisaItems(evisaData.items || []);
+        setHrdItems(hrdData.items || []);
       } catch (e) {
         console.error("Network error:", e);
         setErr("Network error");
@@ -109,8 +123,20 @@ export default function UserDashboard() {
   if (err) return <div className="text-red-600">{err}</div>;
 
   const displayItems =
-    activeTab === "mea" ? meaItems : activeTab === "pcc" ? pccItems : activeTab === "translation" ? translationItems : activeTab === "sticker" ? stickerItems : evisaItems;
-  const totalSubmissions = meaItems.length + pccItems.length + translationItems.length + stickerItems.length + evisaItems.length;
+    activeTab === "mea"
+      ? meaItems
+      : activeTab === "pcc"
+      ? pccItems
+      : activeTab === "translation"
+      ? translationItems
+      : activeTab === "sticker"
+      ? stickerItems
+      : activeTab === "evisa"
+      ? evisaItems
+      : hrdItems;
+
+  const totalSubmissions =
+    meaItems.length + pccItems.length + translationItems.length + stickerItems.length + evisaItems.length + hrdItems.length;
 
   return (
     <div className="text-slate-700">
@@ -135,6 +161,10 @@ export default function UserDashboard() {
         <div className="bg-white rounded-lg border border-slate-200 p-4">
           <div className="text-3xl font-bold text-indigo-900">{stickerItems.length}</div>
           <div className="text-sm text-slate-600 mt-1">Sticker Visa</div>
+        </div>
+        <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="text-3xl font-bold text-teal-900">{hrdItems.length}</div>
+          <div className="text-sm text-slate-600 mt-1">HRD Attestation</div>
         </div>
       </div>
 
@@ -190,16 +220,36 @@ export default function UserDashboard() {
         >
           E-Visa ({evisaItems.length})
         </button>
+        <button
+          onClick={() => setActiveTab("hrd")}
+          className={`px-4 py-3 font-medium border-b-2 transition ${
+            activeTab === "hrd"
+              ? "border-teal-900 text-teal-900"
+              : "border-transparent text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          HRD Attestation ({hrdItems.length})
+        </button>
       </div>
 
       {/* Enquiries List */}
       <div className="text-slate-700">
         <h2 className="text-xl font-semibold mb-4">
-          {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : activeTab === "translation" ? "Translation" : activeTab === "sticker" ? "Sticker Visa" : "E-Visa"} Enquiries
+          {activeTab === "mea"
+            ? "MEA Attestation"
+            : activeTab === "pcc"
+            ? "PCC Legalization"
+            : activeTab === "translation"
+            ? "Translation"
+            : activeTab === "sticker"
+            ? "Sticker Visa"
+            : activeTab === "evisa"
+            ? "E-Visa"
+            : "HRD Attestation"} Enquiries
         </h2>
         {displayItems.length === 0 ? (
           <div className="bg-slate-50 rounded-lg border border-slate-200 p-6 text-center text-slate-600">
-            No {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : activeTab === "translation" ? "Translation" : activeTab === "sticker" ? "Sticker Visa" : "E-Visa"} enquiries found.
+            No {activeTab === "mea" ? "MEA Attestation" : activeTab === "pcc" ? "PCC Legalization" : activeTab === "translation" ? "Translation" : activeTab === "sticker" ? "Sticker Visa" : activeTab === "evisa" ? "E-Visa" : "HRD Attestation"} enquiries found.
           </div>
         ) : (
           <div className="space-y-4">
@@ -241,6 +291,24 @@ export default function UserDashboard() {
                         </div>
                         <div className="text-sm text-slate-500">
                           Country: <strong>{item.country || "-"}</strong>
+                        </div>
+                      </>
+                    ) : activeTab === "evisa" ? (
+                      <>
+                        <div className="font-semibold text-lg">
+                          {item.visaType} — {item.noOfDays} days
+                        </div>
+                        <div className="text-sm text-slate-500">
+                          Country: <strong>{item.country || "-"}</strong>
+                        </div>
+                      </>
+                    ) : activeTab === "hrd" ? (
+                      <>
+                        <div className="font-semibold text-lg">
+                          {item.docType} — {item.noOfDocs} doc(s)
+                        </div>
+                        <div className="text-sm text-slate-500">
+                          State: <strong>{item.state || "-"}</strong>
                         </div>
                       </>
                     ) : (
