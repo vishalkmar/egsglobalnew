@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DummyTicketProcess from "@/components/dummyticket/Process";
-import DummyTicketBooking from "@/components/dummyticket/DummyTicketBooking";
+
 import DummyTicketInsuranceService from "@/components/dummyticket/DummyTicketInsurenceService";
 
 const HERO_IMAGE_URL = "/dummyticket.jpg";
@@ -29,7 +29,7 @@ const DummyTicketBanner: React.FC = () => {
   return (
     <>
       <Header />
-      <section className="relative py-[100px] min-h-[80vh] w-full overflow-hidden">
+      <section className="relative py-[100px] mt-[80px] min-h-[80vh] w-full overflow-hidden">
         {/* Background image */}
         <div className="absolute inset-0">
           <img
@@ -71,7 +71,7 @@ const DummyTicketBanner: React.FC = () => {
           </div>
         </div>
       </section>
-      <DummyTicketBooking/>
+  
       <DummyTicketInsuranceService/>
       <DummyTicketProcess/>
       <Footer />

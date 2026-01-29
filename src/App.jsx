@@ -37,11 +37,24 @@ import HrdAttestationAdmin from "./AdminDashboard/Pages/HrdAttestation";
 import AdminLogin from './AdminDashboard/Pages/AdminLogin'
 
 
+
+
+
+
 // here are user routes 
 
 import UserDashboardLayout from './User/UserDashboardLayout';
 import UserLoginPage from './User/pages/UserLoginPage'
 import UserDashboard from './User/pages/UserDashboard'
+import MeaAttestationForm from './forms/MeaAttestationForm';
+import PccLegalizationForm from './forms/PccLegalizationForm';
+import HrdAttestationForm from './forms/HrdAttestationForm';
+import EVisaForm from './forms/EVisaForm';
+import TranslationForm from './forms/TranslationForm';
+import MeetGreetForm from './forms/MeetGreetForm';
+import AssistanceAppointmentForm from './forms/AssistanceAppointmentForm';
+import DummyTicketForm from './forms/DummyTicketForm';
+import InsuranceForm from './forms/InsuranceForm';
 
 function Router() {
   return (
@@ -57,6 +70,60 @@ function Router() {
         <Route path="/user/dashboard">
         <UserDashboardLayout>
           <UserDashboard />
+        </UserDashboardLayout>
+      </Route>
+
+      <Route path="/user/mea-attestation">
+        <UserDashboardLayout>
+          <MeaAttestationForm />
+        </UserDashboardLayout>
+      </Route>
+
+      <Route path="/user/pcc-legalization">
+        <UserDashboardLayout>
+          <PccLegalizationForm />
+        </UserDashboardLayout>
+      </Route>
+
+      <Route path="/user/hrd-attestation">
+        <UserDashboardLayout>
+          <HrdAttestationForm />
+        </UserDashboardLayout>
+      </Route>
+
+      <Route path="/user/e-visa">
+        <UserDashboardLayout>
+          <EVisaForm />
+        </UserDashboardLayout>
+      </Route>
+
+      <Route path="/user/translation">
+        <UserDashboardLayout>
+          <TranslationForm />
+        </UserDashboardLayout>
+      </Route>
+
+      <Route path="/user/meet-greet">
+        <UserDashboardLayout>
+          <MeetGreetForm />
+        </UserDashboardLayout>
+      </Route>
+
+      <Route path="/user/assistant-appointment">
+        <UserDashboardLayout>
+          <AssistanceAppointmentForm />
+        </UserDashboardLayout>
+      </Route>
+
+      <Route path="/user/dummy-ticket">
+        <UserDashboardLayout>
+          <DummyTicketForm />
+        </UserDashboardLayout>
+      </Route>
+
+      <Route path="/user/insurance">
+        <UserDashboardLayout>
+          <InsuranceForm />
         </UserDashboardLayout>
       </Route>
 

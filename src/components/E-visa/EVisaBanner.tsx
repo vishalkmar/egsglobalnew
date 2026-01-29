@@ -1,210 +1,25 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-type VisaType = "Tourist" | "Work" | "Business";
-
 const HERO = {
-  image: "/visa/bone.avif",
-  badge: "Your Trusted Visa Partner",
-  titleLines: ["We do Visa for Tourist , Study for the following countries"],
+  titleLines: ["E-Visa & Travel Assistance", "Fast. Simple. Reliable."],
   description:
-    "EGS Group simplifies visa processing with reliable, accurate, and fully managed backend support—helping travel agencies and tour operators deliver faster approvals with complete confidence.",
+    "Apply online with expert guidance. We help you submit the right documents, avoid rejections, and track your application end-to-end.",
 };
-
-const COUNTRIES = [
-  "Dubai",
-  "UAE",
-  "Oman",
-  "Singapore",
-  "Vietnam",
-  "Thailand",
-  "Russia",
-  "Azerbaijan",
-  "Bahrain",
-  "Armenia",
-  "Egypt",
-  "Malaysia",
-  "Indonesia",
-  "Sri Lanka",
-  "Turkey",
-  "Qatar",
-  "Saudi Arabia",
-  "Kuwait",
-  "Jordan",
-  "Japan",
-  "South Korea",
-] as const;
-
-type FormState = {
-  name: string;
-  email: string;
-  phone: string;
-  visaType: VisaType | "";
-  country: string;
-  days: string;
-};
-
-const ACCEPTED_FILE_TYPES = "image/*,application/pdf";
 
 export default function VisaBannerWithEVisaForm() {
-  // ✅ LOGIN HELPERS (ONLY LOGIC ADDED)
-  const getToken = () =>
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-  const redirectToLogin = () => {
-    const next =
-      typeof window !== "undefined"
-        ? encodeURIComponent(window.location.pathname + window.location.search)
-        : "";
-    window.location.href = `/login?next=${next}`;
-  };
-
-  const [form, setForm] = useState<FormState>({
-    name: "",
-    email: "",
-    phone: "",
-    visaType: "",
-    country: "",
-    days: "",
-  });
-
-  const [attachments, setAttachments] = useState<(File | null)[]>([null]);
-
   useEffect(() => {
     AOS.init({
-      duration: 750,
+      duration: 800,
       once: false,
       offset: 120,
-      easing: "ease-out",
+      easing: "ease-in-out",
       mirror: true,
     });
   }, []);
-
-  const isFormValid = useMemo(() => {
-    if (!form.name.trim()) return false;
-    if (!form.email.trim()) return false;
-    if (!form.phone.trim()) return false;
-    if (!form.visaType) return false;
-    if (!form.country) return false;
-    if (!form.days.trim()) return false;
-    if (attachments.length === 0) return false;
-    if (attachments.some((f) => !f)) return false;
-    return true;
-  }, [form, attachments]);
-
-  const updateField = (key: keyof FormState, value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleFileChange = (index: number, file: File | null) => {
-    setAttachments((prev) => {
-      const next = [...prev];
-      next[index] = file;
-      return next;
-    });
-  };
-
-  const addAttachmentField = () => setAttachments((prev) => [...prev, null]);
-
-  const removeAttachmentField = (index: number) => {
-    setAttachments((prev) => {
-      const next = [...prev];
-      next.splice(index, 1);
-      return next.length ? next : [null];
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    (async () => {
-      // ✅ LOGIN CHECK (ONLY ADDITION)
-      const token = getToken();
-      if (!token) {
-        redirectToLogin();
-        return;
-      }
-
-      try {
-        if (attachments.length === 0 || attachments.some((f) => !f)) throw new Error("Please attach all required documents.");
-
-        const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
-        const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "";
-        if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) throw new Error("Cloudinary not configured");
-
-        const uploaded = [] as any[];
-        for (let i = 0; i < attachments.length; i++) {
-          const f = attachments[i];
-          if (!f) throw new Error(`Document ${i + 1} is required`);
-          const fd = new FormData();
-          fd.append("file", f);
-          fd.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-          const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
-          const res = await fetch(endpoint, { method: "POST", body: fd });
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(data?.error?.message || "Cloudinary upload failed");
-          uploaded.push({ index: i + 1, url: data.secure_url || data.url, originalName: f.name, mimeType: f.type, size: f.size });
-        }
-
-        const payload = {
-          name: form.name,
-          email: form.email,
-          contact: form.phone,
-          country: form.country,
-          visaType: form.visaType,
-          noOfDays: Number(form.days),
-          noOfDocuments: uploaded.length,
-          documents: uploaded,
-          submittedAt: new Date().toISOString(),
-          enquiryDate: new Date().toISOString().split("T")[0],
-          tracking: {
-            pageUrl: typeof window !== "undefined" ? window.location.href : "",
-            userAgent: typeof window !== "undefined" ? navigator.userAgent : "",
-          },
-        };
-
-        console.log("E-Visa Form Payload:", payload);
-        const API_BASE =
-          import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || import.meta.env.API_BASE_URL || "http://localhost:5000/api";
-
-        const res = await fetch(`${API_BASE}/evisa/e-visa/enquiry`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          credentials: "include",
-          body: JSON.stringify(payload),
-        });
-
-        const data = await res.json().catch(() => ({}));
-        if (res.status === 401) {
-          alert("Unauthorized. Please login to submit the application.");
-          redirectToLogin();
-          return;
-        }
-
-        if (!res.ok) {
-          console.error("E-Visa submit failed", data);
-          throw new Error(data?.message || "Submission failed");
-        }
-
-        alert("Application submitted successfully. Check your email for confirmation.");
-
-        setForm({ name: "", email: "", phone: "", visaType: "", country: "", days: "" });
-        setAttachments([null]);
-      } catch (err: any) {
-        console.error("E-Visa submit error:", err);
-        alert(err?.message || "Submission failed. Please try again.");
-      }
-    })().catch((err) => {
-      console.error("Unhandled error in E-Visa submit:", err);
-      alert(err?.message || "Submission failed. Please try again.");
-    });
-  };
 
   return (
     <section className="relative w-full bg-white text-slate-900 mt-[70px]">
@@ -223,16 +38,8 @@ export default function VisaBannerWithEVisaForm() {
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
-            {/* LEFT: whole block left->right, inside content fade-down */}
+            {/* LEFT */}
             <div data-aos="fade-right" className="text-white pt-10 md:pt-14">
-              <span
-                data-aos="fade-down"
-                data-aos-delay="80"
-                className="inline-flex items-center rounded-full bg-rose-500 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-lg"
-              >
-                {HERO.badge}
-              </span>
-
               <h1
                 data-aos="fade-down"
                 data-aos-delay="140"
@@ -262,6 +69,7 @@ export default function VisaBannerWithEVisaForm() {
                   <p className="text-xs text-slate-200">Avg. Processing</p>
                   <p className="text-base font-semibold">2–7 Working Days</p>
                 </div>
+
                 <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
                   <p className="text-xs text-slate-200">Coverage</p>
                   <p className="text-base font-semibold">50+ Destinations</p>
@@ -269,200 +77,8 @@ export default function VisaBannerWithEVisaForm() {
               </div>
             </div>
 
-            {/* RIGHT: form zoom-in */}
-            <div
-              data-aos="zoom-in"
-              className="bg-white/95 backdrop-blur rounded-2xl border border-white/20 shadow-2xl p-6 md:p-7 mt-4 md:mt-0"
-            >
-              <h2 className="text-xl md:text-2xl font-semibold text-slate-900">
-                Apply for E-Visa
-              </h2>
-              <p className="mt-1 text-sm text-slate-600">
-                All fields are mandatory.
-              </p>
-
-              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">
-                      Name <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      value={form.name}
-                      onChange={(e) => updateField("name", e.target.value)}
-                      type="text"
-                      placeholder="Full name"
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-400"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">
-                      Email <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      value={form.email}
-                      onChange={(e) => updateField("email", e.target.value)}
-                      type="email"
-                      placeholder="you@example.com"
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-400"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">
-                      Phone <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      value={form.phone}
-                      onChange={(e) => updateField("phone", e.target.value)}
-                      type="tel"
-                      placeholder="Phone number"
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-400"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">
-                      Visa Type <span className="text-rose-500">*</span>
-                    </label>
-                    <select
-                      value={form.visaType}
-                      onChange={(e) => updateField("visaType", e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-400"
-                      required
-                    >
-                      <option value="">Select type</option>
-                      <option value="Tourist">Tourist</option>
-                      <option value="Work">Work</option>
-                      <option value="Business">Business</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">
-                      Select Country <span className="text-rose-500">*</span>
-                    </label>
-                    <select
-                      value={form.country}
-                      onChange={(e) => updateField("country", e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-400"
-                      required
-                    >
-                      <option value="">Select country</option>
-                      {COUNTRIES.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">
-                      No. of Days <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      value={form.days}
-                      onChange={(e) =>
-                        updateField("days", e.target.value.replace(/[^\d]/g, ""))
-                      }
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="e.g. 7"
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-400"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between gap-3">
-                    <label className="text-sm font-medium text-slate-700">
-                      Attachments (Image/PDF){" "}
-                      <span className="text-rose-500">*</span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={addAttachmentField}
-                      className="text-sm font-medium text-rose-600 hover:text-rose-700"
-                    >
-                      Add another document
-                    </button>
-                  </div>
-
-                  <div className="mt-2 space-y-3">
-                    {attachments.map((file, idx) => (
-                      <div
-                        key={idx}
-                        className="rounded-xl border border-slate-200 bg-white p-3"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="w-full">
-                            <p className="text-xs text-slate-500 mb-2">
-                              Document {idx + 1}{" "}
-                              <span className="text-rose-500">*</span>
-                            </p>
-
-                            <input
-                              type="file"
-                              accept={ACCEPTED_FILE_TYPES}
-                              onChange={(e) =>
-                                handleFileChange(idx, e.target.files?.[0] ?? null)
-                              }
-                              className="block w-full text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:opacity-90"
-                              required
-                            />
-
-                            {file ? (
-                              <p className="mt-2 text-xs text-slate-600">
-                                Selected:{" "}
-                                <span className="font-medium">{file.name}</span>
-                              </p>
-                            ) : (
-                              <p className="mt-2 text-xs text-slate-500">
-                                No file selected
-                              </p>
-                            )}
-                          </div>
-
-                          {attachments.length > 1 ? (
-                            <button
-                              type="button"
-                              onClick={() => removeAttachmentField(idx)}
-                              className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50"
-                            >
-                              Remove
-                            </button>
-                          ) : null}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <p className="mt-2 text-xs text-slate-500">
-                    Supported: all image formats + PDF. Every attachment field is
-                    mandatory.
-                  </p>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={!isFormValid}
-                  className={`w-full rounded-xl px-4 py-3 text-sm md:text-base font-semibold shadow-md transition
-                    ${
-                      isFormValid
-                        ? "bg-rose-500 text-white hover:opacity-95 shadow-rose-400/40"
-                        : "bg-slate-200 text-slate-500 cursor-not-allowed"
-                    }`}
-                >
-                  Submit Application
-                </button>
-              </form>
-            </div>
+            {/* RIGHT (placeholder for form) */}
+            <div className="w-full" />
           </div>
         </div>
       </div>

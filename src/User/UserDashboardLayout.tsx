@@ -1,6 +1,7 @@
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState,useEffect } from "react";
 import { Link, useLocation } from "wouter";
+import useUserPrefill from "@/hooks/useUserPrefill";
 
 import {
   LayoutDashboard,
@@ -14,6 +15,7 @@ import {
   LogOut,
   X,
   ChevronRight,
+  FileText,Handshake,ShieldCheck,Ticket,CalendarCheck,BadgeCheck,Languages,Sticker
 } from "lucide-react";
 
 type NavItem = {
@@ -24,22 +26,31 @@ type NavItem = {
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
 
-  const userName = "User";
+    const { user } = useUserPrefill();
+
+  const userName = user?.name || "User";
 
   const [location, setLocation] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const navItems: NavItem[] = useMemo(
-    () => [
-      { label: "Dashboard", to: "/user/dashboard", icon: LayoutDashboard },
-      { label: "Track Applications", to: "/user/applications", icon: ClipboardList },
-      { label: "Payments", to: "/user/payments", icon: Wallet },
-      { label: "Profile", to: "/user/profile", icon: UserCircle2 },
-      
-    ],
-    []
-  );
+const navItems: NavItem[] = useMemo(
+  () => [
+    { label: "Dashboard", to: "/user/dashboard", icon: LayoutDashboard },
+    { label: "MEA Attestation", to: "/user/mea-attestation", icon: BadgeCheck },
+    { label: "PCC Legalization", to: "/user/pcc-legalization", icon: FileText },
+    { label: "Translation", to: "/user/translation", icon: Languages },
+    // { label: "Sticker Visa", to: "/user/sticker-visa", icon: Sticker },
+    { label: "E-Visa", to: "/user/e-visa", icon: Sticker },
+    { label: "Assistant & Appointment", to: "/user/assistant-appointment", icon: CalendarCheck },
+    { label: "Dummy Ticket", to: "/user/dummy-ticket", icon: Ticket },
+    { label: "Insurance", to: "/user/insurance", icon: ShieldCheck },
+    { label: "Meet & Greet", to: "/user/meet-greet", icon: Handshake },
+    { label: "HRD Attestation", to: "/user/hrd-attestation", icon: FileText },
+  ],
+  []
+);
+
 
   const activeTitle =
     navItems.find((x) => location === x.to || location.startsWith(x.to + "/"))?.label ||
@@ -165,9 +176,14 @@ const logout = async () => {
           ].join(" ")}
         >
           <div className="text-xs text-white/70">Logged in as</div>
-          <div className="text-sm font-semibold">
-            {collapsed && !isMobile ? "User" : userName}
-          </div>
+          {collapsed && !isMobile ? (
+            <div className="text-sm font-semibold">{user?.email || userName}</div>
+          ) : (
+            <div>
+              <div className="text-sm font-semibold">{userName}</div>
+              <div className="text-xs text-white/70">{user?.email || ""}</div>
+            </div>
+          )}
         </div>
       </div>
     </aside>
@@ -213,8 +229,7 @@ const logout = async () => {
 
               <div className="flex items-center gap-3">
                 <div className="hidden sm:flex items-center gap-2 text-slate-700">
-                  <span className="text-sm">Welcome,</span>
-                  <span className="text-sm font-semibold">{userName}</span>
+                  <span className="text-sm"><Link to="/" className="text-primary">Visit site</Link></span>
                 </div>
 
                 <button
@@ -242,16 +257,18 @@ const logout = async () => {
           <main className="flex-1 p-4 sm:p-6">
             <div className="max-w-6xl mx-auto">
               <div className="rounded-3xl bg-white shadow-sm border border-slate-200 overflow-hidden">
-                <div className="px-6 py-6 border-b border-slate-100">
+                {/* <div className="px-6 py-6 border-b border-slate-100">
                   <h1 className="text-2xl sm:text-3xl font-semibold text-teal-900">
                     {activeTitle}
                   </h1>
                   <div className="mt-2 text-sm text-slate-500">
                     Track your applications, payments, and profile settings here.
                   </div>
-                </div>
+                </div> */}
 
-                <div className="p-6">{children}</div>
+                <div className="p-6">
+                  {children}
+                </div>
               </div>
             </div>
           </main>

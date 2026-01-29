@@ -30,6 +30,8 @@ export default function UserLogin() {
   const [step, setStep] = useState<"email" | "otp">("email");
 
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [sending, setSending] = useState(false);
 
   const [otp, setOtp] = useState<string[]>(Array.from({ length: OTP_LEN }, () => ""));
@@ -49,6 +51,9 @@ export default function UserLogin() {
     return r.success;
   }, [email]);
 
+  const nameValid = useMemo(() => name.trim().length >= 2, [name]);
+  const phoneValid = useMemo(() => phone.trim().length >= 10 && /^\d{10,}$/.test(phone.replace(/\D/g, "")), [phone]);
+
   const otpComplete = useMemo(() => otp.every((d) => d.trim().length === 1), [otp]);
   const otpValue = useMemo(() => otp.join(""), [otp]);
 
@@ -67,6 +72,17 @@ export default function UserLogin() {
   const validateEmailUI = () => {
     const r = emailSchema.safeParse(email);
     setEmailError(r.success ? "" : r.error.issues[0]?.message || "Invalid email");
+    
+    if (!name.trim() || name.trim().length < 2) {
+      setEmailError("Name must be at least 2 characters");
+      return false;
+    }
+    
+    if (!phone.trim() || phone.trim().length < 10 || !/^\d{10,}$/.test(phone.replace(/\D/g, ""))) {
+      setEmailError("Phone must have at least 10 digits");
+      return false;
+    }
+    
     return r.success;
   };
 
@@ -89,8 +105,12 @@ export default function UserLogin() {
       const res = await fetch(`${API_BASE}/auth/user/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // ✅ backend should accept { email }
-        body: JSON.stringify({ email: email.trim() }),
+        // ✅ backend should accept { email, name, phone }
+        body: JSON.stringify({ 
+          email: email.trim(),
+          name: name.trim(),
+          phone: phone.trim()
+        }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -181,7 +201,12 @@ export default function UserLogin() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // ✅ MUST
-        body: JSON.stringify({ email: email.trim(), otp: otpValue }),
+        body: JSON.stringify({ 
+          email: email.trim(), 
+          otp: otpValue,
+          name: name.trim(),
+          phone: phone.trim()
+        }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -328,6 +353,24 @@ useEffect(() => {
                 {step === "email" && (
                   <>
                     <div>
+                      <label className="text-xs font-semibold text-slate-600">Full Name</label>
+                      <div className="mt-1 h-12 rounded-2xl bg-slate-50 border border-slate-200 px-4 flex items-center gap-3 focus-within:ring-2 focus-within:ring-teal-500">
+                        <Users className="h-4 w-4 text-slate-500" />
+                        <input
+                          value={name}
+                          onChange={(e) => {
+                            setName(e.target.value);
+                            if (emailError) setEmailError("");
+                          }}
+                          type="text"
+                          className="w-full bg-transparent outline-none text-sm text-slate-900"
+                          placeholder="Enter your full name"
+                          autoComplete="name"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
                       <label className="text-xs font-semibold text-slate-600">Email Address</label>
                       <div className="mt-1 h-12 rounded-2xl bg-slate-50 border border-slate-200 px-4 flex items-center gap-3 focus-within:ring-2 focus-within:ring-teal-500">
                         <Mail className="h-4 w-4 text-slate-500" />
@@ -344,20 +387,39 @@ useEffect(() => {
                           autoComplete="email"
                         />
                       </div>
+                    </div>
 
-                      {emailError ? (
-                        <p className="mt-2 text-xs text-red-600">{emailError}</p>
-                      ) : (
+                    <div>
+                      <label className="text-xs font-semibold text-slate-600">Phone Number</label>
+                      <div className="mt-1 h-12 rounded-2xl bg-slate-50 border border-slate-200 px-4 flex items-center gap-3 focus-within:ring-2 focus-within:ring-teal-500">
+                        <KeyRound className="h-4 w-4 text-slate-500" />
+                        <input
+                          value={phone}
+                          onChange={(e) => {
+                            const cleaned = e.target.value.replace(/\D/g, "");
+                            setPhone(cleaned.slice(0, 15));
+                            if (emailError) setEmailError("");
+                          }}
+                          type="tel"
+                          className="w-full bg-transparent outline-none text-sm text-slate-900"
+                          placeholder="Enter 10+ digit phone"
+                          autoComplete="tel"
+                        />
+                      </div>
+                    </div>
+
+                    {emailError ? (
+                      <p className="mt-2 text-xs text-red-600">{emailError}</p>
+                    ) : (
                         <p className="mt-2 text-xs text-slate-500">We will send a 6-digit OTP to your email.</p>
                       )}
-                    </div>
 
                     <button
                       type="button"
                       onClick={handleSendOtp}
-                      disabled={!emailValid || sending}
+                      disabled={!emailValid || !nameValid || !phoneValid || sending}
                       className={`w-full h-12 rounded-2xl font-semibold text-white flex items-center justify-center gap-2 transition
-                        ${!emailValid || sending ? "bg-teal-300 cursor-not-allowed" : "bg-teal-700 hover:bg-teal-800"}`}
+                        ${(!emailValid || !nameValid || !phoneValid || sending) ? "bg-teal-300 cursor-not-allowed" : "bg-teal-700 hover:bg-teal-800"}`}
                     >
                       <KeyRound className="h-5 w-5" />
                       {sending ? "Sending OTP..." : "Send OTP"}
@@ -378,10 +440,13 @@ useEffect(() => {
                             setOtp(Array.from({ length: OTP_LEN }, () => ""));
                             setOtpError("");
                             setCooldown(0);
+                            setEmail("");
+                            setName("");
+                            setPhone("");
                           }}
                           className="text-xs font-semibold text-teal-800 hover:opacity-80"
                         >
-                          Change email
+                          Change details
                         </button>
                       </div>
 

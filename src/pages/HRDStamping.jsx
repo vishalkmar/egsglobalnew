@@ -3,7 +3,7 @@ import Header from "../components/Header"
 import Footer from "../components/Footer"
 import  HRDStampingServices from '../components/HRDstamping/HrdStampingServices'
 
-import HrdAttestationform from '../components/HRDstamping/HrdAttestationForm'
+
 import HRDAttestationProcess from '../components/HRDstamping/HrdAttestationAndProcess'
 import HrdGuidance from '../components/HRDstamping/HrdGuidance'
 
@@ -46,9 +46,7 @@ export default function HrdStamping(){
   </div>
 </section>
 
-           <div className="py-[50px]">
-                 <HrdAttestationform/>
-           </div>
+          
           <HRDStampingServices/>
           <HRDAttestationProcess/>
           <HrdGuidance/>
