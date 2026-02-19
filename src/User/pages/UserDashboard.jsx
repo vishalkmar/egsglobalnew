@@ -13,7 +13,7 @@ export default function UserDashboard() {
   const [evisaItems, setEvisaItems] = useState([]);
   const [hrdItems, setHrdItems] = useState([]);
   const [err, setErr] = useState(null);
-  const [activeTab, setActiveTab] = useState("mea"); // "mea" or "pcc" or "translation" or "sticker" or "evisa" or "hrd"
+  const [activeTab, setActiveTab] = useState("mea"); // "mea" or "PCC" or "translation" or "sticker" or "evisa" or "hrd"
 
   useEffect(() => {
     const fetchMyEnquiries = async () => {
