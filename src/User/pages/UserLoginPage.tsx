@@ -44,7 +44,7 @@ export default function UserLogin() {
   const [otpError, setOtpError] = useState<string>("");
 
   // ✅ Your backend base URL (replace)
-  const API_BASE = import.meta?.env?.VITE_API_URL || "http://localhost:5000/api";
+  const API_BASE = import.meta?.env?.VITE_API_URL || import.meta?.env?.API_BASE_URL || "https://egsbackend.onrender.com/api";
 
   const emailValid = useMemo(() => {
     const r = emailSchema.safeParse(email);
