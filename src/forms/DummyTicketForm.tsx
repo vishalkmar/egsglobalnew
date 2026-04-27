@@ -7,6 +7,7 @@ import "aos/dist/aos.css";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, Loader, PlusCircle, Trash2, Ticket } from "lucide-react";
+import useFormToast from "@/hooks/useFormToast";
 
 const COUNTRY_OPTIONS = [
   "Bulgaria",
@@ -61,6 +62,7 @@ export default function DummyTicketForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  useFormToast({ error, success, successTitle: "Dummy ticket submitted" });
 
   // ✅ keep your working API base
   const API_BASE = "http://localhost:5000/api";
@@ -238,7 +240,7 @@ export default function DummyTicketForm() {
           )}
 
           {success && (
-            <div className="flex gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
+            <div className="flex gap-3 p-4 bg-[#294d6b]/10 border border-[#294d6b]/20 rounded-xl text-[#294d6b]">
               <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <p className="text-sm">{success}</p>
             </div>
@@ -293,8 +295,8 @@ export default function DummyTicketForm() {
               <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-5">
                 <div className="flex items-center justify-between gap-3 mb-4">
                   <div className="flex items-center gap-2">
-                    <div className="h-9 w-9 rounded-xl bg-teal-600/10 flex items-center justify-center">
-                      <span className="text-sm font-bold text-teal-800">{idx + 1}</span>
+                    <div className="h-9 w-9 rounded-xl bg-[#294d6b]/10 flex items-center justify-center">
+                      <span className="text-sm font-bold text-[#294d6b]">{idx + 1}</span>
                     </div>
                     <h3 className="text-base font-semibold text-slate-900">Pax Trip Details</h3>
                   </div>
@@ -325,7 +327,7 @@ export default function DummyTicketForm() {
                         }
                         className={`px-4 py-2 text-sm rounded-lg transition ${
                           p.tripType === "oneWay"
-                            ? "bg-teal-700 text-white"
+                            ? "bg-[#294d6b] text-white"
                             : "text-slate-700 hover:bg-white"
                         }`}
                       >
@@ -340,7 +342,7 @@ export default function DummyTicketForm() {
                         }
                         className={`px-4 py-2 text-sm rounded-lg transition ${
                           p.tripType === "roundTrip"
-                            ? "bg-teal-700 text-white"
+                            ? "bg-[#294d6b] text-white"
                             : "text-slate-700 hover:bg-white"
                         }`}
                       >
@@ -358,12 +360,12 @@ export default function DummyTicketForm() {
                       name="destination"
                       value={p.destination}
                       onChange={(e) => handlePaxChange(p.id, e)}
-                      className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600"
+                      className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#294d6b]"
                       required
                     >
                       <option value="">Select destination</option>
                       {COUNTRY_OPTIONS.map((c) => (
-                        <option key={c} value={c} className="bg-slate-900">
+                        <option key={c} value={c} className="bg-white text-slate-900">
                           {c}
                         </option>
                       ))}
@@ -421,7 +423,7 @@ export default function DummyTicketForm() {
                 {/* Amount */}
                 <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 flex items-center justify-between">
                   <span className="text-sm font-medium text-slate-600">Amount (per pax)</span>
-                  <span className="text-base font-bold text-teal-800">₹ 1000</span>
+                  <span className="text-base font-bold text-[#294d6b]">₹ 1000</span>
                 </div>
               </div>
             ))}
@@ -435,7 +437,7 @@ export default function DummyTicketForm() {
             </div>
             <div className="text-right">
               <p className="text-sm text-slate-600">Total Amount</p>
-              <p className="text-lg font-semibold text-teal-900">₹ {1000 * paxes.length}</p>
+              <p className="text-lg font-semibold text-[#294d6b]">₹ {1000 * paxes.length}</p>
             </div>
           </div>
 
@@ -444,7 +446,7 @@ export default function DummyTicketForm() {
           <Button
             type="button"
             onClick={addPax}
-            className="rounded-xl bg-teal-700 hover:bg-teal-800 text-white"
+            className="rounded-xl bg-[#294d6b] hover:bg-[#1f3b54] text-white"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
             Add Pax
@@ -454,7 +456,7 @@ export default function DummyTicketForm() {
           <Button
             type="submit"
             disabled={!isValid || submitting}
-            className="w-full h-12 rounded-xl bg-gradient-to-r from-teal-700 to-teal-800 hover:from-teal-800 hover:to-teal-900 disabled:opacity-50"
+            className="w-full h-12 rounded-xl bg-gradient-to-r from-[#294d6b] to-[#1f3b54] hover:from-[#1f3b54] hover:to-[#162b3d] disabled:opacity-50"
           >
             {submitting ? (
               <>

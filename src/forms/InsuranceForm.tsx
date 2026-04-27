@@ -14,6 +14,7 @@ import {
     UserRound,
 } from "lucide-react";
 import useUserPrefill from "@/hooks/useUserPrefill";
+import useFormToast from "@/hooks/useFormToast";
 
 type BaseFields = {
     name: string;
@@ -83,6 +84,7 @@ export default function InsuranceForm() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    useFormToast({ error, success, successTitle: "Insurance submitted" });
 
     // KEEP SAME API
     const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -90,7 +92,9 @@ export default function InsuranceForm() {
     const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "";
 
     const getToken = () =>
-        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        typeof window !== "undefined"
+            ? localStorage.getItem("authToken") || localStorage.getItem("token")
+            : null;
 
     const validateFileSize = (file: File, label: string) => {
         if (file.size > MAX_FILE_BYTES) {
@@ -199,7 +203,7 @@ export default function InsuranceForm() {
             if (!p.insuranceType) return false;
             if (!p.travelDate) return false;
             if (!p.passportFile) return false; // required
-            // returnDate/tripDuration/destination/specialRequirements are optional
+            if (!p.destination) return false;
         }
         return true;
     }, [base, paxes]);
@@ -216,7 +220,7 @@ export default function InsuranceForm() {
         }
 
         if (!isValid) {
-            setError("Please fill all required fields and upload passport.");
+            setError("Please fill all required fields, including destination, and upload passport.");
             return;
         }
 
@@ -260,7 +264,7 @@ export default function InsuranceForm() {
                 },
             };
 
-            const res = await fetch(`${API_BASE}/insurance/enquiry`, {
+            const res = await fetch(`${API_BASE}/insurance/insurance/enquiry`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -299,12 +303,12 @@ export default function InsuranceForm() {
 
     return (
         <div className="w-full">
-            <div className="w-full rounded-2xl border border-emerald-900/10 bg-gradient-to-b from-white to-emerald-50/40 shadow-sm">
+            <div className="w-full rounded-2xl border border-[#294d6b]/10 bg-gradient-to-b from-white to-[#294d6b]/[0.04] shadow-sm">
                 {/* Header */}
-                <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-emerald-900/10 bg-white/70 rounded-t-2xl">
+                <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-[#294d6b]/10 bg-white/70 rounded-t-2xl">
                     <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-emerald-900/10 flex items-center justify-center">
-                            <UserRound className="h-5 w-5 text-emerald-900" />
+                        <div className="h-10 w-10 rounded-xl bg-[#294d6b]/10 flex items-center justify-center">
+                            <UserRound className="h-5 w-5 text-[#294d6b]" />
                         </div>
                         <div>
                             <h2 className="text-lg font-semibold text-slate-900">Insurance Enquiry</h2>
@@ -317,7 +321,7 @@ export default function InsuranceForm() {
                     <Button
                         type="button"
                         onClick={addPax}
-                        className="bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl"
+                        className="bg-[#294d6b] hover:bg-[#1f3b54] text-white rounded-xl"
                     >
                         <PlusCircle className="h-4 w-4 mr-2" />
                         Add More Pax
@@ -333,14 +337,14 @@ export default function InsuranceForm() {
                     )}
 
                     {success && (
-                        <div className="flex gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
+                        <div className="flex gap-3 p-4 bg-[#294d6b]/10 border border-[#294d6b]/20 rounded-xl text-[#294d6b]">
                             <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
                             <p className="text-sm">{success}</p>
                         </div>
                     )}
 
                     {/* Base details (ONE TIME) */}
-                    <div className="rounded-2xl border border-emerald-900/10 bg-white p-5">
+                    <div className="rounded-2xl border border-[#294d6b]/10 bg-white p-5">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -387,11 +391,11 @@ export default function InsuranceForm() {
                     {/* Pax blocks */}
                     <div className="space-y-5">
                         {paxes.map((p, idx) => (
-                            <div key={p.id} className="rounded-2xl border border-emerald-900/10 bg-white p-5">
+                            <div key={p.id} className="rounded-2xl border border-[#294d6b]/10 bg-white p-5">
                                 <div className="flex items-center justify-between gap-3 mb-4">
                                     <div className="flex items-center gap-2">
-                                        <div className="h-8 w-8 rounded-lg bg-emerald-900/10 flex items-center justify-center">
-                                            <span className="text-sm font-semibold text-emerald-900">{idx + 1}</span>
+                                        <div className="h-8 w-8 rounded-lg bg-[#294d6b]/10 flex items-center justify-center">
+                                            <span className="text-sm font-semibold text-[#294d6b]">{idx + 1}</span>
                                         </div>
                                         <h3 className="text-base font-semibold text-slate-900">Pax Details</h3>
                                     </div>
@@ -417,12 +421,12 @@ export default function InsuranceForm() {
                                             name="insuranceType"
                                             value={p.insuranceType}
                                             onChange={(e) => handlePaxChange(p.id, e)}
-                                            className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                                            className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#294d6b]"
                                             required
                                         >
                                             <option value="">Select Insurance Type</option>
                                             {INSURANCE_TYPES.map((t) => (
-                                                <option key={t} value={t} className="bg-white">
+                                                <option key={t} value={t} className="bg-white text-slate-900">
                                                     {t}
                                                 </option>
                                             ))}
@@ -480,7 +484,7 @@ export default function InsuranceForm() {
                                             name="destination"
                                             value={p.destination}
                                             onChange={(e) => handlePaxChange(p.id, e)}
-                                            className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                                            className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#294d6b]"
                                             required
                                         >
                                             <option value="">Select Destination Country</option>
@@ -493,7 +497,7 @@ export default function InsuranceForm() {
                                                 "Montenegro",
                                                 "Belarus",
                                             ].map((t) => (
-                                                <option key={t} value={t} className="bg-white">
+                                                <option key={t} value={t} className="bg-white text-slate-900">
                                                     {t}
                                                 </option>
                                             ))}
@@ -507,10 +511,10 @@ export default function InsuranceForm() {
                                         Upload Passport (Required)
                                     </label>
 
-                                    <div className="relative rounded-xl border border-dashed border-emerald-900/20 bg-emerald-50/40 hover:bg-emerald-50/70 transition">
+                                    <div className="relative rounded-xl border border-dashed border-[#294d6b]/20 bg-[#294d6b]/[0.04] hover:bg-[#294d6b]/[0.08] transition">
                                         <label className="flex items-center gap-2 cursor-pointer px-4 py-4">
-                                            <div className="h-9 w-9 rounded-lg bg-white border border-emerald-900/10 flex items-center justify-center">
-                                                <Upload className="w-4 h-4 text-emerald-900" />
+                                            <div className="h-9 w-9 rounded-lg bg-white border border-[#294d6b]/10 flex items-center justify-center">
+                                                <Upload className="w-4 h-4 text-[#294d6b]" />
                                             </div>
 
                                             <div className="min-w-0">
@@ -551,7 +555,7 @@ export default function InsuranceForm() {
                     <Button
                         type="submit"
                         disabled={!isValid || submitting}
-                        className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-900 hover:from-emerald-900 hover:to-emerald-950 disabled:opacity-50"
+                        className="w-full h-12 rounded-xl bg-gradient-to-r from-[#294d6b] to-[#1f3b54] hover:from-[#1f3b54] hover:to-[#162b3d] disabled:opacity-50"
                     >
                         {submitting ? (
                             <>

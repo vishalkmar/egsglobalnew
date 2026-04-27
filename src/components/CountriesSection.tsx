@@ -2,14 +2,16 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Globe, MapPin, CheckCircle, Sparkles } from "lucide-react";
 import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
+const PRIMARY_COLOR = "#294d6b";
+
 type CountryServiceConfig = {
   name: string;
-  flag: string; // emoji for now – can be replaced with image
+  flag: string;
   heroImage: string;
   tagline: string;
   description: string;
@@ -49,8 +51,7 @@ const countries: CountryServiceConfig[] = [
   {
     name: "Italy",
     flag: "🇮🇹",
-    heroImage:
-      "https://images.pexels.com/photos/532263/pexels-photo-532263.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    heroImage: "https://images.pexels.com/photos/532263/pexels-photo-532263.jpeg?auto=compress&cs=tinysrgb&w=1200",
     tagline: "Top destination for tourism, study and skilled jobs.",
     description:
       "Guidance on Italy visa requirements, PCC legalisation and appointment handling for applicants from India and neighbouring countries.",
@@ -71,136 +72,122 @@ export default function CountriesSection() {
   useEffect(() => {
     AOS.init({
       duration: 800,
-      once: false, // repeat when entering viewport
+      once: true,
       offset: 80,
       easing: "ease-in-out",
-      mirror: true, // animate while scrolling up also
     });
   }, []);
 
   return (
-    <section className="py-16 md:py-24 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="py-16 md:py-24 bg-[#f5f6f8] relative">
+      {/* Subtle Dots Pattern */}
+      <div className="absolute inset-0 opacity-30" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 1px)`,
+        backgroundSize: '32px 32px'
+      }} />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <div className="text-center mb-12">
-          <h2
-            className="text-3xl md:text-5xl text-sky-600 font-bold mb-4"
-            data-aos="fade-left"
-          >
+        <div className="text-center mb-12 md:mb-16">
+          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4 shadow-sm border border-[#294d6b]/10">
+            <Sparkles className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+            <span className="text-sm font-medium" style={{ color: PRIMARY_COLOR }}>Global Reach</span>
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4" style={{ color: PRIMARY_COLOR }}>
             Countries We Serve
           </h2>
-          <p
-            className="text-lg text-slate-600 max-w-2xl mx-auto"
-            data-aos="fade-right"
-          >
+          
+          <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
             Visa appointment handling, PCC legalisation and documentation support
             for key European destinations, tailored for South Asian applicants.
           </p>
+          
+          {/* Decorative Line */}
+          <div className="flex justify-center mt-6">
+            <div className="w-20 h-1 rounded-full" style={{ backgroundColor: PRIMARY_COLOR }} />
+          </div>
         </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {countries.map((country, index) => {
-            // ✅ Every row pattern: 1st fade-right, 2nd zoom-in, 3rd fade-left
-            const pos = index % 3; // 0,1,2
-            const aosType =
-              pos === 0 ? "fade-right" : pos === 1 ? "zoom-in" : "fade-left";
-
-            // optional stagger (looks premium)
-            const aosDelay = pos * 120;
+            const pos = index % 3;
+            const aosType = pos === 0 ? "fade-right" : pos === 1 ? "fade-up" : "fade-left";
+            const aosDelay = pos * 100;
 
             return (
               <Card
                 key={country.name}
                 data-aos={aosType}
                 data-aos-delay={aosDelay}
-                data-testid={`card-country-${country.name
-                  .toLowerCase()
-                  .replace(/\s+/g, "-")}`}
-                className="group relative overflow-hidden border border-slate-200 bg-white shadow-md hover:shadow-xl hover:border-primary/40 transition-all duration-300 rounded-2xl flex flex-col"
+                className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border-0 flex flex-col h-full"
               >
-                {/* Hero image + overlay */}
-                <div className="relative h-64 overflow-hidden">
+                {/* Hero Image */}
+                <div className="relative h-56 overflow-hidden">
                   <img
                     src={country.heroImage}
-                    alt={`${country.name} landscape`}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    alt={`${country.name}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-
-                  {/* Light gradient overlay for text readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
-
-                  {/* Floating flag badge */}
-                  <div className="absolute top-4 left-4 flex items-center gap-2">
-                    <div className="h-9 w-9 rounded-full overflow-hidden border border-white/70 shadow-md bg-white/90 flex items-center justify-center text-lg">
-                      <span aria-hidden="true">{country.flag}</span>
+                  
+                  {/* Simple Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
+                  
+                  {/* Flag Badge */}
+                  <div className="absolute top-4 left-4">
+                    <div className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-xl shadow-md">
+                      {country.flag}
                     </div>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-white/90 bg-black/30 px-2.5 py-1 rounded-full backdrop-blur">
-                      {country.name}
-                    </span>
                   </div>
-
-                  {/* Country name & tagline at bottom */}
+                  
+                  {/* Country Name */}
                   <div className="absolute bottom-4 left-4 right-4">
-                    <h3
-                      data-testid={`text-country-name-${country.name
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
-                      className="text-2xl font-bold text-white drop-shadow-md"
-                    >
+                    <h3 className="text-xl font-bold text-white drop-shadow-md">
                       {country.name}
                     </h3>
-                    <p className="text-xs mt-1 text-slate-100/90 line-clamp-2">
+                    <p className="text-xs text-white/80 mt-0.5 line-clamp-1">
                       {country.tagline}
                     </p>
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 flex flex-col flex-1">
-                  <p
-                    data-testid={`text-country-description-${country.name
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
-                    className="text-sm text-slate-600 leading-relaxed mb-5"
-                  >
+                <div className="p-5 flex flex-col flex-1">
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
                     {country.description}
                   </p>
 
-                  {/* Services + Nationalities as table-style tiles */}
-                  <div className="mb-6 rounded-xl border border-slate-200 overflow-hidden text-xs sm:text-[0.8rem] text-slate-700">
-                    <div className="grid grid-cols-2 divide-x divide-slate-200">
-                      {/* Services tile */}
-                      <div className="p-4 bg-white">
-                        <p className="font-semibold text-slate-900 mb-2">
+                  {/* Services & Nationalities */}
+                  <div className="mb-5">
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Services */}
+                      <div>
+                        <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                          <Globe className="w-3 h-3" style={{ color: PRIMARY_COLOR }} />
                           Services
                         </p>
-                        <ul className="space-y-1">
+                        <ul className="space-y-1.5">
                           {country.services.map((service) => (
-                            <li
-                              key={service}
-                              className="flex items-center gap-1.5"
-                            >
-                              <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
-                              <span>{service}</span>
+                            <li key={service} className="flex items-center gap-1.5">
+                              <CheckCircle className="w-3 h-3" style={{ color: PRIMARY_COLOR }} />
+                              <span className="text-xs text-gray-600">{service}</span>
                             </li>
                           ))}
                         </ul>
                       </div>
-
-                      {/* Nationalities tile */}
-                      <div className="p-4 bg-slate-50">
-                        <p className="font-semibold text-slate-900 mb-2">
-                          Nationalities Catered
+                      
+                      {/* Nationalities */}
+                      <div>
+                        <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                          <MapPin className="w-3 h-3" style={{ color: PRIMARY_COLOR }} />
+                          Nationalities
                         </p>
-                        <ul className="space-y-1">
+                        <ul className="space-y-1.5">
                           {NATIONALITIES.map((nat) => (
-                            <li
-                              key={nat}
-                              className="flex items-center gap-1.5"
-                            >
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                              <span>{nat}</span>
+                            <li key={nat} className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: PRIMARY_COLOR }} />
+                              <span className="text-xs text-gray-600">{nat}</span>
                             </li>
                           ))}
                         </ul>
@@ -208,24 +195,14 @@ export default function CountriesSection() {
                     </div>
                   </div>
 
-                  {/* CTA button */}
-                  <div className="mt-auto">
-                    <Button
-                      data-testid={`button-learn-more-${country.name
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
-                      variant="outline"
-                      className="w-full group/button text-white border-primary/60 bg-primary hover:text-white hover:border-primary transition-all"
-                    >
-                      Learn more about {country.name}
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover/button:translate-x-1 transition-transform" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Subtle glow on hover */}
-                <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div className="absolute -inset-24 bg-radial from-primary/10 via-transparent to-transparent blur-3xl" />
+                  {/* CTA Button */}
+                  <Button 
+                    className="w-full mt-auto text-white font-medium py-2 transition-all duration-300 hover:opacity-90 group/btn"
+                    style={{ backgroundColor: PRIMARY_COLOR }}
+                  >
+                    Learn More
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                  </Button>
                 </div>
               </Card>
             );

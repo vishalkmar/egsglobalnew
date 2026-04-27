@@ -5,6 +5,7 @@ import useUserPrefill from "@/hooks/useUserPrefill";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Upload, AlertCircle, CheckCircle2, Loader, Plus, Trash2 } from "lucide-react";
+import useFormToast from "@/hooks/useFormToast";
 
 const ACCEPTED_FILE_TYPES = "image/*,application/pdf";
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
@@ -107,6 +108,7 @@ export default function TranslationEnquiryForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  useFormToast({ error, success, successTitle: "Translation submitted" });
 
   // ✅ API same
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";

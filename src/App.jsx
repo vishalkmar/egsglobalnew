@@ -46,6 +46,8 @@ import AdminLogin from './AdminDashboard/Pages/AdminLogin'
 import UserDashboardLayout from './User/UserDashboardLayout';
 import UserLoginPage from './User/pages/UserLoginPage'
 import UserDashboard from './User/pages/UserDashboard'
+import UserServicePage from './User/pages/UserServicePage';
+import UserSubmissionTrackPage from './User/pages/UserSubmissionTrackPage';
 import MeaAttestationForm from './forms/MeaAttestationForm';
 import PccLegalizationForm from './forms/PccLegalizationForm';
 import HrdAttestationForm from './forms/HrdAttestationForm';
@@ -67,7 +69,7 @@ function Router() {
       </Route>
       <Route path="/user/login" component={UserLoginPage} />
 
-        <Route path="/user/dashboard">
+      <Route path="/user/dashboard">
         <UserDashboardLayout>
           <UserDashboard />
         </UserDashboardLayout>
@@ -75,56 +77,100 @@ function Router() {
 
       <Route path="/user/mea-attestation">
         <UserDashboardLayout>
-          <MeaAttestationForm />
+          <UserServicePage
+            title="MEA Attestation"
+            serviceType="mea"
+            form={<MeaAttestationForm />}
+          />
         </UserDashboardLayout>
       </Route>
 
       <Route path="/user/pcc-legalization">
         <UserDashboardLayout>
-          <PccLegalizationForm />
+          <UserServicePage
+            title="PCC Legalization"
+            serviceType="pcc"
+            form={<PccLegalizationForm />}
+          />
         </UserDashboardLayout>
       </Route>
 
       <Route path="/user/hrd-attestation">
         <UserDashboardLayout>
-          <HrdAttestationForm />
+          <UserServicePage
+            title="HRD Attestation"
+            serviceType="hrd"
+            form={<HrdAttestationForm />}
+          />
         </UserDashboardLayout>
       </Route>
 
       <Route path="/user/e-visa">
         <UserDashboardLayout>
-          <EVisaForm />
+          <UserServicePage
+            title="E-Visa"
+            serviceType="evisa"
+            form={<EVisaForm />}
+          />
         </UserDashboardLayout>
       </Route>
 
       <Route path="/user/translation">
         <UserDashboardLayout>
-          <TranslationForm />
+          <UserServicePage
+            title="Translation"
+            serviceType="translation"
+            form={<TranslationForm />}
+          />
         </UserDashboardLayout>
       </Route>
 
       <Route path="/user/meet-greet">
         <UserDashboardLayout>
-          <MeetGreetForm />
+          <UserServicePage
+            title="Meet & Greet"
+            serviceType="meet_greet"
+            form={<MeetGreetForm />}
+          />
         </UserDashboardLayout>
       </Route>
 
       <Route path="/user/assistant-appointment">
         <UserDashboardLayout>
-          <AssistanceAppointmentForm />
+          <UserServicePage
+            title="Assistant & Appointment"
+            serviceType="assistant_appointment"
+            form={<AssistanceAppointmentForm />}
+          />
         </UserDashboardLayout>
       </Route>
 
       <Route path="/user/dummy-ticket">
         <UserDashboardLayout>
-          <DummyTicketForm />
+          <UserServicePage
+            title="Dummy Ticket"
+            serviceType="dummy_ticket"
+            form={<DummyTicketForm />}
+          />
         </UserDashboardLayout>
       </Route>
 
       <Route path="/user/insurance">
         <UserDashboardLayout>
-          <InsuranceForm />
+          <UserServicePage
+            title="Insurance"
+            serviceType="insurance"
+            form={<InsuranceForm />}
+          />
         </UserDashboardLayout>
+      </Route>
+
+      <Route path="/user/track/:type/:id">
+        {(params) => (
+          <UserDashboardLayout>
+            <UserSubmissionTrackPage params={params} />
+          </UserDashboardLayout>
+        )}
       </Route>
 
       <Route path="/admin">

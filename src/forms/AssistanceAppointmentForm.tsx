@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, Loader } from "lucide-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import useFormToast from "@/hooks/useFormToast";
 
 type FormState = {
   name: string;
@@ -42,7 +43,9 @@ export default function AppointmentSubmissionFormFullWidth() {
 
   // ✅ login helpers (same pattern)
   const getToken = () =>
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    typeof window !== "undefined"
+      ? localStorage.getItem("authToken") || localStorage.getItem("token")
+      : null;
 
   const redirectToLogin = () => {
     const next =
@@ -84,6 +87,7 @@ export default function AppointmentSubmissionFormFullWidth() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  useFormToast({ error, success, successTitle: "Assistant request submitted" });
 
   const isValid = useMemo(() => {
     if (!form.name.trim()) return false;
@@ -134,7 +138,7 @@ export default function AppointmentSubmissionFormFullWidth() {
       };
 
       // ✅ Put your working endpoint here (I kept a clean default)
-      const res = await fetch(`${API_BASE}/appointment-submission/enquiry`, {
+      const res = await fetch(`${API_BASE}/assistant/assistant-appointment/enquiry`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -188,7 +192,7 @@ export default function AppointmentSubmissionFormFullWidth() {
           )}
 
           {success && (
-            <div className="flex gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
+            <div className="flex gap-3 p-4 bg-[#294d6b]/10 border border-[#294d6b]/20 rounded-xl text-[#294d6b]">
               <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <p className="text-sm">{success}</p>
             </div>
@@ -283,7 +287,7 @@ export default function AppointmentSubmissionFormFullWidth() {
                 name="visaType"
                 value={form.visaType}
                 onChange={handleChange}
-                className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600"
+                className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#294d6b]"
                 required
               >
                 <option value="">Select Visa Type</option>
@@ -307,7 +311,7 @@ export default function AppointmentSubmissionFormFullWidth() {
                 name="submissionCountry"
                 value={form.submissionCountry}
                 onChange={handleChange}
-                className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600"
+                className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#294d6b]"
                 required
               >
                 <option value="">Select Country</option>
@@ -323,7 +327,7 @@ export default function AppointmentSubmissionFormFullWidth() {
           <Button
             type="submit"
             disabled={!isValid || submitting}
-            className="w-full h-12 rounded-xl bg-gradient-to-r from-teal-700 to-teal-800 hover:from-teal-800 hover:to-teal-900 disabled:opacity-50"
+            className="w-full h-12 rounded-xl bg-gradient-to-r from-[#294d6b] to-[#1f3b54] hover:from-[#1f3b54] hover:to-[#162b3d] disabled:opacity-50"
           >
             {submitting ? (
               <>

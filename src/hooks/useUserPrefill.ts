@@ -14,7 +14,7 @@ export default function useUserPrefill() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("authToken") || localStorage.getItem("token");
         if (!token) {
           setLoading(false);
           return;

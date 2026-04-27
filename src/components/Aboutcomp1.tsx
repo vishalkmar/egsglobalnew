@@ -1,73 +1,82 @@
-const HERO_IMAGE_URL =
-  "https://images.pexels.com/photos/1181533/pexels-photo-1181533.jpeg?auto=compress&cs=tinysrgb&w=1200";
+"use client";
 
-export default function AboutHeroEGS() {
+import { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { Sparkles, Award, Users, Globe } from "lucide-react";
+
+const PRIMARY_COLOR = "#294d6b";
+
+export default function AboutBanner() {
+  useEffect(() => {
+    AOS.init({
+      duration: 800,
+      once: true,
+      offset: 80,
+      easing: "ease-in-out",
+    });
+  }, []);
+
   return (
-    <section className="
-     bg-[#020617]
-            bg-[radial-gradient(circle_at_5%_10%,rgba(37,99,235,0.35),transparent_55%),radial-gradient(circle_at_80%_90%,rgba(147,51,234,0.35),transparent_60%)]
-    ">
-      <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 min-h-[520px] flex flex-col">
-        {/* Main hero content */}
-        <div className="flex flex-col lg:flex-row items-center lg:items-center gap-10 lg:gap-10 py-6 pb-16 lg:justify-between">
-          {/* Left text */}
-          <div className="w-full lg:w-[48%]">
-            <h1 className="text-[32px] sm:text-[40px] lg:text-[46px] leading-tight font-semibold tracking-[0.08em] text-white">
-              ABOUT EGS GROUP
-            </h1>
-            <p className="mt-1 text-sm tracking-[0.32em] uppercase text-white">
-              Global Travel & Documentation Partner
-            </p>
-
-            <p className="mt-5 text-sm md:text-base text-white max-w-md leading-relaxed">
-              EGS Group simplifies global travel and documentation for individuals
-              and businesses. From visas, attestations and document legalization
-              to insurance and airport assistance, we provide reliable end-to-end
-              support under one roof. Our expert team ensures accuracy,
-              transparency and a smooth experience at every step of your journey.
-            </p>
-
-            <button className="mt-7 inline-flex items-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-emerald-500 transition">
-              LEARN MORE
-            </button>
+    <section className="relative overflow-hidden" style={{ backgroundColor: PRIMARY_COLOR }}>
+      {/* Decorative Pattern */}
+      <div className="absolute inset-0 opacity-10" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 1px)`,
+        backgroundSize: '40px 40px'
+      }} />
+      
+      {/* Decorative Blobs */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl" />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div className="text-center" data-aos="fade-up">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
+            <Sparkles className="w-4 h-4 text-white" />
+            <span className="text-white/90 text-sm font-medium">About EGS Group</span>
           </div>
-
-          {/* Right image with circles */}
-          <div className="w-full lg:w-[48%] flex justify-center lg:justify-end">
-            <div className="relative w-[320px] h-[300px] sm:w-[360px] sm:h-[320px] lg:w-[400px] lg:h-[340px]">
-              {/* outer outline ring */}
-              <div className="absolute inset-[-10px] rounded-[999px] border-2 border-teal-300/70" />
-
-              {/* main semi circle background with inner border */}
-              <div className="absolute inset-0 rounded-[999px] bg-sky-50 border-2 border-sky-100 overflow-hidden">
-                {/* arc accents */}
-                <div className="absolute -top-6 left-6 w-32 h-32 border-t-4 border-emerald-300 rounded-full" />
-                <div className="absolute -top-10 right-4 w-40 h-40 border-t-[3px] border-emerald-400 rounded-full" />
-
-                {/* image sitting in lower part for semi-circle feel */}
-                <div className="absolute inset-x-0 bottom-0 h-[82%] overflow-hidden rounded-t-[999px]">
-                  <img
-                    src={HERO_IMAGE_URL}
-                    alt="EGS business team"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-
-              {/* teal big circle bottom-left */}
-              <div className="absolute -bottom-12 left-2 w-36 h-36 rounded-full bg-teal-400" />
-
-              {/* dark small circle over teal */}
-              <div className="absolute -bottom-2 left-20 w-16 h-16 rounded-full bg-slate-900" />
-
-              {/* floating small circle left-top */}
-              <div className="absolute top-6 -left-3 w-9 h-9 rounded-full bg-slate-900" />
-
-              {/* accent line bottom-right */}
-              <div className="absolute -bottom-6 right-2 w-36 h-10 border-b-[3px] border-emerald-400 rounded-full" />
+          
+          {/* Main Heading */}
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+            Your Trusted Partner for
+            <span className="block mt-2">Global Travel & Documentation</span>
+          </h1>
+          
+          {/* Description */}
+          <p className="text-white/80 text-base md:text-lg max-w-2xl mx-auto">
+            We simplify visa processes, document attestation, and travel preparations 
+            with years of expertise and a client-first approach.
+          </p>
+          
+          {/* Stats Row */}
+          <div className="flex flex-wrap justify-center gap-8 md:gap-12 mt-10 pt-6 border-t border-white/20">
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-white">10K+</div>
+              <div className="text-white/70 text-sm">Happy Clients</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-white">98%</div>
+              <div className="text-white/70 text-sm">Success Rate</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-white">24/7</div>
+              <div className="text-white/70 text-sm">Support</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-white">50+</div>
+              <div className="text-white/70 text-sm">Countries</div>
             </div>
           </div>
         </div>
+      </div>
+      
+      {/* Curved Bottom */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 60" fill="#f5f6f8">
+          <path d="M0,32L80,37.3C160,43,320,53,480,53.3C640,53,800,43,960,37.3C1120,32,1280,32,1360,32L1440,32L1440,60L1360,60C1280,60,1120,60,960,60C800,60,640,60,480,60C320,60,160,60,80,60L0,60Z"></path>
+        </svg>
       </div>
     </section>
   );

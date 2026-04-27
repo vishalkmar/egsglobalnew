@@ -26,6 +26,8 @@ const loginSchema = z.object({
   accessLevel: z.literal("Super Admin"),
 });
 
+const EGS_BRAND = "#294d6b";
+
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -135,11 +137,17 @@ export default function AdminLogin() {
 
 
   return (
-    <div className="min-h-screen w-full bg-[#0b7b78] flex items-center justify-center px-4 py-10">
+    <div
+      className="min-h-screen w-full flex items-center justify-center px-4 py-10"
+      style={{ background: `linear-gradient(135deg, ${EGS_BRAND} 0%, #1f3850 55%, #122130 100%)` }}
+    >
       <div className="w-full max-w-6xl rounded-[34px] overflow-hidden shadow-[0_35px_80px_rgba(0,0,0,0.35)] border border-white/10 bg-white">
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* LEFT PANEL */}
-          <div className="relative bg-[#0b7b78] text-white px-8 py-10 lg:px-12 lg:py-14">
+          <div
+            className="relative hidden lg:block text-white px-8 py-10 lg:px-12 lg:py-14"
+            style={{ background: `linear-gradient(135deg, ${EGS_BRAND} 0%, #1f3850 55%, #122130 100%)` }}
+          >
             <div
               className="absolute inset-0 opacity-20"
               style={{
@@ -154,9 +162,9 @@ export default function AdminLogin() {
               </div>
 
               <div className="mt-8">
-                <div className="text-4xl font-extrabold tracking-wide">ICCICT 2026</div>
+                <div className="text-4xl font-extrabold tracking-tight">EGS Admin Portal</div>
                 <div className="mt-3 max-w-md text-white/85 text-base leading-relaxed">
-                  Admin Control Panel (Super Admin Access)
+                  Evren Global Solution operations and super admin access.
                 </div>
               </div>
 
@@ -170,18 +178,26 @@ export default function AdminLogin() {
           </div>
 
           {/* RIGHT PANEL */}
-          <div className="px-6 py-10 sm:px-10 lg:px-12 lg:py-14 bg-white">
+          <div className="px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-14 bg-white">
             <div className="max-w-md mx-auto">
+              <div className="lg:hidden text-center mb-6">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#294d6b]/10 text-[#294d6b]">
+                  <GraduationCap className="h-6 w-6" />
+                </div>
+                <p className="mt-3 text-xs font-semibold uppercase tracking-[0.24em] text-[#294d6b]">
+                  Evren Global Solution
+                </p>
+              </div>
               <div className="text-center">
                 <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900">Welcome Back!</h1>
                 <p className="mt-2 text-sm text-slate-500">Sign in as Super Admin</p>
               </div>
 
-              <form onSubmit={onSubmit} className="mt-8 space-y-5">
+              <form onSubmit={onSubmit} className="mt-6 sm:mt-8 space-y-5">
                 {/* EMAIL */}
                 <div>
                   <label className="text-xs font-semibold text-slate-600">Email Address</label>
-                  <div className="mt-1 h-12 rounded-2xl bg-slate-50 border border-slate-200 px-4 flex items-center gap-3 focus-within:ring-2 focus-within:ring-teal-500">
+                  <div className="mt-1 h-12 rounded-2xl bg-slate-50 border border-slate-200 px-4 flex items-center gap-3 focus-within:ring-2 focus-within:ring-[#294d6b]">
                     <Mail className="h-4 w-4 text-slate-500" />
                     <input
                       value={email}
@@ -196,7 +212,7 @@ export default function AdminLogin() {
                       }}
                       type="email"
                       className="w-full bg-transparent outline-none text-sm text-slate-900"
-                      placeholder="superadmin@iccict.com"
+                      placeholder="admin@evrenglobalsolution.com"
                       autoComplete="email"
                     />
                   </div>
@@ -206,7 +222,7 @@ export default function AdminLogin() {
                 {/* PASSWORD */}
                 <div>
                   <label className="text-xs font-semibold text-slate-600">Password</label>
-                  <div className="mt-1 h-12 rounded-2xl bg-slate-50 border border-slate-200 px-4 flex items-center gap-3 focus-within:ring-2 focus-within:ring-teal-500">
+                  <div className="mt-1 h-12 rounded-2xl bg-slate-50 border border-slate-200 px-4 flex items-center gap-3 focus-within:ring-2 focus-within:ring-[#294d6b]">
                     <Lock className="h-4 w-4 text-slate-500" />
                     <input
                       value={password}
@@ -255,7 +271,7 @@ export default function AdminLogin() {
                   type="submit"
                   disabled={!isValid || loading}
                   className={`w-full h-12 rounded-2xl font-semibold text-white flex items-center justify-center gap-2 transition
-                    ${!isValid || loading ? "bg-teal-300 cursor-not-allowed" : "bg-teal-700 hover:bg-teal-800"}`}
+                    ${!isValid || loading ? "bg-slate-300 cursor-not-allowed" : "bg-[#294d6b] hover:bg-[#1f3b54]"}`}
                 >
                   <LogIn className="h-5 w-5" />
                   {loading ? "Signing In..." : "Sign In"}

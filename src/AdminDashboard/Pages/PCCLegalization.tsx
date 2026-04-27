@@ -49,7 +49,8 @@ type ApiDoc = {
 };
 
 type ApiItem = {
-  _id: string;
+  id?: string;
+  _id?: string;
   name?: string;
   email: string;
   phone: string;
@@ -121,7 +122,7 @@ export default function PCCLegalization() {
         }));
 
         return {
-          id: it._id,
+          id: it.id || it._id || "",
           email: it.email,
           phone: it.phone,
           companyName: it.companyName,
@@ -235,14 +236,14 @@ export default function PCCLegalization() {
     const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold";
     if (kind === "payment") {
       return text === "Paid"
-        ? `${base} bg-emerald-50 text-emerald-800`
+        ? `${base} bg-[#294d6b]/10 text-[#294d6b]`
         : `${base} bg-amber-50 text-amber-900`;
     }
-    if (text === "Approved") return `${base} bg-emerald-50 text-emerald-800`;
+    if (text === "Approved") return `${base} bg-[#294d6b]/10 text-[#294d6b]`;
     if (text === "Rejected") return `${base} bg-rose-50 text-rose-800`;
     if (text === "Pending") return `${base} bg-sky-50 text-sky-800`;
     if (text === "Dispatched") return `${base} bg-purple-50 text-purple-800`;
-    if (text === "Received") return `${base} bg-teal-50 text-teal-900`;
+    if (text === "Received") return `${base} bg-[#294d6b]/10 text-[#294d6b]`;
     return `${base} bg-slate-100 text-slate-700`;
   };
 
@@ -443,7 +444,7 @@ export default function PCCLegalization() {
 
                 <button
                   onClick={() => setUseExactFind(true)}
-                  className="h-9 px-4 rounded-xl bg-teal-900 text-white hover:opacity-95 text-sm font-semibold"
+                  className="h-9 px-4 rounded-xl bg-[#294d6b] text-white hover:bg-[#1f3b54] text-sm font-semibold"
                 >
                   Search
                 </button>
@@ -477,7 +478,7 @@ export default function PCCLegalization() {
       </div>
 
       <div className="rounded-2xl border border-slate-200 overflow-hidden">
-        <div className="bg-teal-900 text-white px-4 py-3 font-semibold flex items-center justify-between">
+        <div className="bg-[#294d6b] text-white px-4 py-3 font-semibold flex items-center justify-between">
           <span>PCC Legalization Enquiries</span>
           <span className="text-sm font-semibold opacity-90">Showing: {filtered.length}</span>
         </div>
@@ -513,7 +514,7 @@ export default function PCCLegalization() {
                         onClick={() => setOpenDocsRow(r)}
                         className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-2"
                       >
-                        <Paperclip className="h-4 w-4 text-teal-900" />
+                        <Paperclip className="h-4 w-4 text-[#294d6b]" />
                         <span className="text-xs font-semibold text-slate-800">
                           {r.files.length} file(s)
                         </span>
@@ -550,7 +551,7 @@ export default function PCCLegalization() {
                         <select
                           value={r.payment}
                           onChange={(e) => onUpdatePayment(r, e.target.value)}
-                          className="h-9 px-2 rounded-lg border border-emerald-200 bg-emerald-50 text-sm font-medium text-emerald-900 outline-none hover:border-emerald-300"
+                          className="h-9 px-2 rounded-lg border border-[#294d6b]/20 bg-[#294d6b]/10 text-sm font-medium text-[#294d6b] outline-none hover:border-[#294d6b]/40"
                         >
                           <option value="Pending">Pending</option>
                           <option value="Paid">Paid</option>
@@ -605,7 +606,7 @@ export default function PCCLegalization() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpenDocsRow(null)} />
 
           <div className="relative w-full max-w-2xl rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
-            <div className="px-5 py-4 bg-teal-900 text-white flex items-center justify-between">
+            <div className="px-5 py-4 bg-[#294d6b] text-white flex items-center justify-between">
               <div className="font-semibold">Documents Attached</div>
               <button
                 onClick={() => setOpenDocsRow(null)}
@@ -631,7 +632,7 @@ export default function PCCLegalization() {
                       {f.type === "pdf" ? (
                         <FileText className="h-5 w-5 text-sky-700" />
                       ) : f.type === "image" ? (
-                        <ImageIcon className="h-5 w-5 text-emerald-700" />
+                        <ImageIcon className="h-5 w-5 text-[#294d6b]" />
                       ) : (
                         <Paperclip className="h-5 w-5 text-slate-700" />
                       )}

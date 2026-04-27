@@ -125,7 +125,7 @@ export default function StickerVisa() {
         }));
 
         return {
-          id: it._id,
+          id: it.id || it._id || "",
           email: it.email,
           contact: it.contact || it.phone || "",
           country: it.country || "",

@@ -172,15 +172,15 @@ export default function DummyTicketAdmin() {
     const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold";
     if (kind === "pay") {
       return text === "Paid"
-        ? `${base} bg-emerald-50 text-emerald-800`
+        ? `${base} bg-[#294d6b]/10 text-[#294d6b]`
         : `${base} bg-amber-50 text-amber-900`;
     }
 
-    if (text === "Approved") return `${base} bg-emerald-50 text-emerald-800`;
+    if (text === "Approved") return `${base} bg-[#294d6b]/10 text-[#294d6b]`;
     if (text === "Rejected") return `${base} bg-rose-50 text-rose-800`;
     if (text === "Pending") return `${base} bg-sky-50 text-sky-800`;
     if (text === "Dispatched") return `${base} bg-purple-50 text-purple-800`;
-    if (text === "Received") return `${base} bg-teal-50 text-teal-900`;
+    if (text === "Received") return `${base} bg-[#294d6b]/10 text-[#294d6b]`;
     return `${base} bg-slate-100 text-slate-700`;
   };
 
@@ -306,7 +306,7 @@ export default function DummyTicketAdmin() {
 
       {/* Table */}
       <div className="rounded-2xl border border-slate-200 overflow-hidden">
-        <div className="bg-teal-900 text-white px-4 py-3 font-semibold flex items-center justify-between">
+        <div className="bg-[#294d6b] text-white px-4 py-3 font-semibold flex items-center justify-between">
           <span>Dummy Ticket Requests</span>
           <span className="text-sm font-semibold opacity-90">Showing: {filtered.length}</span>
         </div>

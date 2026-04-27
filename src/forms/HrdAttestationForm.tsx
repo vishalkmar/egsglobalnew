@@ -15,6 +15,7 @@ import {
   Minus,
 } from "lucide-react";
 import useUserPrefill from "@/hooks/useUserPrefill";
+import useFormToast from "@/hooks/useFormToast";
 
 /** --------- CONFIG --------- */
 const DOCUMENT_OPTIONS: Record<string, string[]> = {
@@ -156,6 +157,7 @@ export default function HrdAttestationForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  useFormToast({ error, success, successTitle: "HRD submitted" });
 
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
   const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
@@ -441,7 +443,7 @@ export default function HrdAttestationForm() {
 
   return (
     <div className="w-full">
-      <div className="w-full rounded-2xl border border-emerald-900/10 bg-gradient-to-b from-white to-emerald-50/40 shadow-sm">
+      <div className="w-full rounded-2xl border border-[#294d6b]/10 bg-gradient-to-b from-white to-[#294d6b]/[0.04] shadow-sm">
         {/* Header strip */}
        
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -453,14 +455,14 @@ export default function HrdAttestationForm() {
           )}
 
           {success && (
-            <div className="flex gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
+            <div className="flex gap-3 p-4 bg-[#294d6b]/10 border border-[#294d6b]/20 rounded-xl text-[#294d6b]">
               <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <p className="text-sm">{success}</p>
             </div>
           )}
 
           {/* Base details (ONE TIME) */}
-          <div className="rounded-2xl border border-emerald-900/10 bg-white p-5">
+          <div className="rounded-2xl border border-[#294d6b]/10 bg-white p-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-2">Full Name *</label>
@@ -510,11 +512,11 @@ export default function HrdAttestationForm() {
               const totalDocs = calcDocCount(p.docQty);
 
               return (
-                <div key={p.id} className="rounded-2xl border border-emerald-900/10 bg-white p-5">
+                <div key={p.id} className="rounded-2xl border border-[#294d6b]/10 bg-white p-5">
                   <div className="flex items-center justify-between gap-3 mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-lg bg-emerald-900/10 flex items-center justify-center">
-                        <span className="text-sm font-semibold text-emerald-900">{paxIdx + 1}</span>
+                      <div className="h-8 w-8 rounded-lg bg-[#294d6b]/10 flex items-center justify-center">
+                        <span className="text-sm font-semibold text-[#294d6b]">{paxIdx + 1}</span>
                       </div>
                       <h3 className="text-base font-semibold text-slate-900">Pax Details</h3>
                     </div>
@@ -539,7 +541,7 @@ export default function HrdAttestationForm() {
                         name="state"
                         value={p.state}
                         onChange={(e) => handlePaxFieldChange(p.id, e)}
-                        className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#294d6b]"
                         required
                       >
                         {STATES.map((s) => (
@@ -570,7 +572,7 @@ export default function HrdAttestationForm() {
                       name="docType"
                       value={p.docType}
                       onChange={(e) => handlePaxFieldChange(p.id, e)}
-                      className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                      className="w-full h-11 bg-white border border-slate-300 rounded-xl px-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#294d6b]"
                       required
                     >
                       <option value="">Select Document Type</option>
@@ -623,7 +625,7 @@ export default function HrdAttestationForm() {
                                 </button>
 
                                 <div className="min-w-[40px] text-center">
-                                  <span className="text-sm font-semibold text-emerald-900">
+                                  <span className="text-sm font-semibold text-[#294d6b]">
                                     {qty}
                                   </span>
                                 </div>
@@ -631,11 +633,11 @@ export default function HrdAttestationForm() {
                                 <button
                                   type="button"
                                   onClick={() => incDoc(p.id, doc)}
-                                  className="h-9 w-9 rounded-lg border border-emerald-900/20 bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center"
+                                  className="h-9 w-9 rounded-lg border border-[#294d6b]/20 bg-[#294d6b]/10 hover:bg-[#294d6b]/15 flex items-center justify-center"
                                   aria-label="Increase"
                                   title="Increase"
                                 >
-                                  <PlusCircle className="h-4 w-4 text-emerald-900" />
+                                  <PlusCircle className="h-4 w-4 text-[#294d6b]" />
                                 </button>
                               </div>
                             </div>
@@ -663,11 +665,11 @@ export default function HrdAttestationForm() {
                         {p.files.map((file, idx) => (
                           <div
                             key={`${p.id}-${idx}`}
-                            className="relative rounded-xl border border-dashed border-emerald-900/20 bg-emerald-50/40 hover:bg-emerald-50/70 transition"
+                            className="relative rounded-xl border border-dashed border-[#294d6b]/20 bg-[#294d6b]/[0.04] hover:bg-[#294d6b]/[0.08] transition"
                           >
                             <label className="flex items-center gap-2 cursor-pointer px-4 py-4">
-                              <div className="h-9 w-9 rounded-lg bg-white border border-emerald-900/10 flex items-center justify-center">
-                                <Upload className="w-4 h-4 text-emerald-900" />
+                              <div className="h-9 w-9 rounded-lg bg-white border border-[#294d6b]/10 flex items-center justify-center">
+                                <Upload className="w-4 h-4 text-[#294d6b]" />
                               </div>
 
                               <div className="min-w-0">
@@ -710,11 +712,11 @@ export default function HrdAttestationForm() {
             })}
           </div>
 
- <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-emerald-900/10 bg-white/70 rounded-t-2xl">
+ <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-[#294d6b]/10 bg-white/70 rounded-t-2xl">
           <Button
             type="button"
             onClick={addPax}
-            className="bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl"
+            className="bg-[#294d6b] hover:bg-[#1f3b54] text-white rounded-xl"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
             Add More Pax
@@ -724,7 +726,7 @@ export default function HrdAttestationForm() {
           <Button
             type="submit"
             disabled={!isValid || submitting || filesUploading}
-            className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-900 hover:from-emerald-900 hover:to-emerald-950 disabled:opacity-50"
+            className="w-full h-12 rounded-xl bg-gradient-to-r from-[#294d6b] to-[#1f3b54] hover:from-[#1f3b54] hover:to-[#162b3d] disabled:opacity-50"
           >
             {submitting ? (
               <>

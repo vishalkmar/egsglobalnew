@@ -124,7 +124,7 @@ export default function EVisa() {
         }));
 
         return {
-          id: it._id,
+          id: it.id || it._id || "",
           email: it.email,
           contact: it.contact || it.phone || "",
           country: it.country || "",
@@ -241,7 +241,7 @@ export default function EVisa() {
     if (text === "Rejected") return `${base} bg-rose-50 text-rose-800`;
     if (text === "Pending") return `${base} bg-sky-50 text-sky-800`;
     if (text === "Dispatched") return `${base} bg-purple-50 text-purple-800`;
-    if (text === "Received") return `${base} bg-teal-50 text-teal-900`;
+    if (text === "Received") return `${base} bg-sky-50 text-[#294d6b]`;
     return `${base} bg-slate-100 text-slate-700`;
   };
 
@@ -458,7 +458,7 @@ export default function EVisa() {
 
         {/* Table */}
         <div className="rounded-2xl border border-slate-200 overflow-hidden">
-          <div className="bg-teal-900 text-white px-4 py-3 font-semibold flex items-center justify-between">
+          <div className="bg-[#294d6b] text-white px-4 py-3 font-semibold flex items-center justify-between">
             <span>E-Visa Enquiries</span>
             <span className="text-sm font-semibold opacity-90">Showing: {filtered.length}</span>
           </div>
@@ -494,7 +494,7 @@ export default function EVisa() {
                           onClick={() => setOpenDocsRow(r)}
                           className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-2"
                         >
-                          <Paperclip className="h-4 w-4 text-teal-900" />
+                          <Paperclip className="h-4 w-4 text-[#294d6b]" />
                           <span className="text-xs font-semibold text-slate-800">
                             {r.files.length} file(s)
                           </span>
@@ -597,7 +597,7 @@ export default function EVisa() {
             className="relative w-full max-w-xl rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-5 py-4 bg-teal-900 text-white flex items-center justify-between">
+            <div className="px-5 py-4 bg-[#294d6b] text-white flex items-center justify-between">
               <div className="font-semibold">Documents Attached</div>
               <button
                 onClick={() => setOpenDocsRow(null)}

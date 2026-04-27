@@ -4,6 +4,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhoWeAreSection from "@/components/aboutUs/WhoWeAreSection";
 import WhatWeDoSection from "@/components/aboutUs/WhatWeDo";
+import  howWeProcess from "@/components/aboutUs/HoweWeProccess";
+import HowWeProcess from "@/components/aboutUs/HoweWeProccess";
 
 const ABOUT_IMAGE_URL =
   "https://images.pexels.com/photos/3184416/pexels-photo-3184416.jpeg?auto=compress&cs=tinysrgb&w=1200";
@@ -18,6 +20,7 @@ export default function AboutUsBanner() {
      <div className="mt-[80px]">
         <AboutHeroEGS/>
         <WhoWeAreSection/>
+        <HowWeProcess/>
         <WhatWeDoSection/>
      </div>
  

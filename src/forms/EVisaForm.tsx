@@ -7,6 +7,7 @@ import { AlertCircle, CheckCircle2, Loader, PlusCircle, Trash2, UploadCloud } fr
 import AOS from "aos";
 import "aos/dist/aos.css";
 import useUserPrefill from "@/hooks/useUserPrefill";
+import useFormToast from "@/hooks/useFormToast";
 
 type VisaType = "Tourist" | "Work" | "Business";
 
@@ -119,6 +120,7 @@ export default function EVisaEnquiryFormFullWidth() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  useFormToast({ error, success, successTitle: "E-Visa submitted" });
 
   const onBaseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

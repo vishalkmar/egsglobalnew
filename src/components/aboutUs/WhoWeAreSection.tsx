@@ -1,182 +1,106 @@
 "use client";
 
-// WhoWeAreSection.tsx
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { CheckCircle, Shield, Target, Heart, TrendingUp, Users, Clock, Award } from "lucide-react";
 
-const WHO = {
-  badge: "ABOUT EGS GROUP",
-  tagline: "Global Travel & Documentation Partner",
-  title: "Who We Are",
-  desc1:
-    "EGS Group supports individuals, families, and businesses with end-to-end travel documentation and embassy-facing processes.",
-  desc2:
-    "From visas (E-Visa + Sticker Visa) to attestations, translations, insurance, and on-ground assistance—our team focuses on accuracy, transparency, and smooth execution.",
-  highlights: [
-    "Visa assistance: E-Visa + Sticker Visa",
-    "Attestation & legalization: HRD, MEA, PCC, Apostille",
-    "Translation services & documentation support",
-    "Insurance, dummy ticket, and appointment assistance",
-  ],
-  stats: [
-    { k: "Accuracy-first", v: "Verification workflow" },
-    { k: "Fast support", v: "Dedicated team" },
-    { k: "Secure handling", v: "Confidential documents" },
-  ],
-  cta: "Learn More",
-  image: {
-    src: "/about/whoweare.jpg", // change this
-    alt: "EGS Group team assisting clients",
-  },
-};
+const PRIMARY_COLOR = "#294d6b";
 
-export default function WhoWeAreSection() {
+export default function WhoWeAre() {
   useEffect(() => {
     AOS.init({
-      duration: 750,
-      easing: "ease-out-cubic",
+      duration: 800,
+      once: true,
       offset: 80,
-      once: false, // repeats on scroll in/out (AOS style)
+      easing: "ease-in-out",
     });
   }, []);
 
   return (
-    <section className="relative w-full overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#050B1F] via-[#0B1440] to-[#2B0B4A]" />
-      <div className="absolute inset-0 bg-[radial-gradient(900px_520px_at_18%_22%,rgba(56,189,248,0.22),transparent_60%),radial-gradient(800px_520px_at_85%_28%,rgba(168,85,247,0.20),transparent_60%),radial-gradient(900px_520px_at_55%_88%,rgba(34,197,94,0.12),transparent_60%)]" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/25 to-black/40" />
-
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16 lg:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
-          {/* LEFT */}
-          <div className="text-white" data-aos="fade-right">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs sm:text-sm font-semibold">
-              <span className="h-2 w-2 rounded-full bg-rose-400" />
-              {WHO.badge}
-            </div>
-
-            <p
-              className="mt-5 text-xs sm:text-sm tracking-[0.24em] uppercase text-slate-200/90"
-              data-aos="fade-down"
-              data-aos-delay="80"
-            >
-              {WHO.tagline}
-            </p>
-
-            <h2
-              className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight"
-              data-aos="fade-up"
-              data-aos-delay="120"
-            >
-              {WHO.title}
-            </h2>
-
-            <p
-              className="mt-4 text-sm sm:text-base text-slate-100/90 leading-relaxed max-w-xl"
-              data-aos="fade-up"
-              data-aos-delay="170"
-            >
-              {WHO.desc1}
-            </p>
-
-            <p
-              className="mt-3 text-sm sm:text-base text-slate-100/90 leading-relaxed max-w-xl"
-              data-aos="fade-up"
-              data-aos-delay="220"
-            >
-              {WHO.desc2}
-            </p>
-
-            {/* Highlights */}
-            <div
-              className="mt-6 rounded-2xl border border-white/12 bg-white/8 p-5"
-              data-aos="fade-up"
-              data-aos-delay="260"
-            >
-              <p className="text-sm font-semibold text-white mb-3">
-                What you can expect
-              </p>
-              <ul className="space-y-2.5 text-sm text-slate-100/90">
-                {WHO.highlights.map((t, i) => (
-                  <li key={t} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-300 flex-shrink-0" />
-                    <span>{t}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Stats */}
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {WHO.stats.map((s, i) => (
-                <div
-                  key={s.k}
-                  className="rounded-2xl border border-white/12 bg-white/10 p-4"
-                  data-aos="zoom-in"
-                  data-aos-delay={320 + i * 90}
-                >
-                  <p className="text-xs text-slate-200/90">{s.k}</p>
-                  <p className="mt-1 text-sm font-semibold text-white">
-                    {s.v}
-                  </p>
+    <section className="py-16 md:py-24 bg-[#f5f6f8] relative">
+      {/* Subtle Dots Pattern */}
+      <div className="absolute inset-0 opacity-30" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 1px)`,
+        backgroundSize: '32px 32px'
+      }} />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          
+          {/* Left Side - Image */}
+          <div data-aos="fade-right">
+            <div className="relative">
+              <div className="rounded-2xl overflow-hidden shadow-xl">
+                <img
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPbSG3CQwufIDy95d5VFRqfutyILa49PFefQ&s"
+                  alt="EGS Group Team"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Floating Experience Badge */}
+              <div className="absolute -bottom-6 -right-6 bg-white rounded-xl shadow-lg p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                    <Award className="w-6 h-6" style={{ color: PRIMARY_COLOR }} />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold" style={{ color: PRIMARY_COLOR }}>10+ Years</div>
+                    <div className="text-xs text-gray-500">Of Excellence</div>
+                  </div>
                 </div>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <div className="mt-7" data-aos="fade-up" data-aos-delay="520">
-              <button className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-sky-500 to-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(56,189,248,0.18)] hover:opacity-95 transition">
-                {WHO.cta}
-              </button>
+              </div>
             </div>
           </div>
-
-          {/* RIGHT */}
-          <div className="relative" data-aos="fade-left">
-            <div className="relative rounded-[28px] overflow-hidden border border-white/12 bg-white/5 shadow-[0_22px_80px_rgba(2,6,23,0.55)]">
-              {/* Image */}
-              <div className="relative h-[280px] sm:h-[340px] lg:h-[420px]">
-                <img
-                  src="/aboutimage2.jpg"
-                  alt={WHO.image.alt}
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
+          
+          {/* Right Side - Content */}
+          <div data-aos="fade-left">
+            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4 shadow-sm border border-[#294d6b]/10">
+              <Shield className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+              <span className="text-sm font-medium" style={{ color: PRIMARY_COLOR }}>Who We Are</span>
+            </div>
+            
+            <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: PRIMARY_COLOR }}>
+              Redefining Global Travel & Documentation Services
+            </h2>
+            
+            <p className="text-gray-600 leading-relaxed mb-4">
+              At EGS Group, we go beyond being just a service provider—we are your trusted partner 
+              in simplifying global travel and documentation requirements. Based in the heart of Delhi, 
+              we specialize in crafting high-quality, exam-accurate solutions for travelers worldwide.
+            </p>
+            
+            <p className="text-gray-600 leading-relaxed mb-6">
+              With years of expertise, a dedicated team of professionals, and a client-first approach, 
+              we ensure every service is delivered with accuracy, transparency, and efficiency.
+            </p>
+            
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5" style={{ color: PRIMARY_COLOR }} />
+                <span className="text-gray-700 text-sm">100% Transparency</span>
               </div>
-
-              {/* Floating card */}
-              <div
-                className="absolute -bottom-6 left-4 right-4 sm:left-6 sm:right-6 rounded-2xl border border-white/12 bg-black/35 backdrop-blur-md p-4 sm:p-5"
-                data-aos="zoom-in"
-                data-aos-delay="180"
-              >
-                <p className="text-sm font-semibold text-white">
-                  Reliable documentation support under one roof
-                </p>
-                <p className="mt-1 text-xs sm:text-sm text-slate-200/90 leading-relaxed">
-                  Clear guidance, accurate filing, and proactive follow-ups—so
-                  your submission stays embassy-ready.
-                </p>
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-white/10 border border-white/10 px-3 py-1 text-[11px] font-semibold text-slate-100">
-                    Visa (E-Visa + Sticker)
-                  </span>
-                  <span className="rounded-full bg-white/10 border border-white/10 px-3 py-1 text-[11px] font-semibold text-slate-100">
-                    Attestation & Legalization
-                  </span>
-                  <span className="rounded-full bg-white/10 border border-white/10 px-3 py-1 text-[11px] font-semibold text-slate-100">
-                    Translation & Support
-                  </span>
-                </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5" style={{ color: PRIMARY_COLOR }} />
+                <span className="text-gray-700 text-sm">Expert Guidance</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5" style={{ color: PRIMARY_COLOR }} />
+                <span className="text-gray-700 text-sm">Fast Processing</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5" style={{ color: PRIMARY_COLOR }} />
+                <span className="text-gray-700 text-sm">Best Price Guarantee</span>
               </div>
             </div>
-
-            {/* Soft glows */}
-            <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-sky-400/20 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-12 -left-12 h-44 w-44 rounded-full bg-violet-400/20 blur-3xl" />
+            
+            <button 
+              className="px-6 py-2.5 rounded-full text-white font-semibold transition-all duration-300 hover:opacity-90"
+              style={{ backgroundColor: PRIMARY_COLOR }}
+            >
+              Learn More About Us
+            </button>
           </div>
         </div>
       </div>

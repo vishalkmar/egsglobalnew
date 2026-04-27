@@ -51,8 +51,12 @@ const navItems: NavItem[] = useMemo(
   []
 );
 
+  const routeTitles: Record<string, string> = {
+    "/user/track": "Track Application",
+  };
 
   const activeTitle =
+    Object.entries(routeTitles).find(([prefix]) => location.startsWith(prefix))?.[1] ||
     navItems.find((x) => location === x.to || location.startsWith(x.to + "/"))?.label ||
     "Dashboard";
 
@@ -72,7 +76,9 @@ const logout = async () => {
   } catch (e) {
     // ignore
   } finally {
+    localStorage.removeItem("authToken");
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     sessionStorage.removeItem("token");
 
     // ✅ history replace (dashboard back me nahi aayega)
@@ -85,9 +91,10 @@ const logout = async () => {
   const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
     <aside
       className={[
-        "h-full bg-teal-900 text-white flex flex-col",
+        "h-full text-white flex flex-col",
         isMobile ? "w-80" : collapsed ? "w-20" : "w-72",
       ].join(" ")}
+      style={{ backgroundColor: "#294d6b" }}
     >
       {/* Brand */}
       <div className="px-4 py-5 border-b border-white/10 flex items-center gap-3">
@@ -103,41 +110,7 @@ const logout = async () => {
         )}
       </div>
 
-      {/* Quick Actions */}
-      {(isMobile || !collapsed) && (
-        <div className="px-3 pt-3">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-            <div className="text-xs text-white/70">Quick actions</div>
-
-            {/* <div className="mt-2 grid grid-cols-2 gap-2">
-              <Link href="/user/profile/edit">
-                <a
-                  onClick={() => isMobile && setMobileOpen(false)}
-                  className="h-10 rounded-xl bg-white/10 hover:bg-white/15 flex items-center justify-center gap-2 text-sm font-semibold"
-                >
-                  <Pencil className="h-4 w-4" />
-                  Edit
-                </a>
-              </Link>
-
-              <button
-                type="button"
-                onClick={() => alert("Delete profile (wire to confirm modal + API)")}
-                className="h-10 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-50 flex items-center justify-center gap-2 text-sm font-semibold"
-                title="Delete Profile"
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete
-              </button>
-            </div> */}
-
-            {/* <div className="mt-2 text-[11px] text-white/70 leading-relaxed">
-              Note: Delete is demo only. Add confirmation modal + backend later.
-            </div> */}
-          </div>
-        </div>
-      )}
-
+      
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
@@ -218,7 +191,7 @@ const logout = async () => {
                   className="h-10 w-10 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 grid place-items-center"
                   aria-label="Toggle sidebar"
                 >
-                  <Menu className="h-5 w-5 text-teal-900" />
+                  <Menu className="h-5 w-5 text-[#294d6b]" />
                 </button>
 
                 <div className="hidden sm:block">
