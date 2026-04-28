@@ -1,193 +1,294 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Building2, 
+  Shield, 
+  Clock, 
+  MapPin, 
+  Wifi, 
+  Coffee, 
+  Sparkles,
+  Hotel,
+  Home,
+  Users
+} from "lucide-react";
 
-const HEADING_TEXT = "Accommodation Assistance for Safe & Budget-Friendly Stays";
+const PRIMARY_COLOR = "#294d6b";
 
-const AccommodationAssistanceBanner: React.FC = () => {
-  const [typedHeading, setTypedHeading] = useState("");
-  const [showCursor, setShowCursor] = useState(true);
+const hotelImages = [
+  {
+    id: 1,
+    url: "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    title: "Luxury Hotel",
+    location: "Connaught Place, Delhi",
+    price: "₹4,500/night",
+    amenities: ["WiFi", "AC", "Restaurant", "Gym"]
+  },
+  {
+    id: 2,
+    url: "https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    title: "Budget Stay",
+    location: "Paharganj, Delhi",
+    price: "₹1,200/night",
+    amenities: ["WiFi", "AC", "Free Breakfast"]
+  },
+  {
+    id: 3,
+    url: "https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    title: "Serviced Apartment",
+    location: "South Delhi",
+    price: "₹6,000/night",
+    amenities: ["WiFi", "AC", "Kitchen", "Parking"]
+  },
+  {
+    id: 4,
+    url: "https://images.pexels.com/photos/189296/pexels-photo-189296.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    title: "Hostel",
+    location: "Hauz Khas, Delhi",
+    price: "₹599/night",
+    amenities: ["WiFi", "Bunk Bed", "Common Area"]
+  },
+  {
+    id: 5,
+    url: "https://images.pexels.com/photos/262048/pexels-photo-262048.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    title: "Premium Hotel",
+    location: "Aerocity, Delhi",
+    price: "₹8,500/night",
+    amenities: ["WiFi", "Pool", "Spa", "Restaurant"]
+  }
+];
 
-  // typing effect (runs once)
+const stats = [
+  { label: "Delhi Coverage", value: "50+ Hotels & Hostels", icon: Building2 },
+  { label: "Safe Areas", value: "Verified Localities", icon: Shield },
+  { label: "24/7 Support", value: "Assistance till Check-in", icon: Clock },
+  { label: "Budget Options", value: "₹599 to ₹10,000+", icon: MapPin },
+];
+
+export default function AccommodationAssistanceBanner() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
   useEffect(() => {
-    let index = 0;
-    const interval = window.setInterval(() => {
-      setTypedHeading(HEADING_TEXT.slice(0, index + 1));
-      index++;
-      if (index >= HEADING_TEXT.length) window.clearInterval(interval);
-    }, 38);
-
-    return () => window.clearInterval(interval);
+    AOS.init({
+      duration: 800,
+      once: true,
+      offset: 80,
+      easing: "ease-in-out",
+    });
   }, []);
 
-  // cursor blink (continuous)
   useEffect(() => {
-    const t = window.setInterval(() => setShowCursor((p) => !p), 520);
-    return () => window.clearInterval(t);
-  }, []);
+    if (!isAutoPlaying) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % hotelImages.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isAutoPlaying]);
 
-  const stats = useMemo(
-    () => [
-      { label: "Delhi Coverage", value: "Hotels • Hostels • Stays" },
-      { label: "Preferred", value: "Safe • Verified Areas" },
-      { label: "Support", value: "Assistance from Start to Check-in" },
-    ],
-    []
-  );
+  const nextSlide = () => {
+    setIsAutoPlaying(false);
+    setCurrentIndex((prev) => (prev + 1) % hotelImages.length);
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  };
+
+  const prevSlide = () => {
+    setIsAutoPlaying(false);
+    setCurrentIndex((prev) => (prev - 1 + hotelImages.length) % hotelImages.length);
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  };
+
+  const currentHotel = hotelImages[currentIndex];
 
   return (
-    <section className="relative w-full overflow-hidden mt-[70px]">
-      {/* NAVY / BLUISH BACKGROUND */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(1000px 520px at 18% 22%, rgba(56,189,248,0.26) 0%, rgba(2,6,23,0) 60%)," +
-            "radial-gradient(760px 520px at 85% 28%, rgba(99,102,241,0.26) 0%, rgba(2,6,23,0) 58%)," +
-            "radial-gradient(820px 560px at 55% 85%, rgba(244,114,182,0.12) 0%, rgba(2,6,23,0) 62%)," +
-            "linear-gradient(135deg, rgba(2,6,23,1) 0%, rgba(15,23,42,1) 36%, rgba(2,6,23,1) 100%)",
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/35 to-black/20" />
+    <section className="relative overflow-hidden bg-[#f5f6f8]">
+      
+      {/* Subtle Dots Pattern */}
+      <div className="absolute inset-0 opacity-30" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 1px)`,
+        backgroundSize: '32px 32px'
+      }} />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        
+        {/* Header */}
+        <div className="text-center mb-10" data-aos="fade-up">
+          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4 shadow-sm border border-[#294d6b]/10">
+            <Hotel className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+            <span className="text-sm font-medium" style={{ color: PRIMARY_COLOR }}>Accommodation Assistance</span>
+          </div>
+          
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4" style={{ color: PRIMARY_COLOR }}>
+            Safe & Budget-Friendly Stays
+            <span className="block mt-2 text-gray-800">in Delhi</span>
+          </h1>
+          
+          <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
+            Finding the right place to stay is essential for a comfortable journey. 
+            We help travelers secure safe, reliable, and well-connected accommodations.
+          </p>
+          
+          <div className="flex justify-center mt-6">
+            <div className="w-20 h-1 rounded-full" style={{ backgroundColor: PRIMARY_COLOR }} />
+          </div>
+        </div>
 
-      {/* soft glows */}
-      <div className="pointer-events-none absolute -top-28 -left-28 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
-      <div className="pointer-events-none absolute top-24 -right-32 h-80 w-80 rounded-full bg-sky-400/18 blur-3xl" />
-
-      <div className="relative z-10 py-14 sm:py-16 md:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* MAIN WRAPPER CARD (glass) */}
-          <div className="rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-md shadow-[0_25px_80px_rgba(0,0,0,0.35)] overflow-hidden">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center p-6 sm:p-10 lg:p-12">
-              {/* LEFT */}
-              <div
-                className="order-2 lg:order-1"
-                style={{
-                  animation: "egsfadeup 700ms ease-out both",
-                }}
-              >
-                {/* badge */}
-                <div
-                  className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-xs sm:text-sm font-semibold text-white/90"
-                  style={{ animation: "egsfadeup 700ms ease-out both", animationDelay: "80ms" }}
-                >
-                  <span className="h-2 w-2 rounded-full bg-rose-400" />
-                  Accommodation Support · Delhi
-                </div>
-
-                {/* heading */}
-                <h1
-                  className="mt-5 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight"
-                  style={{ animation: "egsfadeup 700ms ease-out both", animationDelay: "140ms" }}
-                >
-                  <span className="bg-gradient-to-r from-sky-300 via-cyan-200 to-indigo-200 bg-clip-text text-transparent">
-                    {typedHeading}
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-2 gap-10 items-center">
+          
+          {/* Left Side - Content */}
+          <div data-aos="fade-right">
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
+                  We Make Your Stay 
+                  <span className="relative inline-block ml-2" style={{ color: PRIMARY_COLOR }}>
+                    Hassle-Free
+                    <svg className="absolute -bottom-2 left-0 w-full" height="4" viewBox="0 0 100 4" fill="none">
+                      <path d="M0 2 L100 2" stroke={PRIMARY_COLOR} strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
                   </span>
-                  <span
-                    className={`inline-block w-[10px] ml-1 rounded-sm align-middle ${
-                      showCursor ? "opacity-100" : "opacity-0"
-                    }`}
-                    style={{ height: "1.15em", background: "rgba(125,211,252,0.9)" }}
-                  />
-                </h1>
-
-                <p
-                  className="mt-4 text-base sm:text-lg md:text-xl text-white/90"
-                  style={{ animation: "egsfadeup 700ms ease-out both", animationDelay: "220ms" }}
-                >
-                  Accommodation assistance in Delhi for every type of traveller.
+                </h2>
+                
+                <p className="text-gray-600 leading-relaxed">
+                  Accommodation assistance in Delhi for every type of traveller. From affordable stays 
+                  to premium housing options, we help you secure safe, reliable, and well-connected 
+                  accommodations tailored to your needs, preferences, and budgets.
                 </p>
-
-                <p
-                  className="mt-4 text-sm sm:text-base md:text-lg text-white/75 leading-relaxed max-w-2xl"
-                  style={{ animation: "egsfadeup 700ms ease-out both", animationDelay: "280ms" }}
-                >
-                  Finding the right place to stay is essential for a comfortable journey. EGS Group assists
-                  travelers with short-term arrangements tailored to their needs, preferences, and budgets.
-                  From affordable stays to premium housing options, we help you secure safe, reliable, and
-                  well-connected accommodations.
-                </p>
-
-                {/* mini stats */}
-                <div
-                  className="mt-7 grid grid-cols-1 sm:grid-cols-3 gap-3"
-                  style={{ animation: "egsfadeup 700ms ease-out both", animationDelay: "340ms" }}
-                >
-                  {stats.map((s, i) => (
-                    <div
-                      key={s.label}
-                      className="rounded-2xl border border-white/10 bg-white/8 px-4 py-3"
-                      style={{
-                        background: "rgba(255,255,255,0.06)",
-                        animation: "egsfadeup 650ms ease-out both",
-                        animationDelay: `${380 + i * 90}ms`,
-                      }}
-                    >
-                      <p className="text-[11px] font-semibold tracking-wide text-white/60 uppercase">
-                        {s.label}
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-white/90">{s.value}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA */}
-                <div
-                  className="mt-7 flex flex-wrap gap-3"
-                  style={{ animation: "egsfadeup 700ms ease-out both", animationDelay: "520ms" }}
-                >
-                  <button className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-500 to-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:opacity-95 transition">
-                    Request Accommodation Options
-                  </button>
-                  <button className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white/85 hover:bg-white/10 transition">
-                    Talk to a Coordinator
-                  </button>
-                </div>
               </div>
-
-              {/* RIGHT IMAGE */}
-              <div
-                className="order-1 lg:order-2"
-                style={{
-                  animation: "egsscalein 650ms ease-out both",
-                  animationDelay: "120ms",
-                }}
-              >
-                <div className="relative w-full rounded-3xl overflow-hidden shadow-[0_22px_70px_rgba(0,0,0,0.35)]">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
-                  <img
-                    src="/accomodation.jpg"
-                    alt="Accommodation assistance and stay arrangements"
-                    className="w-full h-[260px] sm:h-[320px] md:h-[380px] lg:h-[420px] object-cover"
-                    width={1200}
-                    height={800}
-                  />
-                  {/* small bottom label */}
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="inline-flex items-center rounded-full bg-black/40 border border-white/10 px-4 py-2 text-xs sm:text-sm text-white/90 backdrop-blur">
-                      Verified areas · Budget to Premium · Smooth check-in guidance
+              
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                {stats.map((stat, idx) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div key={idx} className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                        <Icon className="w-5 h-5" style={{ color: PRIMARY_COLOR }} />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">{stat.label}</p>
+                        <p className="text-sm font-semibold text-gray-800">{stat.value}</p>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  );
+                })}
+              </div>
+              
+              {/* Amenities */}
+              <div className="flex flex-wrap gap-2">
+                {["Verified Areas", "Budget to Premium", "Smooth Check-in", "24/7 Support"].map((item) => (
+                  <span key={item} className="text-xs px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600">
+                    {item}
+                  </span>
+                ))}
+              </div>
+              
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap gap-3 pt-2">
+                <button 
+                  className="px-6 py-2.5 rounded-full text-white font-semibold transition-all duration-300 hover:opacity-90"
+                  style={{ backgroundColor: PRIMARY_COLOR }}
+                >
+                  Find Accommodation
+                </button>
+                <button 
+                  className="px-6 py-2.5 rounded-full border-2 font-semibold transition-all duration-300 hover:shadow-md"
+                  style={{ borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}
+                >
+                  Talk to Coordinator
+                </button>
               </div>
             </div>
           </div>
-
-          {/* keyframes */}
-          <style>{`
-            @keyframes egsfadeup {
-              from { opacity: 0; transform: translateY(14px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-            @keyframes egsscalein {
-              from { opacity: 0; transform: scale(0.96); }
-              to { opacity: 1; transform: scale(1); }
-            }
-          `}</style>
+          
+          {/* Right Side - Carousel */}
+          <div data-aos="fade-left">
+            <div className="relative">
+              {/* Main Card */}
+              <div className="bg-white rounded-2xl overflow-hidden shadow-xl">
+                <div className="relative h-64 md:h-80 overflow-hidden">
+                  <img
+                    src={currentHotel.url}
+                    alt={currentHotel.title}
+                    className="w-full h-full object-cover transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                  
+                  {/* Price Tag */}
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
+                    <span className="text-sm font-bold" style={{ color: PRIMARY_COLOR }}>{currentHotel.price}</span>
+                  </div>
+                </div>
+                
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xl font-bold text-gray-800">{currentHotel.title}</h3>
+                    <div className="flex gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <svg key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <MapPin className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-500">{currentHotel.location}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {currentHotel.amenities.map((amenity) => (
+                      <span key={amenity} className="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600">
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Navigation Arrows */}
+              <button
+                onClick={prevSlide}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:shadow-lg transition-all duration-300"
+              >
+                <ChevronLeft className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+              </button>
+              
+              <button
+                onClick={nextSlide}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:shadow-lg transition-all duration-300"
+              >
+                <ChevronRight className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+              </button>
+              
+              {/* Dots */}
+              <div className="flex justify-center gap-2 mt-4">
+                {hotelImages.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setIsAutoPlaying(false);
+                      setCurrentIndex(idx);
+                      setTimeout(() => setIsAutoPlaying(true), 10000);
+                    }}
+                    className={`transition-all duration-300 rounded-full ${
+                      idx === currentIndex
+                        ? "w-6 h-1.5"
+                        : "w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400"
+                    }`}
+                    style={{ backgroundColor: idx === currentIndex ? PRIMARY_COLOR : undefined }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
-};
-
-export default AccommodationAssistanceBanner;
+}
