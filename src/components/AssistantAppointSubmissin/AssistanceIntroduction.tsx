@@ -1,181 +1,189 @@
-// EmbassyConsularIntro.tsx
 "use client";
 
 import React, { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { 
+  Building2, 
+  Globe, 
+  FileCheck, 
+  Calendar, 
+  Fingerprint, 
+  BookText,
+  Shield,
+  Sparkles,
+  ArrowRight,
+  CheckCircle,
+  Clock,
+  Users
+} from "lucide-react";
+
+const PRIMARY_COLOR = "#294d6b";
 
 export default function EmbassyConsularIntro() {
   useEffect(() => {
     AOS.init({
-      duration: 750,
-      once: false,
-      offset: 120,
-      easing: "ease-out",
-      mirror: true,
+      duration: 800,
+      once: true,
+      offset: 80,
+      easing: "ease-in-out",
     });
   }, []);
 
+  const procedures = [
+    {
+      icon: FileCheck,
+      text: "Submitting visa applications for tourism, business, study, work, or long-term stay"
+    },
+    {
+      icon: Fingerprint,
+      text: "Providing biometrics such as fingerprints and photographs"
+    },
+    {
+      icon: Calendar,
+      text: "Scheduling appointments at the Embassy, Consulate, or VFS centre"
+    },
+    {
+      icon: BookText,
+      text: "Submitting passports and supporting documents for verification"
+    },
+    {
+      icon: Shield,
+      text: "Applying for consular services such as passport renewal, attestation, document verification, and emergency travel permissions"
+    }
+  ];
+
   return (
-    <section className="w-full bg-gradient-to-b from-slate-50 via-white to-slate-50 py-14 px-4 sm:px-6 lg:px-10 relative overflow-hidden">
-      {/* soft background accents (light) */}
-      <div className="pointer-events-none absolute -top-28 left-1/2 h-64 w-[46rem] -translate-x-1/2 rounded-full bg-emerald-200/35 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-28 right-0 h-72 w-72 rounded-full bg-sky-200/35 blur-3xl" />
-
-      <div className="max-w-5xl mx-auto relative">
-        {/* Badge + Heading */}
-        <div className="mb-8 text-center">
-          <div
-            data-aos="fade-down"
-            className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-1 text-xs font-medium text-emerald-700"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            Embassy & Consular Services – Overview
+    <section className="py-16 md:py-24 bg-[#f5f6f8] relative">
+      {/* Subtle Dots Pattern */}
+      <div className="absolute inset-0 opacity-30" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 1px)`,
+        backgroundSize: '32px 32px'
+      }} />
+      
+      {/* Decorative Circles */}
+      <div className="absolute top-20 right-10 w-64 h-64 rounded-full bg-[#294d6b]/5 blur-3xl" />
+      <div className="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-[#1a3650]/5 blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#294d6b]/3 blur-3xl" />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header */}
+        <div className="text-center mb-12 md:mb-16" data-aos="fade-up">
+          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4 shadow-sm border border-[#294d6b]/10">
+            <Building2 className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+            <span className="text-sm font-medium" style={{ color: PRIMARY_COLOR }}>Embassy & Consular Services</span>
           </div>
-
-          <h1
-            data-aos="fade-up"
-            data-aos-delay="80"
-            className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900"
-          >
+          
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4" style={{ color: PRIMARY_COLOR }}>
             What Are Embassy and Consular Services?
-          </h1>
-
-          <p
-            data-aos="fade-up"
-            data-aos-delay="140"
-            className="mt-3 text-sm sm:text-base text-slate-500 max-w-3xl mx-auto"
-          >
-            A neutral explanation of how official embassies, consulates and visa
-            centres handle international travel and documentation processes.
+          </h2>
+          
+          <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
+            A neutral explanation of how official embassies, consulates and visa centres handle international travel and documentation processes.
           </p>
+          
+          <div className="flex justify-center mt-6">
+            <div className="w-20 h-1 rounded-full" style={{ backgroundColor: PRIMARY_COLOR }} />
+          </div>
         </div>
 
-        {/* Main Card */}
-        <div
-          data-aos="zoom-in"
-          className="relative rounded-3xl border border-slate-200/70 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] overflow-hidden"
-        >
-          {/* gradient top bar */}
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-sky-500 to-emerald-400" />
-
-          {/* subtle inner tint */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-emerald-50/40 via-transparent to-transparent" />
-
-          <div className="p-6 sm:p-8 lg:p-10 relative">
-            {/* Intro Paragraph */}
-            <p
-              data-aos="fade-up"
-              data-aos-delay="80"
-              className="text-sm sm:text-base text-slate-700 leading-relaxed"
-            >
-              Embassy and Consular Services refer to the official processes
-              handled by a country’s Embassy, Consulate, or authorised visa
-              centre (such as VFS Global).
-            </p>
-
-            {/* Divider */}
-            <div
-              data-aos="fade"
-              data-aos-delay="120"
-              className="my-6 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"
-            />
-
-            {/* Two-column layout on larger screens */}
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start">
-              {/* Left: Steps / procedure */}
-              <div
-                data-aos="fade-right"
-                data-aos-delay="120"
-                className="rounded-2xl border border-slate-200/70 bg-white p-5 sm:p-6 shadow-sm"
-              >
-                <h2 className="text-base sm:text-lg font-semibold text-slate-900 mb-3">
-                  Typical Procedures Involved
-                </h2>
-                <p className="text-sm sm:text-base text-slate-700 mb-3">
-                  In most cases, applicants must follow a defined procedure that
-                  includes:
-                </p>
-
-                <ul className="space-y-2.5 text-sm sm:text-base text-slate-700">
-                  <li className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500" />
-                    <span>
-                      Submitting visa applications for tourism, business, study,
-                      work, or long-term stay
-                    </span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500" />
-                    <span>
-                      Providing biometrics such as fingerprints and photographs
-                    </span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500" />
-                    <span>
-                      Scheduling appointments at the Embassy, Consulate, or VFS
-                      centre
-                    </span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500" />
-                    <span>
-                      Submitting passports and supporting documents for
-                      verification
-                    </span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500" />
-                    <span>
-                      Applying for consular services such as passport renewal
-                      (for citizens of that country), attestation, document
-                      verification, and emergency travel permissions
-                    </span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Right: Info block / highlight box */}
-              <div
-                data-aos="fade-left"
-                data-aos-delay="180"
-                className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 sm:p-5"
-              >
-                <h3 className="text-sm sm:text-base font-semibold text-emerald-900 mb-2">
-                  How Embassies and Consulates Operate
-                </h3>
-                <p className="text-xs sm:text-sm text-emerald-900/90 leading-relaxed">
-                  Embassies and Consulates operate under strict international
-                  and government guidelines. Each country has its own
-                  requirements, document checklists, timelines, eligibility
-                  rules, and jurisdiction restrictions. Appointment availability
-                  is controlled directly by the concerned Embassy or visa centre,
-                  and applicants must follow the official process to secure a
-                  slot.
-                </p>
-
-                <div className="mt-4 rounded-xl bg-white/90 border border-emerald-100 px-3 py-2.5 text-xs sm:text-sm text-emerald-950">
-                  In simple terms, Embassy and Consular Services are the official
-                  gateway through which international travellers complete visa,
-                  document, and identity-related procedures before travelling to
-                  another country.
+        {/* Main Content */}
+        <div className="grid lg:grid-cols-2 gap-8" data-aos="fade-up">
+          
+          {/* Left Side - Procedures */}
+          <div className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+            <div className="p-6 md:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                  <FileCheck className="w-5 h-5" style={{ color: PRIMARY_COLOR }} />
                 </div>
+                <h3 className="text-xl font-bold text-gray-800">Typical Procedures Involved</h3>
+              </div>
+              
+              <p className="text-gray-600 text-sm mb-6">
+                In most cases, applicants must follow a defined procedure that includes:
+              </p>
+              
+              <div className="space-y-4">
+                {procedures.map((procedure, idx) => {
+                  const Icon = procedure.icon;
+                  return (
+                    <div key={idx} className="flex gap-3 group">
+                      <div className="flex-shrink-0">
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                          <Icon className="w-3 h-3" style={{ color: PRIMARY_COLOR }} />
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-sm leading-relaxed group-hover:text-gray-800 transition-colors">
+                        {procedure.text}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          
+          {/* Right Side - Info Box */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+              <div className="p-6 md:p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                    <Globe className="w-5 h-5" style={{ color: PRIMARY_COLOR }} />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-800">How Embassies and Consulates Operate</h3>
+                </div>
+                
+                <p className="text-gray-600 text-sm leading-relaxed mb-6">
+                  Embassies and Consulates operate under strict international and government guidelines. 
+                  Each country has its own requirements, document checklists, timelines, eligibility rules, 
+                  and jurisdiction restrictions. Appointment availability is controlled directly by the 
+                  concerned Embassy or visa centre, and applicants must follow the official process to secure a slot.
+                </p>
+                
+                <div className="p-4 rounded-xl" style={{ backgroundColor: `${PRIMARY_COLOR}05`, borderLeft: `3px solid ${PRIMARY_COLOR}` }}>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    <strong className="font-semibold" style={{ color: PRIMARY_COLOR }}>In simple terms,</strong> Embassy and Consular Services are the official 
+                    gateway through which international travellers complete visa, document, and 
+                    identity-related procedures before travelling to another country.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Quick Stats */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  { icon: Clock, value: "10-15 Days", label: "Avg Processing" },
+                  { icon: Users, value: "50+", label: "Countries Served" },
+                  { icon: CheckCircle, value: "98%", label: "Success Rate" }
+                ].map((stat, idx) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div key={idx} className="text-center group">
+                      <div className="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                        <Icon className="w-5 h-5" style={{ color: PRIMARY_COLOR }} />
+                      </div>
+                      <div className="text-base font-bold text-gray-800">{stat.value}</div>
+                      <div className="text-xs text-gray-500">{stat.label}</div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
-
-        {/* Optional tiny note */}
-        <p
-          data-aos="fade-up"
-          data-aos-delay="120"
-          className="mt-4 text-[11px] sm:text-xs text-slate-400 text-center"
-        >
-          This section is for general informational purposes and does not replace
-          official guidance from any Embassy, Consulate, or authorised visa
-          centre.
-        </p>
+        
+        {/* Note */}
+        <div className="mt-8 text-center" data-aos="fade-up">
+          <p className="text-xs text-gray-400">
+            This section is for general informational purposes and does not replace official guidance from any Embassy, 
+            Consulate, or authorised visa centre.
+          </p>
+        </div>
       </div>
     </section>
   );

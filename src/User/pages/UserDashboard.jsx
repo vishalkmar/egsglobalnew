@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import {
   FileCheck, Clock, AlertCircle, CheckCircle2, Package,
-  LogOut, Search, Filter, Eye
+  Search, Filter, Eye, CreditCard, FileText
 } from "lucide-react";
 import { userDashboardAPI } from "../../lib/api";
 
@@ -23,6 +23,7 @@ export default function UserDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
+  const [applicationTab, setApplicationTab] = useState("all");
 
   // Fetch dashboard on mount
   useEffect(() => {
@@ -72,19 +73,12 @@ export default function UserDashboard() {
     fetchSubmissions();
   }, [dashboardData, selectedService, selectedStatus, searchQuery, page]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setLocation("/user/login");
-  };
-
   const handleViewDetails = (submission) => {
     setLocation(`/user/track/${submission.serviceType}/${submission.id}`);
   };
 
-  const services = ["all", "evisa", "hrd", "mea", "pcc", "sticker_visa", "translation", "assistant_appointment", "insurance", "meet_greet"];
-  const statuses = ["all", "Pending", "Processing", "Approved", "Rejected", "Dispatched"];
+  const services = ["all", "evisa", "hrd", "mea", "pcc", "sticker_visa", "translation", "assistant_appointment", "dummy_ticket", "insurance", "meet_greet"];
+  const statuses = ["all", "Pending", "Processing", "Approved", "Rejected", "Dispatched", "Received"];
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -118,6 +112,18 @@ export default function UserDashboard() {
       default:
         return null;
     }
+  };
+
+  const visibleSubmissions = submissions.filter((sub) => {
+    if (applicationTab === "paid") return sub.payment === "Paid";
+    if (applicationTab === "manual") return sub.payment !== "Paid";
+    return true;
+  });
+
+  const tabCounts = {
+    all: submissions.length,
+    paid: submissions.filter((sub) => sub.payment === "Paid").length,
+    manual: submissions.filter((sub) => sub.payment !== "Paid").length,
   };
 
   if (loading) {
@@ -249,15 +255,40 @@ export default function UserDashboard() {
         {/* Submissions List */}
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Your Submissions
-            </h2>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Your Applications</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  All forms yahin dikhenge. Paid applications alag se aur manual applications alag se dekh sakte ho.
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-2 rounded-2xl bg-slate-50 p-2">
+                <button
+                  onClick={() => setApplicationTab("all")}
+                  className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${applicationTab === "all" ? "bg-[#294d6b] text-white" : "bg-white text-slate-700"}`}
+                >
+                  All Applications ({tabCounts.all})
+                </button>
+                <button
+                  onClick={() => setApplicationTab("paid")}
+                  className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${applicationTab === "paid" ? "bg-[#294d6b] text-white" : "bg-white text-slate-700"}`}
+                >
+                  Paid Applications ({tabCounts.paid})
+                </button>
+                <button
+                  onClick={() => setApplicationTab("manual")}
+                  className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${applicationTab === "manual" ? "bg-[#294d6b] text-white" : "bg-white text-slate-700"}`}
+                >
+                  Manual Applications ({tabCounts.manual})
+                </button>
+              </div>
+            </div>
           </div>
 
-          {submissions.length === 0 ? (
+          {visibleSubmissions.length === 0 ? (
             <div className="p-12 text-center">
               <Package className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">No submissions found matching your filters</p>
+              <p className="text-gray-600">No applications found in this tab</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -282,7 +313,7 @@ export default function UserDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {submissions.map((sub) => (
+                  {visibleSubmissions.map((sub) => (
                     <tr key={sub.id} className="hover:bg-gray-50 transition">
                       <td className="px-6 py-4">
                         <span className="inline-block px-3 py-1 bg-[#294d6b]/10 text-[#294d6b] text-sm font-semibold rounded-full">
@@ -290,7 +321,13 @@ export default function UserDashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
-                        {sub.country || sub.submissionCountry || sub.destination || sub.visaType || sub.insuranceType || sub.docType || "—"}
+                        <div>{sub.country || sub.submissionCountry || sub.destination || sub.visaType || sub.insuranceType || sub.docType || "—"}</div>
+                        <div className="mt-2">
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${sub.payment === "Paid" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
+                            {sub.payment === "Paid" ? <CreditCard className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
+                            {sub.payment === "Paid" ? "Paid Application" : "Manual Application"}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getStatusColor(sub.status)}`}>
@@ -318,10 +355,10 @@ export default function UserDashboard() {
           )}
 
           {/* Pagination */}
-          {submissions.length > 0 && (
+          {visibleSubmissions.length > 0 && (
             <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                Showing {(page - 1) * limit + 1} to {(page - 1) * limit + submissions.length} results
+                Showing {(page - 1) * limit + 1} to {(page - 1) * limit + visibleSubmissions.length} results
               </p>
               <div className="flex gap-2">
                 <button

@@ -20,6 +20,7 @@ type ApiRow = {
   specialRequirements?: string;
   status?: string;
   payment?: string;
+  paymentAmount?: string | null;
   documents?: ApiDoc[];
 };
 
@@ -152,16 +153,17 @@ export default function InsuranceAdmin() {
         <div className="bg-[#294d6b] text-white px-4 py-3 font-semibold flex items-center justify-between"><span>Insurance Enquiries</span><span className="text-sm font-semibold opacity-90">Showing: {filtered.length}</span></div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-600"><tr><th className="text-left px-4 py-3 font-medium">Applicant</th><th className="text-left px-4 py-3 font-medium">Travel</th><th className="text-left px-4 py-3 font-medium">Destination</th><th className="text-left px-4 py-3 font-medium">Passport</th><th className="text-left px-4 py-3 font-medium">Status</th><th className="text-left px-4 py-3 font-medium">Payment</th><th className="text-left px-4 py-3 font-medium">Actions</th></tr></thead>
+            <thead className="bg-slate-50 text-slate-600"><tr><th className="text-left px-4 py-3 font-medium">Applicant</th><th className="text-left px-4 py-3 font-medium">Travel</th><th className="text-left px-4 py-3 font-medium">Destination</th><th className="text-left px-4 py-3 font-medium">Passport</th><th className="text-left px-4 py-3 font-medium">Status</th><th className="text-left px-4 py-3 font-medium">Payment</th><th className="text-left px-4 py-3 font-medium">Amount</th><th className="text-left px-4 py-3 font-medium">Actions</th></tr></thead>
             <tbody>
-              {pagedRows.length === 0 ? <tr><td colSpan={7} className="px-4 py-10 text-center text-slate-600">{loading ? "Loading..." : "No records found."}</td></tr> : pagedRows.map((r) => (
+              {pagedRows.length === 0 ? <tr><td colSpan={8} className="px-4 py-10 text-center text-slate-600">{loading ? "Loading..." : "No records found."}</td></tr> : pagedRows.map((r) => (
                 <tr key={r.id} className="border-t border-slate-100">
                   <td className="px-4 py-3 text-slate-900"><div className="font-medium">{r.name || "User"}</div><div className="text-xs text-slate-500">{r.email}</div><div className="text-xs text-slate-500">{r.phone}</div></td>
                   <td className="px-4 py-3 text-slate-900"><div>{r.insuranceType}</div><div className="text-xs text-slate-500">{r.travelDate}{r.returnDate ? ` to ${r.returnDate}` : ""}</div></td>
                   <td className="px-4 py-3 text-slate-900"><div>{r.destination}</div><div className="text-xs text-slate-500">{r.tripDuration ? `${r.tripDuration} days` : "Duration not set"}</div></td>
                   <td className="px-4 py-3">{r.documents?.[0]?.url ? <a href={r.documents[0].url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-[#294d6b] hover:bg-slate-50"><FileText className="h-4 w-4" />Open<ExternalLink className="h-3 w-3" /></a> : <span className="text-xs text-slate-500">No file</span>}</td>
                   <td className="px-4 py-3"><select value={r.status || "Pending"} onChange={(e) => updateField(r, { status: e.target.value })} className="h-9 px-2 rounded-lg border border-slate-200 bg-slate-50 text-sm font-medium text-slate-900 outline-none"><option>Pending</option><option>Processing</option><option>Approved</option><option>Rejected</option><option>Dispatched</option><option>Received</option></select></td>
-                  <td className="px-4 py-3"><select value={r.payment || "Pending"} onChange={(e) => updateField(r, { payment: e.target.value })} className="h-9 px-2 rounded-lg border border-[#294d6b]/20 bg-[#294d6b]/10 text-sm font-medium text-[#294d6b] outline-none"><option>Pending</option><option>Paid</option></select></td>
+                  <td className="px-4 py-3"><span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${(r.payment || "Pending") === "Paid" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800"}`}>{r.payment || "Pending"}</span></td>
+                  <td className="px-4 py-3 text-slate-900">{r.paymentAmount || "-"}</td>
                   <td className="px-4 py-3"><button onClick={() => deleteRow(r)} className="h-9 w-11 grid place-items-center rounded-xl border border-slate-200 bg-white hover:bg-rose-50" title="Delete"><Trash2 className="h-4 w-4 text-rose-600" /></button></td>
                 </tr>
               ))}

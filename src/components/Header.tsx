@@ -294,7 +294,7 @@ export default function Header() {
                     <button
                       onClick={() => {
                         setUserMenuOpen(false);
-                        window.location.href = "/dashboard";
+                        window.location.href = "/user/dashboard";
                       }}
                       className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:text-white transition-all duration-200 rounded-lg mx-1"
                       style={{ width: "calc(100% - 8px)" }}
@@ -451,7 +451,7 @@ export default function Header() {
                             style={{ backgroundColor: PRIMARY_COLOR }}
                             onClick={() => {
                               setIsMobileMenuOpen(false);
-                              window.location.href = "/dashboard";
+                              window.location.href = "/user/dashboard";
                             }}
                           >
                             Dashboard

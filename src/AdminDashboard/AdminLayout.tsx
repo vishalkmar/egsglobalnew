@@ -3,12 +3,14 @@ import { Link, useLocation } from "wouter";
 import {
   BadgeCheck,
   CalendarCheck,
+  CreditCard,
   FileText,
   Handshake,
   Languages,
   LayoutDashboard,
   LogOut,
   Menu,
+  PackageSearch,
   Search,
   ShieldCheck,
   Ticket,
@@ -40,6 +42,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       { label: "Insurance", to: "/admin/insurance", icon: ShieldCheck },
       { label: "Meet & Greet", to: "/admin/meet-greet", icon: Handshake },
       { label: "HRD Attestation", to: "/admin/hrd-attestation", icon: FileText },
+      { label: "Payments", to: "/admin/payments", icon: CreditCard },
+      { label: "Courier System", to: "/admin/courier-system", icon: PackageSearch },
     ],
     []
   );

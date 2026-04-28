@@ -1,86 +1,125 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { 
+  Sparkles, 
+  ArrowRight, 
+  CheckCircle,
+  Send
+} from "lucide-react";
 
-const HERO = {
-  titleLines: ["E-Visa & Travel Assistance", "Fast. Simple. Reliable."],
-  description:
-    "Apply online with expert guidance. We help you submit the right documents, avoid rejections, and track your application end-to-end.",
-};
+const PRIMARY_COLOR = "#294d6b";
 
-export default function VisaBannerWithEVisaForm() {
+export default function VisaBanner() {
+  const [typedText, setTypedText] = useState("");
+  const [showCursor, setShowCursor] = useState(true);
+  const fullText = "Fast. Simple. Reliable.";
+
   useEffect(() => {
     AOS.init({
       duration: 800,
-      once: false,
-      offset: 120,
+      once: true,
+      offset: 80,
       easing: "ease-in-out",
-      mirror: true,
     });
   }, []);
 
+  useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      setTypedText(fullText.slice(0, index + 1));
+      index++;
+      if (index >= fullText.length) clearInterval(interval);
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const cursorInterval = setInterval(() => setShowCursor(prev => !prev), 500);
+    return () => clearInterval(cursorInterval);
+  }, []);
+
   return (
-    <section className="relative w-full bg-white text-slate-900 mt-[70px]">
-      <div className="relative w-full min-h-[70vh] md:min-h-[85vh] overflow-hidden">
-        <div
-          className="absolute inset-0 bg-center bg-cover"
-          style={{
-            background:
-              "radial-gradient(900px 500px at 18% 25%, rgba(99,102,241,0.45) 0%, rgba(15,23,42,0) 60%)," +
-              "radial-gradient(700px 450px at 85% 30%, rgba(56,189,248,0.30) 0%, rgba(15,23,42,0) 55%)," +
-              "radial-gradient(800px 520px at 55% 85%, rgba(244,114,182,0.18) 0%, rgba(15,23,42,0) 60%)," +
-              "linear-gradient(135deg, rgba(2,6,23,1) 0%, rgba(15,23,42,1) 35%, rgba(2,6,23,1) 100%)",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35" />
-
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
-            {/* LEFT */}
-            <div data-aos="fade-right" className="text-white pt-10 md:pt-14">
-              <h1
-                data-aos="fade-down"
-                data-aos-delay="140"
-                className="mt-6 text-3xl sm:text-4xl md:text-5xl lg:text-[3.2rem] font-bold leading-tight"
-              >
-                {HERO.titleLines.map((line, i) => (
-                  <span key={i} className="block">
-                    {line}
-                  </span>
-                ))}
-              </h1>
-
-              <p
-                data-aos="fade-down"
-                data-aos-delay="210"
-                className="mt-5 text-sm sm:text-base md:text-lg text-slate-100 max-w-xl leading-relaxed"
-              >
-                {HERO.description}
-              </p>
-
-              <div
-                data-aos="fade-down"
-                data-aos-delay="280"
-                className="mt-7 grid grid-cols-2 gap-3 max-w-xl"
-              >
-                <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                  <p className="text-xs text-slate-200">Avg. Processing</p>
-                  <p className="text-base font-semibold">2–7 Working Days</p>
+    <section className="relative overflow-hidden  bg-gradient-to-br from-white via-slate-50 to-[#f0f4f8]">
+      
+      {/* Subtle Dots Pattern */}
+      <div className="absolute inset-0 opacity-30" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 1px)`,
+        backgroundSize: '32px 32px'
+      }} />
+      
+      {/* Decorative Circles */}
+      <div className="absolute top-20 right-10 w-72 h-72 rounded-full bg-[#294d6b]/5 blur-3xl" />
+      <div className="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-[#1a3650]/5 blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#294d6b]/3 blur-3xl" />
+      
+      {/* Content Container - Centered */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div className="text-center max-w-3xl mx-auto">
+          
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-white shadow-sm rounded-full px-4 py-1.5 mb-6 border border-gray-100" data-aos="fade-down">
+            <Sparkles className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+            <span className="text-sm font-medium" style={{ color: PRIMARY_COLOR }}>E-Visa & Travel Assistance</span>
+          </div>
+          
+          {/* Main Heading */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight text-gray-800" data-aos="fade-up">
+            E-Visa & Travel
+            <span className="block mt-2" style={{ color: PRIMARY_COLOR }}>Assistance</span>
+          </h1>
+          
+          {/* Typed Subheading */}
+          <div className="mb-6" data-aos="fade-up" data-aos-delay="100">
+            <span className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-500">
+              {typedText}
+            </span>
+            <span className={`inline-block w-[2px] h-7 ml-1 align-middle ${showCursor ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundColor: PRIMARY_COLOR }} />
+          </div>
+          
+          {/* Description */}
+          <p className="text-gray-500 text-base md:text-lg leading-relaxed mb-8" data-aos="fade-up" data-aos-delay="200">
+            Apply online with expert guidance. We help you submit the right documents, 
+            avoid rejections, and track your application end-to-end.
+          </p>
+          
+          {/* Feature List - Centered */}
+          <div className="flex flex-wrap justify-center gap-5 mb-10" data-aos="fade-up" data-aos-delay="300">
+            {[
+              "Expert document review",
+              "End-to-end tracking",
+              "Avoid common rejections"
+            ].map((feature, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                  <CheckCircle className="w-3 h-3" style={{ color: PRIMARY_COLOR }} />
                 </div>
-
-                <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                  <p className="text-xs text-slate-200">Coverage</p>
-                  <p className="text-base font-semibold">50+ Destinations</p>
-                </div>
+                <span className="text-gray-600 text-sm">{feature}</span>
               </div>
-            </div>
-
-            {/* RIGHT (placeholder for form) */}
-            <div className="w-full" />
+            ))}
+          </div>
+          
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap justify-center gap-4" data-aos="fade-up" data-aos-delay="400">
+            <button className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-white font-semibold transition-all duration-300 hover:shadow-lg group" style={{ backgroundColor: PRIMARY_COLOR }}>
+              Apply for E-Visa
+              <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+            <button className="inline-flex items-center gap-2 px-8 py-3 rounded-full border-2 border-gray-300 text-gray-600 font-semibold hover:border-[#294d6b] hover:text-[#294d6b] transition-all duration-300">
+              Learn More
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
+      </div>
+      
+      {/* Simple Wave Bottom */}
+      <div className="relative">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 60" fill="#f5f6f8">
+          <path d="M0,32L80,37.3C160,43,320,53,480,53.3C640,53,800,43,960,37.3C1120,32,1280,32,1360,32L1440,32L1440,60L1360,60C1280,60,1120,60,960,60C800,60,640,60,480,60C320,60,160,60,80,60L0,60Z"></path>
+        </svg>
       </div>
     </section>
   );

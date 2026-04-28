@@ -6,8 +6,9 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2, Loader, PlusCircle, Trash2, Ticket } from "lucide-react";
+import { AlertCircle, CheckCircle2, CreditCard, Loader, PlusCircle, Trash2 } from "lucide-react";
 import useFormToast from "@/hooks/useFormToast";
+import { paymentsAPI } from "@/lib/api";
 
 const COUNTRY_OPTIONS = [
   "Bulgaria",
@@ -36,9 +37,29 @@ type PaxTicket = {
 };
 
 const uid = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+const CASHFREE_SCRIPT_SRC = "https://sdk.cashfree.com/js/v3/cashfree.js";
+
+function loadCashfreeScript(): Promise<any> {
+  return new Promise((resolve, reject) => {
+    if ((window as any).Cashfree) return resolve((window as any).Cashfree);
+    const existing = document.querySelector(`script[src="${CASHFREE_SCRIPT_SRC}"]`);
+    if (existing) {
+      existing.addEventListener("load", () => resolve((window as any).Cashfree), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Failed to load Cashfree SDK")), { once: true });
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = CASHFREE_SCRIPT_SRC;
+    s.async = true;
+    s.onload = () => resolve((window as any).Cashfree);
+    s.onerror = () => reject(new Error("Failed to load Cashfree SDK"));
+    document.body.appendChild(s);
+  });
+}
 
 export default function DummyTicketForm() {
   const { user } = useUserPrefill();
+  const FEE_INR = Number((import.meta as any).env?.VITE_DUMMY_TICKET_FEE_INR || 1000);
 
   useEffect(() => {
     if (!user) return;
@@ -62,7 +83,14 @@ export default function DummyTicketForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [cashfreeReady, setCashfreeReady] = useState(false);
   useFormToast({ error, success, successTitle: "Dummy ticket submitted" });
+
+  useEffect(() => {
+    loadCashfreeScript()
+      .then(() => setCashfreeReady(true))
+      .catch((err) => setError(err?.message || "Payment SDK failed to load"));
+  }, []);
 
   // ✅ keep your working API base
   const API_BASE = "http://localhost:5000/api";
@@ -190,15 +218,15 @@ export default function DummyTicketForm() {
         name: base.name || "",
         email: base.email,
         mobile: base.mobile,
-        amountPerPax: 1000,
-        totalAmount: 1000 * paxes.length,
+        amountPerPax: FEE_INR,
+        totalAmount: FEE_INR * paxes.length,
         paxes: paxes.map((p, idx) => ({
           paxNo: idx + 1,
           tripType: p.tripType,
           startLocation: p.destination, // keep backend key same style
           departureDate: p.departureDate,
           returnDate: p.tripType === "roundTrip" ? p.returnDate : "",
-          amount: 1000,
+          amount: FEE_INR,
         })),
         submittedAt: new Date().toISOString(),
         tracking: {
@@ -207,11 +235,37 @@ export default function DummyTicketForm() {
         },
       };
 
-      await submitDummyTicket(token, payload);
+      const submissionRes = await submitDummyTicket(token, payload);
+      const submissionId = submissionRes?.item?.id || null;
 
-      setSuccess("Dummy ticket request submitted successfully. Our team will contact you shortly.");
-      setBase({ name: "", email: "", mobile: "" });
-      setPaxes([{ id: uid(), tripType: "oneWay", destination: "", departureDate: "", returnDate: "" }]);
+      if (!cashfreeReady || !(window as any).Cashfree) {
+        throw new Error("Payment SDK not ready. Please refresh and try again.");
+      }
+
+      const initRes = await paymentsAPI.initiate({
+        serviceType: "dummy_ticket",
+        submissionId,
+        amount: FEE_INR * paxes.length,
+        notes: `Dummy ticket fee for ${paxes.length} pax`,
+      });
+
+      const sessionId = initRes.data?.payment_session_id;
+      if (!sessionId) throw new Error("Payment session not created");
+
+      const cashfree = (window as any).Cashfree({
+        mode: initRes.data?.cashfree_mode || "sandbox",
+      });
+
+      const result = await cashfree.checkout({
+        paymentSessionId: sessionId,
+        redirectTarget: "_self",
+      });
+
+      if (result?.error) {
+        throw new Error(result.error.message || "Payment cancelled");
+      }
+
+      setSuccess("Redirecting to payment gateway...");
     } catch (err: any) {
       const msg = err?.message || "Something went wrong. Please try again.";
       setError(msg);
@@ -423,7 +477,7 @@ export default function DummyTicketForm() {
                 {/* Amount */}
                 <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 flex items-center justify-between">
                   <span className="text-sm font-medium text-slate-600">Amount (per pax)</span>
-                  <span className="text-base font-bold text-[#294d6b]">₹ 1000</span>
+              <span className="text-base font-bold text-[#294d6b]">₹ {FEE_INR}</span>
                 </div>
               </div>
             ))}
@@ -437,7 +491,7 @@ export default function DummyTicketForm() {
             </div>
             <div className="text-right">
               <p className="text-sm text-slate-600">Total Amount</p>
-              <p className="text-lg font-semibold text-[#294d6b]">₹ {1000 * paxes.length}</p>
+              <p className="text-lg font-semibold text-[#294d6b]">₹ {FEE_INR * paxes.length}</p>
             </div>
           </div>
 
@@ -455,7 +509,7 @@ export default function DummyTicketForm() {
 
           <Button
             type="submit"
-            disabled={!isValid || submitting}
+            disabled={!isValid || submitting || !cashfreeReady}
             className="w-full h-12 rounded-xl bg-gradient-to-r from-[#294d6b] to-[#1f3b54] hover:from-[#1f3b54] hover:to-[#162b3d] disabled:opacity-50"
           >
             {submitting ? (
@@ -464,7 +518,10 @@ export default function DummyTicketForm() {
                 Submitting...
               </>
             ) : (
-              "Buy Dummy Ticket"
+              <>
+                <CreditCard className="w-4 h-4 mr-2" />
+                Pay ₹{(FEE_INR * paxes.length).toLocaleString("en-IN")} & Submit
+              </>
             )}
           </Button>
         </form>

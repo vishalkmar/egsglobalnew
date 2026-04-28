@@ -41,13 +41,18 @@ import AdminLogin from './AdminDashboard/Pages/AdminLogin'
 
 
 
-// here are user routes 
+// here are user routes
 
 import UserDashboardLayout from './User/UserDashboardLayout';
 import UserLoginPage from './User/pages/UserLoginPage'
 import UserDashboard from './User/pages/UserDashboard'
 import UserServicePage from './User/pages/UserServicePage';
 import UserSubmissionTrackPage from './User/pages/UserSubmissionTrackPage';
+import TransactionHistory from './User/pages/TransactionHistory';
+import PaymentSuccess from './User/pages/PaymentSuccess';
+import PaymentFailure from './User/pages/PaymentFailure';
+import Profile from './User/pages/Profile';
+import AdminPayments from './AdminDashboard/Pages/Payments';
 import MeaAttestationForm from './forms/MeaAttestationForm';
 import PccLegalizationForm from './forms/PccLegalizationForm';
 import HrdAttestationForm from './forms/HrdAttestationForm';
@@ -57,6 +62,10 @@ import MeetGreetForm from './forms/MeetGreetForm';
 import AssistanceAppointmentForm from './forms/AssistanceAppointmentForm';
 import DummyTicketForm from './forms/DummyTicketForm';
 import InsuranceForm from './forms/InsuranceForm';
+import FloatingSiteWidgets from './components/FloatingSiteWidgets';
+import CourierSystemAdmin from './AdminDashboard/Pages/CourierSystem';
+import DocumentCourierSupport from './pages/DocumentCourierSupport';
+import CourierStatusPage from './pages/CourierStatusPage';
 
 function Router() {
   return (
@@ -173,6 +182,21 @@ function Router() {
         )}
       </Route>
 
+      <Route path="/user/transactions">
+        <UserDashboardLayout>
+          <TransactionHistory />
+        </UserDashboardLayout>
+      </Route>
+
+      <Route path="/user/profile">
+        <UserDashboardLayout>
+          <Profile />
+        </UserDashboardLayout>
+      </Route>
+
+      <Route path="/payment-success" component={PaymentSuccess} />
+      <Route path="/payment-failure" component={PaymentFailure} />
+
       <Route path="/admin">
         <Redirect to="/admin/login"/>
       </Route>
@@ -244,6 +268,18 @@ function Router() {
         </AdminLayout>
       </Route>
 
+      <Route path="/admin/payments">
+        <AdminLayout>
+          <AdminPayments />
+        </AdminLayout>
+      </Route>
+
+      <Route path="/admin/courier-system">
+        <AdminLayout>
+          <CourierSystemAdmin />
+        </AdminLayout>
+      </Route>
+
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
 
@@ -257,6 +293,8 @@ function Router() {
       />
 
       <Route path="/insurance-dummy-ticket" component={InsuranceDummyTicket} />
+      <Route path="/document-courier-support" component={DocumentCourierSupport} />
+      <Route path="/courier-status" component={CourierStatusPage} />
       <Route path="/meet-greet" component={MeetGreet} />
       <Route
         path="/accommodation-assistant"
@@ -274,6 +312,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
+        <FloatingSiteWidgets />
         <Router />
       </TooltipProvider>
     </QueryClientProvider>

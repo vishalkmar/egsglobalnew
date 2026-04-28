@@ -68,10 +68,11 @@ export const adminDashboardAPI = {
   getSubmissions: (params) =>
     api.get('/secureadmin/admin/submissions', { params }),
   getUsers: (params) => api.get('/secureadmin/admin/users', { params }),
+  getCouriers: (params) => api.get('/secureadmin/admin/couriers', { params }),
   updateSubmissionStatus: (type, id, status, notes = '') =>
     api.patch(`/secureadmin/admin/submissions/${type}/${id}/status`, {
       status,
-      notes,
+      note: notes,
     }),
 };
 
@@ -106,6 +107,33 @@ export const serviceAPI = {
 // CONTACT FORM ENDPOINT
 export const contactAPI = {
   sendMessage: (formData) => api.post('/contact', formData),
+};
+
+// PAYMENTS
+export const paymentsAPI = {
+  initiate: (body) => api.post('/payments/initiate', body),
+  verify: (body) => api.post('/payments/verify', body),
+  history: (params) => api.get('/payments/history', { params }),
+  getOne: (id) => api.get(`/payments/me/${id}`),
+  // admin
+  adminList: (params) => api.get('/payments/admin/all', { params }),
+  adminStats: (params) => api.get('/payments/admin/stats', { params }),
+  adminGet: (id) => api.get(`/payments/admin/${id}`),
+  adminResend: (id) => api.post(`/payments/admin/${id}/resend`),
+};
+
+export const courierAPI = {
+  track: (number) => api.get('/courier/track', { params: { number } }),
+  adminList: (params) => api.get('/courier/admin', { params }),
+  adminCreate: (body) => api.post('/courier/admin', body),
+  adminUpdate: (id, body) => api.patch(`/courier/admin/${id}`, body),
+  adminDelete: (id) => api.delete(`/courier/admin/${id}`),
+};
+
+// USER PROFILE
+export const profileAPI = {
+  get: () => api.get('/secureuser/user/profile'),
+  update: (body) => api.patch('/secureuser/user/profile', body),
 };
 
 export default api;

@@ -1,87 +1,53 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Pencil, Trash2, Search, Filter } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Filter, Search, Trash2 } from "lucide-react";
 
 type DummyTicketRow = {
   id: string;
+  name?: string;
   email: string;
-  contact: string;
-  destinationCountry: string;
-  departureDate: string; // yyyy-mm-dd
-  ticketAmount: number; // dummy amount
-  tripType: "One Way" | "Two Way";
-  applicationStatus: "Pending" | "Approved" | "Rejected" | "Dispatched" | "Received";
-  paymentStatus: "Paid" | "Pending";
-  createdAt: string;
+  mobile: string;
+  destination: string;
+  departureDate: string;
+  returnDate?: string;
+  tripType: "oneWay" | "roundTrip";
+  paxCount: number;
+  totalAmount: number;
+  status?: string;
+  payment?: string;
 };
 
-/* ✅ Destination countries (as per dropdown) */
-const DESTINATION_COUNTRIES = [
-  "All",
-  "Bulgaria",
-  "North Macedonia",
-  "Croatia",
-  "Serbia",
-  "Russia",
-  "Montenegro",
-  "Belarus",
-];
-
-const TRIP_TYPES: Array<DummyTicketRow["tripType"] | "All"> = ["All", "One Way", "Two Way"];
-
-const APPLICATION_STATUS_OPTIONS: Array<DummyTicketRow["applicationStatus"] | "All"> = [
-  "All",
-  "Pending",
-  "Approved",
-  "Rejected",
-  "Dispatched",
-  "Received",
-];
-
-const PAYMENT_STATUS_OPTIONS: Array<DummyTicketRow["paymentStatus"] | "All"> = [
-  "All",
-  "Paid",
-  "Pending",
-];
+const DESTINATION_COUNTRIES = ["All", "Bulgaria", "North Macedonia", "Croatia", "Serbia", "Russia", "Montenegro", "Belarus"];
+const STATUS_OPTIONS = ["All", "Pending", "Processing", "Approved", "Rejected", "Dispatched", "Received"];
 
 export default function DummyTicketAdmin() {
-  /* ---------- MOCK DATA ---------- */
-  const [rows] = useState<DummyTicketRow[]>([
-    {
-      id: "DT-4001",
-      email: "user1@mail.com",
-      contact: "9876543210",
-      destinationCountry: "Russia",
-      departureDate: "2026-01-20",
-      ticketAmount: 18500,
-      tripType: "One Way",
-      applicationStatus: "Pending",
-      paymentStatus: "Pending",
-      createdAt: "Just now",
-    },
-    {
-      id: "DT-4002",
-      email: "user2@mail.com",
-      contact: "9999999999",
-      destinationCountry: "Serbia",
-      departureDate: "2026-02-02",
-      ticketAmount: 26500,
-      tripType: "Two Way",
-      applicationStatus: "Approved",
-      paymentStatus: "Paid",
-      createdAt: "2 hours ago",
-    },
-  ]);
-
-  /* ---------- FILTERS ---------- */
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const [rows, setRows] = useState<DummyTicketRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [destination, setDestination] = useState<string>("All");
-  const [tripType, setTripType] = useState<(typeof TRIP_TYPES)[number]>("All");
-  const [appStatus, setAppStatus] = useState<(typeof APPLICATION_STATUS_OPTIONS)[number]>("All");
-  const [paymentStatus, setPaymentStatus] = useState<(typeof PAYMENT_STATUS_OPTIONS)[number]>("All");
-
-  /* ---------- PAGINATION ---------- */
+  const [appStatus, setAppStatus] = useState<string>("All");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
+
+  const fetchRows = async () => {
+    setLoading(true);
+    setApiError(null);
+    try {
+      const res = await fetch(`${API_BASE}/dummy-ticket`, { credentials: "include" });
+      const data = await res.json().catch(() => ({ items: [] }));
+      if (!res.ok) throw new Error(data?.message || "Failed to fetch dummy ticket requests");
+      setRows(data.items || []);
+    } catch (err: any) {
+      setApiError(err?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRows();
+  }, []);
 
   useEffect(() => {
     const calc = () => {
@@ -97,308 +63,155 @@ export default function DummyTicketAdmin() {
     return () => window.removeEventListener("resize", calc);
   }, []);
 
-  /* ---------- FILTERING ---------- */
   const filtered = useMemo(() => {
     let data = [...rows];
 
     if (searchText.trim()) {
       const q = searchText.toLowerCase();
-      data = data.filter((r) => {
-        return (
-          r.id.toLowerCase().includes(q) ||
-          r.email.toLowerCase().includes(q) ||
-          r.contact.toLowerCase().includes(q) ||
-          r.destinationCountry.toLowerCase().includes(q) ||
-          r.tripType.toLowerCase().includes(q) ||
-          r.applicationStatus.toLowerCase().includes(q) ||
-          r.paymentStatus.toLowerCase().includes(q)
-        );
-      });
+      data = data.filter((r) =>
+        [r.name, r.email, r.mobile, r.destination, r.tripType, r.status, r.payment]
+          .filter(Boolean)
+          .some((v) => String(v).toLowerCase().includes(q))
+      );
     }
 
-    if (destination !== "All")
-      data = data.filter((r) => r.destinationCountry === destination);
-
-    if (tripType !== "All") data = data.filter((r) => r.tripType === tripType);
-
-    if (appStatus !== "All")
-      data = data.filter((r) => r.applicationStatus === appStatus);
-
-    if (paymentStatus !== "All")
-      data = data.filter((r) => r.paymentStatus === paymentStatus);
+    if (destination !== "All") data = data.filter((r) => r.destination === destination);
+    if (appStatus !== "All") data = data.filter((r) => (r.status || "Pending") === appStatus);
 
     return data;
-  }, [rows, searchText, destination, tripType, appStatus, paymentStatus]);
+  }, [rows, searchText, destination, appStatus]);
 
-  /* ---------- STATS ---------- */
   const stats = useMemo(() => {
-    const total = rows.length;
+    return {
+      total: rows.length,
+      paid: rows.filter((r) => r.payment === "Paid").length,
+      pending: rows.filter((r) => (r.status || "Pending") === "Pending").length,
+      destinationCount: destination !== "All" ? rows.filter((r) => r.destination === destination).length : rows.length,
+    };
+  }, [rows, destination]);
 
-    const byDestination =
-      destination !== "All"
-        ? rows.filter((r) => r.destinationCountry === destination).length
-        : rows.length;
-
-    const byTripType =
-      tripType !== "All" ? rows.filter((r) => r.tripType === tripType).length : rows.length;
-
-    const byAppStatus =
-      appStatus !== "All"
-        ? rows.filter((r) => r.applicationStatus === appStatus).length
-        : rows.length;
-
-    const byPayment =
-      paymentStatus !== "All"
-        ? rows.filter((r) => r.paymentStatus === paymentStatus).length
-        : rows.length;
-
-    return { total, byDestination, byTripType, byAppStatus, byPayment };
-  }, [rows, destination, tripType, appStatus, paymentStatus]);
-
-  /* ---------- PAGINATION ---------- */
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
 
   useEffect(() => {
     setPage(1);
-  }, [pageSize, searchText, destination, tripType, appStatus, paymentStatus]);
+  }, [pageSize, searchText, destination, appStatus]);
 
-  const pagedRows = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, page, pageSize]);
+  const pagedRows = useMemo(() => filtered.slice((page - 1) * pageSize, page * pageSize), [filtered, page, pageSize]);
 
-  /* ---------- UI HELPERS ---------- */
+  const updateField = async (row: DummyTicketRow, updates: Record<string, string>) => {
+    try {
+      const res = await fetch(`${API_BASE}/dummy-ticket/${row.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(updates),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || "Update failed");
+      setRows((prev) => prev.map((item) => (item.id === row.id ? { ...item, ...updates } : item)));
+    } catch (err: any) {
+      alert(err?.message || "Update failed");
+    }
+  };
+
+  const onDelete = async (row: DummyTicketRow) => {
+    if (!window.confirm(`Delete dummy ticket ${row.email}?`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/dummy-ticket/${row.id}`, { method: "DELETE", credentials: "include" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || "Delete failed");
+      setRows((prev) => prev.filter((item) => item.id !== row.id));
+    } catch (err: any) {
+      alert(err?.message || "Delete failed");
+    }
+  };
+
   const pill = (text: string, kind: "app" | "pay") => {
     const base = "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold";
     if (kind === "pay") {
       return text === "Paid"
-        ? `${base} bg-[#294d6b]/10 text-[#294d6b]`
-        : `${base} bg-amber-50 text-amber-900`;
+        ? `${base} bg-emerald-50 text-emerald-700`
+        : `${base} bg-amber-50 text-amber-800`;
     }
-
     if (text === "Approved") return `${base} bg-[#294d6b]/10 text-[#294d6b]`;
     if (text === "Rejected") return `${base} bg-rose-50 text-rose-800`;
     if (text === "Pending") return `${base} bg-sky-50 text-sky-800`;
-    if (text === "Dispatched") return `${base} bg-purple-50 text-purple-800`;
-    if (text === "Received") return `${base} bg-[#294d6b]/10 text-[#294d6b]`;
+    if (text === "Dispatched") return `${base} bg-violet-50 text-violet-800`;
+    if (text === "Received") return `${base} bg-emerald-50 text-emerald-700`;
     return `${base} bg-slate-100 text-slate-700`;
   };
 
   const money = (amt: number) =>
-    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(amt);
-
-  /* ---------- ACTIONS ---------- */
-  const onEdit = (row: DummyTicketRow) => alert(`Edit: ${row.id} (wire to modal/page)`);
-  const onDelete = (row: DummyTicketRow) => alert(`Delete: ${row.id} (wire to confirm + API)`);
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(amt || 0);
 
   return (
     <div className="space-y-4">
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <div className="text-2xl font-semibold text-slate-900">{stats.total}</div>
-          <div className="mt-0.5 text-xs text-slate-600">Total Requests</div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="text-2xl font-semibold text-slate-900">{stats.byDestination}</div>
-          <div className="mt-0.5 text-xs text-slate-600">Destination wise</div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="text-2xl font-semibold text-slate-900">{stats.byTripType}</div>
-          <div className="mt-0.5 text-xs text-slate-600">Trip type wise</div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="text-2xl font-semibold text-slate-900">{stats.byAppStatus}</div>
-          <div className="mt-0.5 text-xs text-slate-600">Application status wise</div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="text-2xl font-semibold text-slate-900">{stats.byPayment}</div>
-          <div className="mt-0.5 text-xs text-slate-600">Payment status wise</div>
-        </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="text-2xl font-semibold text-slate-900">{stats.total}</div><div className="mt-0.5 text-xs text-slate-600">Total Requests</div></div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="text-2xl font-semibold text-slate-900">{stats.destinationCount}</div><div className="mt-0.5 text-xs text-slate-600">Destination wise</div></div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="text-2xl font-semibold text-slate-900">{stats.pending}</div><div className="mt-0.5 text-xs text-slate-600">Pending status</div></div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="text-2xl font-semibold text-slate-900">{stats.paid}</div><div className="mt-0.5 text-xs text-slate-600">Paid applications</div></div>
       </div>
 
-      {/* Filters */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4">
-        <div className="flex items-center gap-2 text-slate-900 font-semibold text-sm">
-          <Filter className="h-4 w-4" />
-          Filters
-        </div>
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 flex items-center justify-between">
+        <div className="text-sm text-slate-700">{loading ? "Loading requests..." : apiError ? `Error: ${apiError}` : `Loaded: ${rows.length}`}</div>
+        <button onClick={fetchRows} className="h-9 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm font-semibold">Refresh</button>
+      </div>
 
-        <div className="mt-3 grid grid-cols-1 lg:grid-cols-6 gap-2">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="flex items-center gap-2 text-slate-900 font-semibold text-sm"><Filter className="h-4 w-4" />Filters</div>
+        <div className="mt-3 grid grid-cols-1 lg:grid-cols-4 gap-2">
           <div className="lg:col-span-2">
             <label className="text-xs font-medium text-slate-600">Search</label>
             <div className="mt-1 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 h-10">
               <Search className="h-4 w-4 text-slate-500" />
-              <input
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                placeholder="Search by email, contact, destination..."
-                className="w-full outline-none text-sm"
-              />
+              <input value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="Search by name, email, contact..." className="w-full outline-none text-sm" />
             </div>
           </div>
-
-          <div>
-            <label className="text-xs font-medium text-slate-600">Destination</label>
-            <select
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none"
-            >
-              {DESTINATION_COUNTRIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-slate-600">Trip Type</label>
-            <select
-              value={tripType}
-              onChange={(e) => setTripType(e.target.value as any)}
-              className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none"
-            >
-              {TRIP_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-slate-600">Application Status</label>
-            <select
-              value={appStatus}
-              onChange={(e) => setAppStatus(e.target.value as any)}
-              className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none"
-            >
-              {APPLICATION_STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-slate-600">Payment Status</label>
-            <select
-              value={paymentStatus}
-              onChange={(e) => setPaymentStatus(e.target.value as any)}
-              className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none"
-            >
-              {PAYMENT_STATUS_OPTIONS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-          </div>
+          <div><label className="text-xs font-medium text-slate-600">Destination</label><select value={destination} onChange={(e) => setDestination(e.target.value)} className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none">{DESTINATION_COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}</select></div>
+          <div><label className="text-xs font-medium text-slate-600">Application Status</label><select value={appStatus} onChange={(e) => setAppStatus(e.target.value)} className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none">{STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200 overflow-hidden">
-        <div className="bg-[#294d6b] text-white px-4 py-3 font-semibold flex items-center justify-between">
-          <span>Dummy Ticket Requests</span>
-          <span className="text-sm font-semibold opacity-90">Showing: {filtered.length}</span>
-        </div>
-
+        <div className="bg-[#294d6b] text-white px-4 py-3 font-semibold flex items-center justify-between"><span>Dummy Ticket Requests</span><span className="text-sm font-semibold opacity-90">Showing: {filtered.length}</span></div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
-                <th className="text-left px-4 py-3 font-medium">Email</th>
-                <th className="text-left px-4 py-3 font-medium">Contact</th>
+                <th className="text-left px-4 py-3 font-medium">Applicant</th>
                 <th className="text-left px-4 py-3 font-medium">Destination</th>
-                <th className="text-left px-4 py-3 font-medium">Departure Date</th>
-                <th className="text-left px-4 py-3 font-medium">Ticket Amount</th>
-                <th className="text-left px-4 py-3 font-medium">Trip Type</th>
+                <th className="text-left px-4 py-3 font-medium">Journey</th>
+                <th className="text-left px-4 py-3 font-medium">Amount</th>
                 <th className="text-left px-4 py-3 font-medium">Application Status</th>
                 <th className="text-left px-4 py-3 font-medium">Payment Status</th>
                 <th className="text-left px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
-
             <tbody>
               {pagedRows.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center text-slate-600">
-                    No records found.
-                  </td>
-                </tr>
+                <tr><td colSpan={7} className="px-4 py-10 text-center text-slate-600">{loading ? "Loading..." : "No records found."}</td></tr>
               ) : (
                 pagedRows.map((r) => (
                   <tr key={r.id} className="border-t border-slate-100">
-                    <td className="px-4 py-3 text-slate-900">{r.email}</td>
-                    <td className="px-4 py-3 text-slate-900">{r.contact}</td>
-                    <td className="px-4 py-3 text-slate-900">{r.destinationCountry}</td>
-                    <td className="px-4 py-3 text-slate-900">{r.departureDate}</td>
-                    <td className="px-4 py-3 text-slate-900">{money(r.ticketAmount)}</td>
-                    <td className="px-4 py-3 text-slate-900">{r.tripType}</td>
-
-                    <td className="px-4 py-3">
-                      <span className={pill(r.applicationStatus, "app")}>{r.applicationStatus}</span>
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <span className={pill(r.paymentStatus, "pay")}>{r.paymentStatus}</span>
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <div className="inline-flex rounded-xl overflow-hidden border border-slate-200 bg-white">
-                        <button
-                          onClick={() => onEdit(r)}
-                          className="h-9 w-11 grid place-items-center hover:bg-slate-50"
-                          title="Edit"
-                        >
-                          <Pencil className="h-4 w-4 text-sky-700" />
-                        </button>
-                        <div className="w-px bg-slate-200" />
-                        <button
-                          onClick={() => onDelete(r)}
-                          className="h-9 w-11 grid place-items-center hover:bg-rose-50"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4 text-rose-600" />
-                        </button>
-                      </div>
-                    </td>
+                    <td className="px-4 py-3 text-slate-900"><div className="font-medium">{r.name || "User"}</div><div className="text-xs text-slate-500">{r.email}</div><div className="text-xs text-slate-500">{r.mobile}</div></td>
+                    <td className="px-4 py-3 text-slate-900">{r.destination}</td>
+                    <td className="px-4 py-3 text-slate-900"><div>{r.tripType === "roundTrip" ? "Round Trip" : "One Way"}</div><div className="text-xs text-slate-500">{r.departureDate}{r.returnDate ? ` to ${r.returnDate}` : ""}</div><div className="text-xs text-slate-500">Pax: {r.paxCount}</div></td>
+                    <td className="px-4 py-3 text-slate-900">{money(r.totalAmount)}</td>
+                    <td className="px-4 py-3"><select value={r.status || "Pending"} onChange={(e) => updateField(r, { status: e.target.value })} className="h-9 px-2 rounded-lg border border-slate-200 bg-slate-50 text-sm font-medium text-slate-900 outline-none"><option>Pending</option><option>Processing</option><option>Approved</option><option>Rejected</option><option>Dispatched</option><option>Received</option></select></td>
+                    <td className="px-4 py-3"><span className={pill(r.payment || "Pending", "pay")}>{r.payment || "Pending"}</span></td>
+                    <td className="px-4 py-3"><button onClick={() => onDelete(r)} className="h-9 w-11 grid place-items-center rounded-xl border border-slate-200 bg-white hover:bg-rose-50" title="Delete"><Trash2 className="h-4 w-4 text-rose-600" /></button></td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
         <div className="px-4 py-3 border-t border-slate-100 bg-white flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
-          <div className="text-sm text-slate-600">
-            Page {page} of {totalPages} • Rows per page: {pageSize}
-          </div>
-
+          <div className="text-sm text-slate-600">Page {page} of {totalPages} • Rows per page: {pageSize}</div>
           <div className="flex items-center gap-2">
-            <button
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="h-9 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:hover:bg-white text-sm font-semibold"
-            >
-              Prev
-            </button>
-            <button
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="h-9 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:hover:bg-white text-sm font-semibold"
-            >
-              Next
-            </button>
+            <button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="h-9 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-sm font-semibold">Prev</button>
+            <button disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="h-9 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-sm font-semibold">Next</button>
           </div>
         </div>
       </div>

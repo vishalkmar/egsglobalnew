@@ -15,6 +15,7 @@ import {
   LogOut,
   X,
   ChevronRight,
+  Receipt,
   FileText,Handshake,ShieldCheck,Ticket,CalendarCheck,BadgeCheck,Languages,Sticker
 } from "lucide-react";
 
@@ -47,6 +48,8 @@ const navItems: NavItem[] = useMemo(
     { label: "Insurance", to: "/user/insurance", icon: ShieldCheck },
     { label: "Meet & Greet", to: "/user/meet-greet", icon: Handshake },
     { label: "HRD Attestation", to: "/user/hrd-attestation", icon: FileText },
+    { label: "Transactions", to: "/user/transactions", icon: Receipt },
+    { label: "Profile", to: "/user/profile", icon: UserCircle2 },
   ],
   []
 );

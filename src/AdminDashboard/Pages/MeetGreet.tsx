@@ -156,7 +156,7 @@ export default function MeetGreet() {
                   <td className="px-4 py-3 text-slate-900">{r.visaType}</td>
                   <td className="px-4 py-3 text-slate-900">{r.submissionCountry}</td>
                   <td className="px-4 py-3"><select value={r.status || "Pending"} onChange={(e) => updateField(r, { status: e.target.value })} className="h-9 px-2 rounded-lg border border-slate-200 bg-slate-50 text-sm font-medium text-slate-900 outline-none"><option>Pending</option><option>Processing</option><option>Approved</option><option>Rejected</option><option>Dispatched</option><option>Received</option></select></td>
-                  <td className="px-4 py-3"><select value={r.payment || "Pending"} onChange={(e) => updateField(r, { payment: e.target.value })} className="h-9 px-2 rounded-lg border border-[#294d6b]/20 bg-[#294d6b]/10 text-sm font-medium text-[#294d6b] outline-none"><option>Pending</option><option>Paid</option></select></td>
+                  <td className="px-4 py-3"><span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${(r.payment || "Pending") === "Paid" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800"}`}>{r.payment || "Pending"}</span></td>
                   <td className="px-4 py-3"><button onClick={() => deleteRow(r)} className="h-9 w-11 grid place-items-center rounded-xl border border-slate-200 bg-white hover:bg-rose-50" title="Delete"><Trash2 className="h-4 w-4 text-rose-600" /></button></td>
                 </tr>
               ))}

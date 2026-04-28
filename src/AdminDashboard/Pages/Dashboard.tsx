@@ -9,6 +9,7 @@ type ServiceKey =
   | "sticker_visa"
   | "translation"
   | "assistant_appointment"
+  | "dummy_ticket"
   | "insurance"
   | "meet_greet";
 
@@ -59,6 +60,7 @@ const ROUTE_BY_SERVICE: Record<ServiceKey, string> = {
   sticker_visa: "/admin/sticker-visa",
   translation: "/admin/translation",
   assistant_appointment: "/admin/assistant-appointment",
+  dummy_ticket: "/admin/dummy-ticket",
   insurance: "/admin/insurance",
   meet_greet: "/admin/meet-greet",
 };
@@ -72,6 +74,7 @@ const SERVICE_OPTIONS: Array<{ value: "" | ServiceKey; label: string }> = [
   { value: "sticker_visa", label: "Sticker Visa" },
   { value: "translation", label: "Translation" },
   { value: "assistant_appointment", label: "Assistant & Appointment" },
+  { value: "dummy_ticket", label: "Dummy Ticket" },
   { value: "insurance", label: "Insurance" },
   { value: "meet_greet", label: "Meet & Greet" },
 ];

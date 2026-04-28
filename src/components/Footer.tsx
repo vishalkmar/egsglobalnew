@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Send, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import PublicSupportCTA from "@/components/PublicSupportCTA";
 
 const PRIMARY_COLOR = "#294d6b";
 
@@ -36,6 +37,9 @@ export default function Footer() {
 
   return (
     <footer className="relative text-white" style={{ backgroundColor: PRIMARY_COLOR }}>
+      <div className="bg-[#f5f6f8]">
+        <PublicSupportCTA />
+      </div>
       {/* Decorative Top Gradient */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-white/20 via-white/40 to-white/20" />
       

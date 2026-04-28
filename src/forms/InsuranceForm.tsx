@@ -7,14 +7,37 @@ import { Button } from "@/components/ui/button";
 import {
     AlertCircle,
     CheckCircle2,
+    CreditCard,
     Loader,
     PlusCircle,
+    ShieldCheck,
     Trash2,
     Upload,
     UserRound,
 } from "lucide-react";
 import useUserPrefill from "@/hooks/useUserPrefill";
 import useFormToast from "@/hooks/useFormToast";
+import { paymentsAPI } from "@/lib/api";
+
+const CASHFREE_SCRIPT_SRC = "https://sdk.cashfree.com/js/v3/cashfree.js";
+
+function loadCashfreeScript(): Promise<any> {
+  return new Promise((resolve, reject) => {
+    if ((window as any).Cashfree) return resolve((window as any).Cashfree);
+    const existing = document.querySelector(`script[src="${CASHFREE_SCRIPT_SRC}"]`);
+    if (existing) {
+      existing.addEventListener("load", () => resolve((window as any).Cashfree), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Failed to load Cashfree SDK")), { once: true });
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = CASHFREE_SCRIPT_SRC;
+    s.async = true;
+    s.onload = () => resolve((window as any).Cashfree);
+    s.onerror = () => reject(new Error("Failed to load Cashfree SDK"));
+    document.body.appendChild(s);
+  });
+}
 
 type BaseFields = {
     name: string;
@@ -84,7 +107,16 @@ export default function InsuranceForm() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const [cashfreeReady, setCashfreeReady] = useState(false);
     useFormToast({ error, success, successTitle: "Insurance submitted" });
+
+    useEffect(() => {
+        loadCashfreeScript()
+            .then(() => setCashfreeReady(true))
+            .catch((err) => setError(err?.message || "Payment SDK failed to load"));
+    }, []);
+
+    const FEE_INR = Number((import.meta as any).env?.VITE_INSURANCE_FEE_INR || 1000);
 
     // KEEP SAME API
     const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -277,23 +309,36 @@ export default function InsuranceForm() {
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data?.message || "Submission failed");
 
-            setSuccess(
-                "Your insurance enquiry has been submitted successfully. Our team will contact you shortly with suitable options."
-            );
+            const submissionId = data?.items?.[0]?.id || null;
 
-            setBase({ name: "", email: "", phone: "" });
-            setPaxes([
-                {
-                    id: uid(),
-                    insuranceType: "",
-                    travelDate: "",
-                    returnDate: "",
-                    tripDuration: "",
-                    destination: "",
-                    specialRequirements: "",
-                    passportFile: null,
-                },
-            ]);
+            if (!cashfreeReady || !(window as any).Cashfree) {
+                throw new Error("Payment SDK not ready. Please refresh and try again.");
+            }
+
+            const initRes = await paymentsAPI.initiate({
+                serviceType: "insurance",
+                submissionId,
+                amount: FEE_INR,
+                notes: `Insurance fee for ${paxPayload.length} pax`,
+            });
+
+            const sessionId = initRes.data?.payment_session_id;
+            if (!sessionId) throw new Error("Payment session not created");
+
+            const cashfree = (window as any).Cashfree({
+                mode: initRes.data?.cashfree_mode || "sandbox",
+            });
+
+            const result = await cashfree.checkout({
+                paymentSessionId: sessionId,
+                redirectTarget: "_self",
+            });
+
+            if (result?.error) {
+                throw new Error(result.error.message || "Payment cancelled");
+            }
+
+            setSuccess("Redirecting to payment gateway...");
         } catch (err: any) {
             setError(err?.message || "Something went wrong. Please try again.");
         } finally {
@@ -552,18 +597,31 @@ export default function InsuranceForm() {
                         ))}
                     </div>
 
+                    <div className="rounded-2xl border border-[#294d6b]/20 bg-[#294d6b]/5 p-4 flex items-start gap-3">
+                        <ShieldCheck className="h-5 w-5 text-[#294d6b] flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 text-sm text-slate-700">
+                            <div className="font-semibold text-[#294d6b]">Service fee: ₹{FEE_INR.toLocaleString("en-IN")}</div>
+                            <div className="text-xs text-slate-600 mt-0.5">
+                                Payable now via Cashfree (UPI, Cards, Netbanking). After successful payment, our team will start processing your insurance enquiry.
+                            </div>
+                        </div>
+                    </div>
+
                     <Button
                         type="submit"
-                        disabled={!isValid || submitting}
+                        disabled={!isValid || submitting || !cashfreeReady}
                         className="w-full h-12 rounded-xl bg-gradient-to-r from-[#294d6b] to-[#1f3b54] hover:from-[#1f3b54] hover:to-[#162b3d] disabled:opacity-50"
                     >
                         {submitting ? (
                             <>
                                 <Loader className="w-4 h-4 mr-2 animate-spin" />
-                                Submitting...
+                                Processing...
                             </>
                         ) : (
-                            "Submit Enquiry"
+                            <>
+                                <CreditCard className="w-4 h-4 mr-2" />
+                                Pay ₹{FEE_INR.toLocaleString("en-IN")} & Submit
+                            </>
                         )}
                     </Button>
                 </form>
