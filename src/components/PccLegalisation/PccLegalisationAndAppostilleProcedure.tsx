@@ -3,260 +3,232 @@
 import React, { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { 
+  CheckCircle, 
+  ArrowRight, 
+  Building2, 
+  Landmark, 
+  Globe,
+  FileCheck,
+  Shield,
+  Sparkles
+} from "lucide-react";
+
+const PRIMARY_COLOR = "#294d6b";
 
 interface FlowStep {
   label: string;
   sub?: string;
+  icon?: React.ElementType;
 }
 
 interface FlowType {
   title: string;
   highlight: string;
   description: string;
-  color: string; // left border colour
   steps: FlowStep[];
+  icon: React.ElementType;
 }
 
 const flows: FlowType[] = [
   {
     title: "PCC Legalization",
     highlight: "PCC → State → MEA → Embassy",
-    description:
-      "PCC for Bangladesh and Nepal is processed through state verification followed by MEA attestation, ensuring the document is valid for official use.",
-    color: "border-sky-500",
+    description: "For Bangladesh & Nepal: PCC processed through state verification followed by MEA attestation, ensuring validity for official use.",
+    icon: Shield,
     steps: [
-      {
-        label: "PCC Issuance",
-        sub: "Local Police Station / PSK / Passport Office",
-      },
-      {
-        label: "State Home Department Authentication",
-        sub: "Home / General Administration Department (State Govt.)",
-      },
-      {
-        label: "MEA Attestation",
-        sub: "Ministry of External Affairs, New Delhi",
-      },
-      {
-        label: "Embassy Attestation",
-        sub: "Embassy / Consulate of destination Bangladesh & Nepal",
-      },
+      { label: "PCC Issuance", sub: "Local Police Station / PSK / Passport Office", icon: FileCheck },
+      { label: "State Authentication", sub: "Home / General Administration Department", icon: Building2 },
+      { label: "MEA Attestation", sub: "Ministry of External Affairs, New Delhi", icon: Landmark },
+      { label: "Embassy Attestation", sub: "Embassy / Consulate of destination", icon: Globe },
     ],
   },
   {
     title: "PCC Apostille",
     highlight: "PCC → State → MEA Apostille",
-    description:
-      "For India, the PCC is processed through State Home Department authentication followed by MEA Apostille, making it valid for international use without further attestation.",
-    color: "border-emerald-500",
+    description: "For India: PCC processed through State Home Department authentication followed by MEA Apostille, valid internationally.",
+    icon: Globe,
     steps: [
-      {
-        label: "PCC Issuance",
-        sub: "Local Police Station / PSK / Passport Office",
-      },
-      {
-        label: "State Authentication",
-        sub: "State Home / General Administration Department",
-      },
-      {
-        label: "MEA Apostille",
-        sub: "Apostille by Ministry of External Affairs, New Delhi",
-      },
+      { label: "PCC Issuance", sub: "Local Police Station / PSK / Passport Office", icon: FileCheck },
+      { label: "State Authentication", sub: "State Home / General Administration Department", icon: Building2 },
+      { label: "MEA Apostille", sub: "Apostille by Ministry of External Affairs", icon: Landmark },
     ],
   },
 ];
 
-// step-wise colour palette
-const STEP_COLORS = [
-  { bg: "bg-slate-600", sub: "text-slate-50/90", dotBorder: "border-slate-300" },
-  { bg: "bg-amber-500", sub: "text-amber-50/90", dotBorder: "border-amber-300" },
-  { bg: "bg-sky-600", sub: "text-sky-50/90", dotBorder: "border-sky-300" },
-  {
-    bg: "bg-emerald-600",
-    sub: "text-emerald-50/90",
-    dotBorder: "border-emerald-300",
-  },
-];
+const StepCard: React.FC<{ step: FlowStep; index: number; total: number; isLast: boolean }> = ({ 
+  step, 
+  index, 
+  total, 
+  isLast 
+}) => {
+  const Icon = step.icon || CheckCircle;
+  
+  return (
+    <div className="relative flex-1 group">
+      {/* Step Circle with Pulse Effect */}
+      <div className="relative z-10 flex flex-col items-center">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center border-2 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg" 
+            style={{ borderColor: PRIMARY_COLOR }}>
+            <span className="text-sm font-bold" style={{ color: PRIMARY_COLOR }}>{index + 1}</span>
+          </div>
+          {!isLast && (
+            <div className="hidden lg:block absolute top-1/2 left-full w-full h-0.5 -translate-y-1/2" 
+              style={{ background: `linear-gradient(90deg, ${PRIMARY_COLOR} 0%, ${PRIMARY_COLOR}40 100%)` }} />
+          )}
+        </div>
+        
+        <div className="mt-4 text-center max-w-[180px] mx-auto">
+          <div className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center" 
+            style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+            <Icon className="w-5 h-5" style={{ color: PRIMARY_COLOR }} />
+          </div>
+          <p className="text-sm font-semibold text-gray-800">{step.label}</p>
+          <p className="text-xs text-gray-500 mt-1">{step.sub}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-const PccLegalizationApostilleFlow: React.FC = () => {
+export default function PccLegalizationApostilleFlow() {
   useEffect(() => {
     AOS.init({
-      duration: 750,
-      once: false,
-      offset: 120,
+      duration: 800,
+      once: true,
+      offset: 80,
       easing: "ease-in-out",
-      mirror: true,
     });
   }, []);
 
   return (
-    <section className="bg-white py-12 md:py-16">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* MAIN HEADING + INTRO */}
-        <div className="text-center mb-8 md:mb-10">
-          <h2
-            data-aos="fade-down"
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800"
-          >
-            Procedure for PCC Legalization & Apostille
+    <section className="py-16 md:py-24 bg-[#f5f6f8] relative">
+      {/* Subtle Dots Pattern */}
+      <div className="absolute inset-0 opacity-30" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 1px)`,
+        backgroundSize: '32px 32px'
+      }} />
+      
+      {/* Decorative Circles */}
+      <div className="absolute top-20 right-10 w-64 h-64 rounded-full bg-[#294d6b]/5 blur-3xl" />
+      <div className="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-[#1a3650]/5 blur-3xl" />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header */}
+        <div className="text-center mb-12 md:mb-16" data-aos="fade-up">
+          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4 shadow-sm border border-[#294d6b]/10">
+            <Sparkles className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+            <span className="text-sm font-medium" style={{ color: PRIMARY_COLOR }}>Procedure Guide</span>
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4" style={{ color: PRIMARY_COLOR }}>
+            PCC Legalization & Apostille Procedure
           </h2>
-          <p
-            data-aos="fade-left"
-            data-aos-delay="120"
-            className="mt-3 text-sm sm:text-base text-gray-600 leading-relaxed max-w-3xl mx-auto"
-          >
-            We provide PCC legalization services for Bangladesh and Nepal, which
-            are completed through state authentication followed by MEA
-            attestation. For India, PCC is processed through State Home
-            Department authentication and MEA Apostille, making it valid for
-            international use.
+          
+          <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
+            Complete step-by-step guide for PCC legalization and apostille process
           </p>
+          
+          <div className="flex justify-center mt-6">
+            <div className="w-20 h-1 rounded-full" style={{ backgroundColor: PRIMARY_COLOR }} />
+          </div>
         </div>
 
-        {/* FLOW CARDS */}
-        <div className="space-y-8 md:space-y-10">
-          {flows.map((flow, flowIndex) => (
-            <div
-              key={flow.title}
-              data-aos="fade-up"
-              data-aos-delay={flowIndex * 120}
-              className={`rounded-2xl border bg-slate-50/70 border-slate-200 shadow-sm p-4 sm:p-5 md:p-6 lg:p-7 flex flex-col gap-4 md:gap-5 border-l-4 ${flow.color}`}
-            >
-              {/* TITLE + SHORT LINE */}
-              <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between">
-                <div>
-                  <h3
-                    data-aos="fade-right"
-                    data-aos-delay={flowIndex * 120 + 100}
-                    className="text-lg sm:text-xl font-semibold text-slate-800"
-                  >
-                    {flow.title}
-                  </h3>
-                  <p
-                    data-aos="fade-left"
-                    data-aos-delay={flowIndex * 120 + 140}
-                    className="mt-1 text-xs sm:text-sm text-gray-600"
-                  >
-                    {flow.description}
-                  </p>
+        {/* Flow Cards */}
+        <div className="space-y-10">
+          {flows.map((flow, flowIndex) => {
+            const FlowIcon = flow.icon;
+            
+            return (
+              <div
+                key={flow.title}
+                className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100"
+                data-aos="fade-up"
+                data-aos-delay={flowIndex * 150}
+              >
+                {/* Card Header */}
+                <div className="p-6 pb-4 border-b border-gray-100" style={{ backgroundColor: `${PRIMARY_COLOR}05` }}>
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                        <FlowIcon className="w-6 h-6" style={{ color: PRIMARY_COLOR }} />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-800">{flow.title}</h3>
+                        <p className="text-gray-500 text-sm mt-1 max-w-2xl">{flow.description}</p>
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 rounded-full text-xs font-medium text-white" style={{ backgroundColor: PRIMARY_COLOR }}>
+                      {flow.highlight}
+                    </span>
+                  </div>
                 </div>
-
-                <span
-                  data-aos="zoom-in"
-                  data-aos-delay={flowIndex * 120 + 180}
-                  className="mt-1 inline-flex items-center justify-center self-start md:self-center rounded-full bg-slate-900/5 text-[11px] sm:text-xs px-3 py-1 font-medium text-slate-700"
-                >
-                  {flow.highlight}
-                </span>
-              </div>
-
-              {/* STEP FLOW */}
-              <div className="mt-2">
-                <div className="relative">
-                  {/* line behind cards */}
-                  <div
-                    data-aos="fade-up"
-                    data-aos-delay={flowIndex * 120 + 220}
-                    className="hidden md:block absolute top-1/2 left-4 right-4 h-[2px] bg-gradient-to-r from-slate-300 via-amber-300 via-sky-300 to-emerald-300 -translate-y-1/2 pointer-events-none"
-                  />
-
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-3 relative z-10">
-                    {flow.steps.map((step, index) => {
-                      const palette =
-                        STEP_COLORS[index] ??
-                        STEP_COLORS[STEP_COLORS.length - 1];
-
-                      const stepBgClass = palette.bg;
-                      const stepSubTextClass = palette.sub;
-                      const dotBorderClass = palette.dotBorder;
-
-                      // ✅ step animations: 1st fade-right, 2nd zoom-in, 3rd fade-up, 4th fade-left
-                      const stepAos =
-                        index === 0
-                          ? "fade-right"
-                          : index === 1
-                          ? "zoom-in"
-                          : index === flow.steps.length - 1
-                          ? "fade-left"
-                          : "fade-up";
-
-                      const delayBase = flowIndex * 120 + 280 + index * 140;
-
-                      return (
-                        <React.Fragment key={step.label}>
-                          {/* STEP CARD */}
-                          <div className="flex-1">
-                            <div className="relative max-w-xs md:max-w-none mx-auto">
-                              {/* connector dot */}
-                              <span
-                                data-aos="zoom-in"
-                                data-aos-delay={delayBase + 60}
-                                className={`hidden md:block absolute -top-2 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-white border ${dotBorderClass}`}
-                              />
-
-                              <div
-                                data-aos={stepAos}
-                                data-aos-delay={delayBase}
-                                data-aos-duration="650"
-                                className={`rounded-xl ${stepBgClass} shadow-sm border border-white/10 px-3.5 py-3 sm:px-4 sm:py-3.5 text-center`}
-                              >
-                                <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wide mb-1 text-white/80">
-                                  Step {index + 1}
-                                </p>
-                                <p className="text-sm sm:text-[0.98rem] font-medium text-white">
-                                  {step.label}
-                                </p>
-                                {step.sub && (
-                                  <p
-                                    className={`mt-1 text-[11px] sm:text-xs ${stepSubTextClass}`}
-                                  >
-                                    {step.sub}
-                                  </p>
-                                )}
+                
+                {/* Steps Roadmap */}
+                <div className="p-6">
+                  <div className="relative">
+                    {/* Desktop Connecting Line */}
+                    <div className="hidden lg:block absolute top-16 left-[15%] right-[15%] h-0.5 rounded-full" 
+                      style={{ backgroundColor: `${PRIMARY_COLOR}20` }} />
+                    
+                    <div className="flex flex-col lg:flex-row justify-between gap-8 lg:gap-4">
+                      {flow.steps.map((step, idx) => {
+                        const StepIcon = step.icon || CheckCircle;
+                        const isLast = idx === flow.steps.length - 1;
+                        
+                        return (
+                          <div key={idx} className="relative flex-1 group">
+                            {/* Step Number Circle */}
+                            <div className="relative z-10 flex flex-col items-center">
+                              <div className="relative">
+                                <div className="w-14 h-14 rounded-full bg-white shadow-md flex items-center justify-center border-2 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg" 
+                                  style={{ borderColor: PRIMARY_COLOR }}>
+                                  <span className="text-base font-bold" style={{ color: PRIMARY_COLOR }}>{idx + 1}</span>
+                                </div>
+                                {/* Animated Pulse Ring */}
+                                <div className="absolute inset-0 rounded-full animate-ping opacity-20" 
+                                  style={{ backgroundColor: PRIMARY_COLOR }} />
+                              </div>
+                              
+                              {/* Connecting Arrow (between steps) */}
+                              {!isLast && (
+                                <div className="hidden lg:block absolute top-1/2 left-full w-8 -translate-y-1/2">
+                                  <ArrowRight className="w-5 h-5" style={{ color: `${PRIMARY_COLOR}50` }} />
+                                </div>
+                              )}
+                              
+                              <div className="mt-4 text-center max-w-[200px] mx-auto">
+                                <div className="w-12 h-12 rounded-xl mx-auto mb-2 flex items-center justify-center" 
+                                  style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                                  <StepIcon className="w-6 h-6" style={{ color: PRIMARY_COLOR }} />
+                                </div>
+                                <p className="text-sm font-semibold text-gray-800">{step.label}</p>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">{step.sub}</p>
                               </div>
                             </div>
                           </div>
-
-                          {/* ARROW BETWEEN STEPS */}
-                          {index < flow.steps.length - 1 && (
-                            <div
-                              data-aos="zoom-in"
-                              data-aos-delay={delayBase + 80}
-                              className="flex md:flex-col items-center justify-center md:justify-start"
-                            >
-                              <span className="md:hidden text-slate-400 text-lg">
-                                →
-                              </span>
-                              <span className="hidden md:inline-block h-8 w-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-500 text-base shadow-sm">
-                                →
-                              </span>
-                            </div>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Footer Note */}
+                <div className="px-6 pb-6 pt-2">
+                  <div className="p-4 rounded-xl" style={{ backgroundColor: `${PRIMARY_COLOR}05` }}>
+                    <p className="text-xs text-gray-500 flex items-center gap-2">
+                      <Shield className="w-3.5 h-3.5" style={{ color: PRIMARY_COLOR }} />
+                      EGS supports you at each stage – from issuance to final attestation
+                    </p>
                   </div>
                 </div>
               </div>
-
-              {/* FOOTNOTE */}
-              <p
-                data-aos="fade-up"
-                data-aos-delay={flowIndex * 120 + 900}
-                className="mt-3 text-[11px] sm:text-xs text-gray-500"
-              >
-                EGS supports you at each stage of the PCC process – from issuance
-                and state authentication to MEA attestation / Apostille and,
-                where required, embassy attestation – so that your Police
-                Clearance Certificate is accepted confidently by foreign
-                authorities.
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
   );
-};
-
-export default PccLegalizationApostilleFlow;
+}

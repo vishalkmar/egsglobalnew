@@ -3,355 +3,289 @@
 import React, { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { 
+  FileText, 
+  Award, 
+  Shield, 
+  Clock, 
+  CheckCircle,
+  Sparkles,
+  Globe,
+  Users,
+  ArrowRight,
+  Languages,
+  BookOpen
+} from "lucide-react";
+
+const PRIMARY_COLOR = "#294d6b";
 
 type TabKey = "what" | "benefits" | "why";
 
-const ImmigrationTabs = {
+interface TabContent {
+  heading: string;
+  content: React.ReactNode;
+  features?: string[];
+}
+
+const ImmigrationTabs: Record<TabKey, TabContent> = {
   what: {
     heading: "What Is Immigration Translation?",
+    features: ["Official Documents", "Legal Compliance", "Certified Translation"],
     content: (
       <>
-        <p className="mb-3">
-          Immigration translation is the translation of documents needed for
-          immigration purposes, such as birth certificates, marriage
-          certificates, divorce decrees, educational transcripts and employment
-          records. These documents must be accurately translated to support an
-          immigration application.
+        <p className="text-gray-600 text-sm leading-relaxed mb-3">
+          Immigration translation is the translation of documents needed for immigration purposes, 
+          such as birth certificates, marriage certificates, divorce decrees, educational transcripts 
+          and employment records. These documents must be accurately translated to support an immigration application.
         </p>
-        <p className="mb-3">
-          Professional translation services, employing translators fluent in
-          both the source and target languages and experienced in translating
-          official documents, typically perform immigration translation. To
-          verify the accuracy of the translation, an affidavit or other form of
-          certification may be required.
-        </p>
-        <p>
-          The reliability and accuracy of translated documents are crucial in
-          the immigration process, as even minor errors can delay or impact the
-          outcome of an application.
+        <p className="text-gray-600 text-sm leading-relaxed">
+          Professional translation services, employing translators fluent in both the source and target 
+          languages and experienced in translating official documents, typically perform immigration translation.
         </p>
       </>
     ),
   },
   benefits: {
-    heading: "The Benefits of Immigration Translation",
+    heading: "Benefits of Immigration Translation",
+    features: ["Accuracy", "Legality", "Speed", "Quality", "Convenience"],
     content: (
-      <>
-        <p className="mb-3">
-          Here are some advantages of using a professional translation service
-          for immigration translation:
-        </p>
-        <ul className="list-disc pl-6 space-y-2">
-          <li>
-            <span className="font-semibold">Accuracy:</span> Professional
-            translation services ensure that your translated documents are
-            accurate and faithfully represent the originals.
-          </li>
-          <li>
-            <span className="font-semibold">Legality:</span> Many immigration
-            authorities require legally recognised translations.
-          </li>
-          <li>
-            <span className="font-semibold">Speed:</span> Professional teams can
-            translate documents quickly and efficiently.
-          </li>
-          <li>
-            <span className="font-semibold">Quality:</span> Experienced
-            translators ensure translated content is clear and precise.
-          </li>
-          <li>
-            <span className="font-semibold">Convenience:</span> Saves time and
-            effort—no need to manage multiple translators yourself.
-          </li>
-        </ul>
-      </>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {["Accuracy - Precise, faithful translations", "Legality - Meets immigration standards", "Speed - Quick turnaround", "Quality - Clear and precise content", "Convenience - Single point of contact"].map((item, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+            <span className="text-gray-600 text-sm">{item}</span>
+          </div>
+        ))}
+      </div>
     ),
   },
   why: {
     heading: "Why EGS Group for Immigration Translation?",
+    features: ["Expert Translators", "Embassy Approved", "Fast Delivery"],
     content: (
       <>
-        <p className="mb-3">
-          EGS Group understands the unique challenges individuals and businesses
-          face when navigating immigration processes. That’s why we offer
-          translation solutions tailored to each client’s specific needs.
+        <p className="text-gray-600 text-sm leading-relaxed mb-3">
+          EGS Group understands the unique challenges individuals and businesses face when navigating 
+          immigration processes. That's why we offer translation solutions tailored to each client's specific needs.
         </p>
-        <p>
-          Our team delivers high-quality, legally compliant translations and
-          collaborates closely with clients to strengthen every immigration
-          file.
+        <p className="text-gray-600 text-sm leading-relaxed">
+          Our team delivers high-quality, legally compliant translations and collaborates closely with 
+          clients to strengthen every immigration file.
         </p>
       </>
     ),
   },
 };
 
-const CertificateTabs = {
+const CertificateTabs: Record<TabKey, TabContent> = {
   what: {
     heading: "What Is Certificate Translation?",
+    features: ["Official Documents", "Legal Verification", "Certified Service"],
     content: (
       <>
-        <p className="mb-3">
-          Certificate translation involves converting an official document from
-          one language to another. This service is often required when a
-          foreign-language certificate must be presented for a job application,
-          immigration process or any legal or official purpose.
+        <p className="text-gray-600 text-sm leading-relaxed mb-3">
+          Certificate translation involves converting an official document from one language to another. 
+          This service is often required when a foreign-language certificate must be presented for a job 
+          application, immigration process or any legal or official purpose.
         </p>
-        <p className="mb-3">
-          Professional translation companies like EGS Group perform certificate
-          translation using translators proficient in both the source and target
-          languages and experienced with official documents.
-        </p>
-        <p>
-          In many cases, an affidavit or other certification is needed to
-          confirm accuracy and authenticity of the translation.
+        <p className="text-gray-600 text-sm leading-relaxed">
+          Professional translation companies like EGS Group perform certificate translation using translators 
+          proficient in both languages and experienced with official documents.
         </p>
       </>
     ),
   },
   benefits: {
-    heading: "The Benefits of Certificate Translation",
+    heading: "Benefits of Certificate Translation",
+    features: ["Accuracy", "Legality", "Speed", "Quality", "Convenience"],
     content: (
-      <>
-        <p className="mb-3">
-          There are several advantages to having your certificates translated by
-          EGS Group:
-        </p>
-        <ul className="list-disc pl-6 space-y-2">
-          <li>
-            <span className="font-semibold">Accuracy:</span> Precise, faithful
-            translations for legal/official verification.
-          </li>
-          <li>
-            <span className="font-semibold">Legality:</span> Meets standards of
-            employers, universities and authorities.
-          </li>
-          <li>
-            <span className="font-semibold">Speed:</span> Urgent translations
-            without compromising quality.
-          </li>
-          <li>
-            <span className="font-semibold">Quality:</span> Natural readability
-            with all important details preserved.
-          </li>
-          <li>
-            <span className="font-semibold">Convenience:</span> No hassle of
-            managing translators or terminology checks.
-          </li>
-        </ul>
-      </>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {["Accuracy - Faithful translations", "Legality - Meets official standards", "Speed - Urgent translations available", "Quality - Natural readability", "Convenience - Hassle-free process"].map((item, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+            <span className="text-gray-600 text-sm">{item}</span>
+          </div>
+        ))}
+      </div>
     ),
   },
   why: {
     heading: "Why EGS Group for Certificate Translation?",
+    features: ["Expert Team", "Quality Assurance", "Timely Delivery"],
     content: (
       <>
-        <p className="mb-3">
-          Certificates are crucial for careers, studies and legal procedures.
-          EGS Group helps bridge communication gaps when documents are in a
-          different language.
+        <p className="text-gray-600 text-sm leading-relaxed mb-3">
+          Certificates are crucial for careers, studies and legal procedures. EGS Group helps bridge 
+          communication gaps when documents are in a different language.
         </p>
-        <p>
-          Our translators combine linguistic expertise with industry knowledge,
-          focusing on clarity, compliance and presentation so documents are
-          accepted confidently.
+        <p className="text-gray-600 text-sm leading-relaxed">
+          Our translators combine linguistic expertise with industry knowledge, focusing on clarity, 
+          compliance and presentation so documents are accepted confidently.
         </p>
       </>
     ),
   },
 };
 
-const TabButton: React.FC<{
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}> = ({ label, active, onClick }) => (
+const TabButton: React.FC<{ label: string; active: boolean; onClick: () => void }> = ({ 
+  label, 
+  active, 
+  onClick 
+}) => (
   <button
-    type="button"
     onClick={onClick}
-    className={`
-      relative px-4 py-2 text-sm font-semibold transition rounded-md
-      ${active ? "text-white" : "text-slate-200 hover:text-white"}
-    `}
+    className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+      active 
+        ? "text-white shadow-md" 
+        : "text-gray-500 hover:text-gray-700"
+    }`}
+    style={{ backgroundColor: active ? PRIMARY_COLOR : "transparent" }}
   >
-    <span
-      className={`
-        absolute left-0 bottom-0 h-[2px] w-full transition-opacity
-        ${
-          active
-            ? "opacity-100 bg-gradient-to-r from-violet-500 to-fuchsia-500"
-            : "opacity-0"
-        }
-      `}
-    />
-    <span
-      className={`
-        absolute inset-0 rounded-md -z-10 transition-opacity
-        ${
-          active
-            ? "opacity-100 bg-gradient-to-r from-violet-600/70 to-fuchsia-600/60"
-            : "opacity-0 hover:opacity-100 bg-white/5"
-        }
-      `}
-    />
     {label}
   </button>
 );
 
-const TranslationInfoSections: React.FC = () => {
+export default function TranslationInfoSections() {
   const [immigrationTab, setImmigrationTab] = useState<TabKey>("what");
   const [certificateTab, setCertificateTab] = useState<TabKey>("what");
 
-  // ✅ soft AOS only on section/card, not heavy on every line
   useEffect(() => {
     AOS.init({
-      duration: 700,
-      once: false,
-      offset: 120,
-      easing: "ease-out",
-      mirror: true,
+      duration: 800,
+      once: true,
+      offset: 80,
+      easing: "ease-in-out",
     });
   }, []);
 
   return (
-    <section className="py-16 md:py-20 bg-gradient-to-b from-slate-50 via-white to-slate-50 relative overflow-hidden">
-      {/* soft background accents (light) */}
-      <div className="pointer-events-none absolute -top-28 left-1/2 h-64 w-[46rem] -translate-x-1/2 rounded-full bg-emerald-200/35 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-28 right-0 h-72 w-72 rounded-full bg-sky-200/35 blur-3xl" />
-
-      <div className="max-w-6xl mx-auto px-4 md:px-6 space-y-16 md:space-y-20 relative">
-        {/* IMMIGRATION */}
-        <div>
-          <div className="text-center md:text-left">
-            <h2
-              data-aos="fade-up"
-              className="text-3xl md:text-4xl font-semibold text-slate-900"
-            >
-              Immigration Translation Services
-            </h2>
-            <div
-              data-aos="fade-up"
-              data-aos-delay="80"
-              className="mt-3 h-[3px] w-32 bg-gradient-to-r from-violet-600 to-fuchsia-600 mx-auto md:mx-0 rounded-full"
-            />
-            <p
-              data-aos="fade-up"
-              data-aos-delay="140"
-              className="mt-3 text-sm md:text-base text-slate-600 max-w-2xl mx-auto md:mx-0"
-            >
-              Clear, compliant translations for visa files, residency applications and official submissions.
-            </p>
+    <section className="py-16 md:py-24 bg-[#f5f6f8] relative">
+      {/* Subtle Dots Pattern */}
+      <div className="absolute inset-0 opacity-30" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 1px)`,
+        backgroundSize: '32px 32px'
+      }} />
+      
+      {/* Decorative Circles */}
+      <div className="absolute top-20 right-10 w-64 h-64 rounded-full bg-[#294d6b]/5 blur-3xl" />
+      <div className="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-[#1a3650]/5 blur-3xl" />
+      
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header */}
+        <div className="text-center mb-12" data-aos="fade-up">
+          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4 shadow-sm border border-[#294d6b]/10">
+            <Languages className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+            <span className="text-sm font-medium" style={{ color: PRIMARY_COLOR }}>Translation Services</span>
           </div>
+          
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4" style={{ color: PRIMARY_COLOR }}>
+            Professional Translation Services
+          </h2>
+          
+          <p className="text-gray-600 text-base max-w-2xl mx-auto">
+            Accurate, certified translations for immigration and official documents, accepted by embassies worldwide
+          </p>
+          
+          <div className="flex justify-center mt-5">
+            <div className="w-20 h-1 rounded-full" style={{ backgroundColor: PRIMARY_COLOR }} />
+          </div>
+        </div>
 
-          {/* CARD */}
-          <div
-            data-aos="fade-right"
-            className="mt-8 rounded-3xl overflow-hidden border border-violet-200/60 bg-gradient-to-br from-[#120B2A] via-[#0C1533] to-[#120B2A] shadow-[0_18px_55px_rgba(2,6,23,0.18)]"
-          >
-            {/* Tabs */}
-            <div className="flex gap-1 border-b border-white/10 bg-black/25 px-2 py-2">
-              <TabButton
-                label="What It Is"
-                active={immigrationTab === "what"}
-                onClick={() => setImmigrationTab("what")}
-              />
-              <TabButton
-                label="Benefits"
-                active={immigrationTab === "benefits"}
-                onClick={() => setImmigrationTab("benefits")}
-              />
-              <TabButton
-                label="Why Us?"
-                active={immigrationTab === "why"}
-                onClick={() => setImmigrationTab("why")}
-              />
+        {/* Immigration Translation Section */}
+        <div className="mb-16" data-aos="fade-up">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+              <Globe className="w-5 h-5" style={{ color: PRIMARY_COLOR }} />
             </div>
-
-            {/* Content (smooth fade, not heavy) */}
-            <div className="p-5 md:p-7 text-sm md:text-base text-slate-200 leading-relaxed">
-              <h3 className="text-xl md:text-2xl font-semibold text-white mb-3">
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-800">
+              Immigration Translation Services
+            </h3>
+          </div>
+          
+          {/* Card */}
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+            {/* Tabs */}
+            <div className="flex gap-2 px-6 pt-4 pb-2 border-b border-gray-100">
+              <TabButton label="What It Is" active={immigrationTab === "what"} onClick={() => setImmigrationTab("what")} />
+              <TabButton label="Benefits" active={immigrationTab === "benefits"} onClick={() => setImmigrationTab("benefits")} />
+              <TabButton label="Why Us?" active={immigrationTab === "why"} onClick={() => setImmigrationTab("why")} />
+            </div>
+            
+            {/* Content */}
+            <div className="p-6">
+              <h4 className="text-xl font-bold text-gray-800 mb-4">
                 {ImmigrationTabs[immigrationTab].heading}
-              </h3>
-
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 md:p-5 text-slate-200 transition-opacity duration-200">
+              </h4>
+              
+              {/* Features Tags */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {ImmigrationTabs[immigrationTab].features?.map((feature, i) => (
+                  <span key={i} className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                    {feature}
+                  </span>
+                ))}
+              </div>
+              
+              <div className="text-gray-600 text-sm leading-relaxed">
                 {ImmigrationTabs[immigrationTab].content}
               </div>
-
-              <button className="mt-6 inline-flex items-center justify-center rounded-md bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white hover:opacity-95 transition">
+              
+              <button className="mt-5 inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 hover:gap-2" style={{ color: PRIMARY_COLOR }}>
                 Learn More
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* CERTIFICATE */}
-        <div>
-          <div className="text-center md:text-right">
-            <h2
-              data-aos="fade-up"
-              className="text-3xl md:text-4xl font-semibold text-slate-900"
-            >
-              Certificate Translation Services
-            </h2>
-            <div
-              data-aos="fade-up"
-              data-aos-delay="80"
-              className="mt-3 h-[3px] w-32 bg-gradient-to-r from-violet-600 to-fuchsia-600 mx-auto md:ml-auto md:mr-0 rounded-full"
-            />
-            <p
-              data-aos="fade-up"
-              data-aos-delay="140"
-              className="mt-3 text-sm md:text-base text-slate-600 max-w-2xl mx-auto md:ml-auto md:mr-0"
-            >
-              Embassy-ready certificate translations with accurate formatting and terminology.
-            </p>
-          </div>
-
-          {/* CARD */}
-          <div
-            data-aos="fade-left"
-            className="mt-8 rounded-3xl overflow-hidden border border-violet-200/60 bg-gradient-to-br from-[#120B2A] via-[#0C1533] to-[#120B2A] shadow-[0_18px_55px_rgba(2,6,23,0.18)]"
-          >
-            {/* Tabs RIGHT */}
-            <div className="flex justify-end gap-1 border-b border-white/10 bg-black/25 px-2 py-2">
-              <TabButton
-                label="What It Is"
-                active={certificateTab === "what"}
-                onClick={() => setCertificateTab("what")}
-              />
-              <TabButton
-                label="Benefits"
-                active={certificateTab === "benefits"}
-                onClick={() => setCertificateTab("benefits")}
-              />
-              <TabButton
-                label="Why Us?"
-                active={certificateTab === "why"}
-                onClick={() => setCertificateTab("why")}
-              />
+        {/* Certificate Translation Section */}
+        <div data-aos="fade-up">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+              <FileText className="w-5 h-5" style={{ color: PRIMARY_COLOR }} />
             </div>
-
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-800">
+              Certificate Translation Services
+            </h3>
+          </div>
+          
+          {/* Card */}
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+            {/* Tabs */}
+            <div className="flex gap-2 px-6 pt-4 pb-2 border-b border-gray-100">
+              <TabButton label="What It Is" active={certificateTab === "what"} onClick={() => setCertificateTab("what")} />
+              <TabButton label="Benefits" active={certificateTab === "benefits"} onClick={() => setCertificateTab("benefits")} />
+              <TabButton label="Why Us?" active={certificateTab === "why"} onClick={() => setCertificateTab("why")} />
+            </div>
+            
             {/* Content */}
-            <div className="p-5 md:p-7 text-sm md:text-base text-slate-200 leading-relaxed text-left">
-              <h3 className="text-xl md:text-2xl font-semibold text-white mb-3">
+            <div className="p-6">
+              <h4 className="text-xl font-bold text-gray-800 mb-4">
                 {CertificateTabs[certificateTab].heading}
-              </h3>
-
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 md:p-5 text-slate-200 transition-opacity duration-200">
+              </h4>
+              
+              {/* Features Tags */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {CertificateTabs[certificateTab].features?.map((feature, i) => (
+                  <span key={i} className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                    {feature}
+                  </span>
+                ))}
+              </div>
+              
+              <div className="text-gray-600 text-sm leading-relaxed">
                 {CertificateTabs[certificateTab].content}
               </div>
-
-              <div className="mt-6 flex md:justify-end">
-                <button className="inline-flex items-center justify-center rounded-md bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white hover:opacity-95 transition">
-                  Learn More
-                </button>
-              </div>
+              
+              <button className="mt-5 inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 hover:gap-2" style={{ color: PRIMARY_COLOR }}>
+                Learn More
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
       </div>
     </section>
   );
-};
-
-export default TranslationInfoSections;
+}

@@ -3,12 +3,23 @@
 import React, { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { ShieldCheck, Stamp, Globe2, CheckCircle2 } from "lucide-react";
+import { 
+  ShieldCheck, 
+  Stamp, 
+  Globe2, 
+  CheckCircle2, 
+  FileCheck,
+  AlertCircle,
+  Sparkles,
+  Download,
+  Clock
+} from "lucide-react";
+
+const PRIMARY_COLOR = "#294d6b";
 
 interface PccVariant {
   title: string;
   badge: string;
-  color: string; // border / accent
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   required: string[];
   optional: string[];
@@ -18,7 +29,6 @@ const pccVariants: PccVariant[] = [
   {
     title: "PCC Legalization",
     badge: "Bangladesh · Nepal",
-    color: "border-sky-500",
     icon: ShieldCheck,
     required: [
       "Original Police Clearance Certificate (PCC) – issued by PSK / Passport Office / Local Police Station",
@@ -34,7 +44,6 @@ const pccVariants: PccVariant[] = [
   {
     title: "PCC Apostille",
     badge: "India",
-    color: "border-emerald-500",
     icon: Stamp,
     required: [
       "Original Police Clearance Certificate (PCC) from PSK / Passport Office / Local Police",
@@ -49,127 +58,145 @@ const pccVariants: PccVariant[] = [
   },
 ];
 
-const PccDocumentsRequired: React.FC = () => {
+export default function PccDocumentsRequired() {
   useEffect(() => {
     AOS.init({
       duration: 800,
-      once: false,
-      offset: 120,
+      once: true,
+      offset: 80,
       easing: "ease-in-out",
-      mirror: true,
     });
   }, []);
 
   return (
-    <section className="bg-slate-50 py-12 md:py-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Heading + Intro */}
-        <div className="mb-8 md:mb-10 text-center">
-          <h2
-            data-aos="fade-down"
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800"
-          >
+    <section className="py-16 md:py-24 bg-[#f5f6f8] relative">
+      {/* Subtle Dots Pattern */}
+      <div className="absolute inset-0 opacity-30" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 1px)`,
+        backgroundSize: '32px 32px'
+      }} />
+      
+      {/* Decorative Circles */}
+      <div className="absolute top-20 right-10 w-64 h-64 rounded-full bg-[#294d6b]/5 blur-3xl" />
+      <div className="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-[#1a3650]/5 blur-3xl" />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header */}
+        <div className="text-center mb-12 md:mb-16" data-aos="fade-up">
+          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4 shadow-sm border border-[#294d6b]/10">
+            <Sparkles className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+            <span className="text-sm font-medium" style={{ color: PRIMARY_COLOR }}>Document Checklist</span>
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4" style={{ color: PRIMARY_COLOR }}>
             Documents Required for PCC Legalization & Apostille
           </h2>
-
-          <p
-            data-aos="fade-left"
-            data-aos-delay="120"
-            className="mt-3 text-sm sm:text-base text-slate-600 max-w-3xl mx-auto leading-relaxed"
-          >
-            PCC attestation process usually starts with verification from the
-            issuing authority (PSK / Passport Office or Local Police). After
-            verification, the document is authenticated at the state level (as
-            applicable) and then submitted to MEA for Apostille or Attestation.
-            If the destination requires further stamping, we also coordinate
-            Embassy / Consulate attestation and provide safe pickup & delivery
-            support.
+          
+          <p className="text-gray-600 text-base md:text-lg max-w-3xl mx-auto">
+            PCC attestation process starts with verification from the issuing authority (PSK / Passport Office or Local Police). 
+            After verification, the document is authenticated at the state level and then submitted to MEA for Apostille or Attestation.
           </p>
+          
+          <div className="flex justify-center mt-6">
+            <div className="w-20 h-1 rounded-full" style={{ backgroundColor: PRIMARY_COLOR }} />
+          </div>
         </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
+        {/* Cards Grid */}
+        <div className="grid md:grid-cols-2 gap-8">
           {pccVariants.map((variant, index) => {
             const Icon = variant.icon;
-
-            // ✅ 1st left->right, 2nd right->left
-            const cardAos = index === 0 ? "fade-right" : "fade-left";
-
+            
             return (
               <div
                 key={variant.title}
-                data-aos={cardAos}
-                data-aos-delay={index * 120}
-                className={`relative rounded-2xl bg-white border ${variant.color} shadow-sm p-5 sm:p-6 lg:p-7 flex flex-col gap-4`}
+                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
+                data-aos="fade-up"
+                data-aos-delay={index * 150}
               >
-                {/* Accent pill */}
-                <div className="absolute -top-3 left-4 inline-flex items-center rounded-full bg-slate-900 text-[11px] sm:text-xs text-white px-3 py-1 shadow-md">
-                  <Globe2 className="w-3.5 h-3.5 mr-1.5" />
-                  PCC for International Use
-                </div>
-
-                {/* Header */}
-                <div className="flex items-start gap-3">
-                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-sky-50 shadow-md">
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-slate-900">
-                      {variant.title}
-                    </h3>
-
-                    <p className="mt-2 inline-flex items-center rounded-full bg-slate-100 text-[11px] sm:text-xs text-slate-700 px-3 py-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-500" />
-                      {variant.badge}
-                    </p>
+                {/* Card Header */}
+                <div className="p-6 pb-4" style={{ backgroundColor: `${PRIMARY_COLOR}05` }}>
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}15` }}>
+                      <Icon className="w-7 h-7" style={{ color: PRIMARY_COLOR }} />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-800">{variant.title}</h3>
+                      <div className="inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: `${PRIMARY_COLOR}10`, color: PRIMARY_COLOR }}>
+                        <Globe2 className="w-3 h-3" />
+                        <span>{variant.badge}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                {/* Required + Optional lists */}
-                <div className="mt-2 space-y-4 text-sm">
-                  <div>
-                    <p className="font-semibold text-slate-800 mb-1">
-                      Mandatory Documents
-                    </p>
-                    <ul className="space-y-1.5 text-[13px] sm:text-sm text-slate-600">
-                      {variant.required.map((item) => (
-                        <li key={item} className="flex items-start gap-2">
-                          <span className="mt-[5px] h-1.5 w-1.5 rounded-full bg-slate-500" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
+                
+                {/* Required Documents */}
+                <div className="p-6 pb-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                      <FileCheck className="w-3.5 h-3.5" style={{ color: PRIMARY_COLOR }} />
+                    </div>
+                    <h4 className="font-semibold text-gray-800">Mandatory Documents</h4>
                   </div>
-
-                  <div>
-                    <p className="font-semibold text-slate-800 mb-1">
-                      Supporting / Optional Documents
-                    </p>
-                    <ul className="space-y-1.5 text-[13px] sm:text-sm text-slate-600">
-                      {variant.optional.map((item) => (
-                        <li key={item} className="flex items-start gap-2">
-                          <span className="mt-[5px] h-1.5 w-1.5 rounded-full bg-slate-300" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <ul className="space-y-2">
+                    {variant.required.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: PRIMARY_COLOR }} />
+                        <span className="text-gray-600 text-sm leading-relaxed">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Optional Documents */}
+                <div className="px-6 pb-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                      <AlertCircle className="w-3.5 h-3.5" style={{ color: PRIMARY_COLOR }} />
+                    </div>
+                    <h4 className="font-semibold text-gray-800">Supporting / Optional Documents</h4>
+                  </div>
+                  <ul className="space-y-2">
+                    {variant.optional.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <div className="w-4 h-4 rounded-full flex-shrink-0 mt-0.5 flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: PRIMARY_COLOR }} />
+                        </div>
+                        <span className="text-gray-500 text-sm leading-relaxed">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Footer */}
+                <div className="px-6 pb-6 pt-2 border-t border-gray-100 mt-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-gray-400" />
+                      <span className="text-xs text-gray-400">Processing: 5-7 days</span>
+                    </div>
+                    <button className="text-sm font-medium flex items-center gap-1 transition-all duration-300 hover:gap-2" style={{ color: PRIMARY_COLOR }}>
+                      Download Checklist
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-
-        {/* Tiny footer strip */}
-        <div className="mt-8 text-center" data-aos="zoom-in" data-aos-delay="150">
-          <p className="inline-block text-[11px] sm:text-xs text-slate-500 bg-white border border-dashed border-slate-200 rounded-full px-4 py-2">
-            EGS helps you verify the exact requirement as per your destination
-            country&apos;s latest rules before starting the process.
-          </p>
+        
+        {/* Footer Note */}
+        <div className="mt-8 text-center" data-aos="fade-up">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100">
+            <ShieldCheck className="w-3.5 h-3.5" style={{ color: PRIMARY_COLOR }} />
+            <p className="text-xs text-gray-500">
+              EGS helps you verify the exact requirement as per your destination country's latest rules before starting the process.
+            </p>
+          </div>
         </div>
       </div>
     </section>
   );
-};
-
-export default PccDocumentsRequired;
+}

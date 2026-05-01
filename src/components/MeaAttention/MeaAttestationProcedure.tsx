@@ -13,9 +13,11 @@ interface FlowType {
   title: string;
   highlight: string;
   description: string;
-  color: string; // tailwind border color
+  color: string;
   steps: FlowStep[];
 }
+
+const PRIMARY_COLOR = "#294d6b";
 
 const flows: FlowType[] = [
   {
@@ -23,7 +25,7 @@ const flows: FlowType[] = [
     highlight: "HRD → MEA → Embassy",
     description:
       "Educational certificates are first authenticated by the Human Resource / Education Department of the issuing state or union territory, then attested by MEA and finally by the concerned country’s embassy.",
-    color: "border-sky-500",
+    color: `border-[${PRIMARY_COLOR}]`,
     steps: [
       {
         label: "Human Resource Department (HRD)",
@@ -44,7 +46,7 @@ const flows: FlowType[] = [
     highlight: "Home Dept → MEA → Embassy",
     description:
       "Personal documents such as birth, marriage, or death certificates are authenticated by the Home / General Administration Department, then attested by MEA and finally by the embassy of the destination country.",
-    color: "border-amber-500",
+    color: `border-[${PRIMARY_COLOR}]`,
     steps: [
       {
         label: "Home Department / GAD",
@@ -65,7 +67,7 @@ const flows: FlowType[] = [
     highlight: "Chamber → MEA → Embassy",
     description:
       "Commercial papers are pre-authenticated by the Chamber of Commerce, followed by MEA attestation and then embassy attestation, making them valid for international trade and corporate use.",
-    color: "border-rose-500",
+    color: `border-[${PRIMARY_COLOR}]`,
     steps: [
       {
         label: "Chamber of Commerce",
@@ -101,7 +103,8 @@ const MeaAttestationProcedureFlow: React.FC = () => {
         <div className="text-center mb-8 md:mb-10">
           <h2
             data-aos="fade-right"
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800"
+            className="text-2xl sm:text-3xl md:text-4xl font-bold"
+            style={{ color: PRIMARY_COLOR }}
           >
             Procedure Of MEA Document Attestation
           </h2>
@@ -121,30 +124,19 @@ const MeaAttestationProcedureFlow: React.FC = () => {
         {/* FLOW CARDS */}
         <div className="space-y-8 md:space-y-10">
           {flows.map((flow, flowIndex) => {
-            // step card background theme
-            const stepBgClass =
-              flowIndex === 0
-                ? "bg-amber-500"
-                : flowIndex === 1
-                ? "bg-sky-600"
-                : "bg-emerald-600";
-
+            // step card background theme - using theme color
+            const stepBgClass = `bg-[${PRIMARY_COLOR}]`;
             const stepTitleTextClass = "text-white";
-            const stepSubTextClass =
-              flowIndex === 0
-                ? "text-amber-50/90"
-                : flowIndex === 1
-                ? "text-sky-50/90"
-                : "text-emerald-50/90";
-
-            const stepLabelTextClass = "text-white/80";
+            const stepSubTextClass = "text-white/80";
+            const stepLabelTextClass = "text-white/70";
 
             return (
               <div
                 key={flow.title}
                 data-aos="fade-up"
                 data-aos-delay={flowIndex * 120}
-                className={`rounded-2xl border bg-slate-50/70 border-slate-200 shadow-sm p-4 sm:p-5 md:p-6 lg:p-7 flex flex-col gap-4 md:gap-5 border-l-4 ${flow.color}`}
+                className={`rounded-2xl border bg-slate-50/70 border-slate-200 shadow-sm p-4 sm:p-5 md:p-6 lg:p-7 flex flex-col gap-4 md:gap-5 border-l-4`}
+                style={{ borderLeftColor: PRIMARY_COLOR }}
               >
                 {/* TITLE + SHORT LINE */}
                 <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between">
@@ -168,7 +160,8 @@ const MeaAttestationProcedureFlow: React.FC = () => {
                   <span
                     data-aos="zoom-in"
                     data-aos-delay={flowIndex * 120 + 160}
-                    className="mt-1 inline-flex items-center justify-center self-start md:self-center rounded-full bg-slate-900/5 text-[11px] sm:text-xs px-3 py-1 font-medium text-slate-700"
+                    className="mt-1 inline-flex items-center justify-center self-start md:self-center rounded-full text-[11px] sm:text-xs px-3 py-1 font-medium text-white"
+                    style={{ backgroundColor: PRIMARY_COLOR }}
                   >
                     {flow.highlight}
                   </span>
@@ -178,11 +171,11 @@ const MeaAttestationProcedureFlow: React.FC = () => {
                 <div className="mt-2">
                   <div className="relative">
                     {/* snake line behind cards (desktop only) */}
-                    <div className="hidden md:block absolute top-1/2 left-4 right-4 h-[2px] bg-gradient-to-r from-sky-300 via-emerald-300 to-rose-300 -translate-y-1/2 pointer-events-none" />
+                    <div className="hidden md:block absolute top-1/2 left-4 right-4 h-[2px] -translate-y-1/2 pointer-events-none"
+                      style={{ background: `linear-gradient(90deg, ${PRIMARY_COLOR}20, ${PRIMARY_COLOR}40, ${PRIMARY_COLOR}20)` }} />
 
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-3 relative z-10">
                       {flow.steps.map((step, index) => {
-                        // per-step animation: 1st fade-right, 2nd zoom-in, 3rd fade-left
                         const pos = index % 3;
                         const stepAos =
                           pos === 0
@@ -199,13 +192,15 @@ const MeaAttestationProcedureFlow: React.FC = () => {
                             <div className="flex-1">
                               <div className="relative max-w-xs md:max-w-none mx-auto">
                                 {/* connector dot */}
-                                <span className="hidden md:block absolute -top-2 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-white border border-sky-300" />
+                                <span className="hidden md:block absolute -top-2 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-white border"
+                                  style={{ borderColor: PRIMARY_COLOR }} />
 
                                 <div
                                   data-aos={stepAos}
                                   data-aos-delay={delayBase}
                                   data-aos-duration="650"
-                                  className={`rounded-xl ${stepBgClass} shadow-sm border border-white/10 px-3.5 py-3 sm:px-4 sm:py-3.5 text-center`}
+                                  className="rounded-xl shadow-sm border border-white/10 px-3.5 py-3 sm:px-4 sm:py-3.5 text-center"
+                                  style={{ backgroundColor: PRIMARY_COLOR }}
                                 >
                                   <p
                                     className={`text-[11px] sm:text-xs font-semibold uppercase tracking-wide mb-1 ${stepLabelTextClass}`}
@@ -235,12 +230,11 @@ const MeaAttestationProcedureFlow: React.FC = () => {
                                 data-aos-delay={delayBase + 70}
                                 className="flex md:flex-col items-center justify-center md:justify-start"
                               >
-                                {/* mobile arrow */}
                                 <span className="md:hidden text-slate-400 text-lg">
                                   →
                                 </span>
-                                {/* desktop node */}
-                                <span className="hidden md:inline-block h-8 w-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-500 text-base shadow-sm">
+                                <span className="hidden md:inline-block h-8 w-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-base shadow-sm"
+                                  style={{ color: PRIMARY_COLOR }}>
                                   →
                                 </span>
                               </div>

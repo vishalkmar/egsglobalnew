@@ -1,136 +1,177 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { 
+  GraduationCap, 
+  Heart, 
+  Briefcase, 
+  FileCheck, 
+  Sparkles,
+  ChevronRight,
+  CheckCircle,
+  Shield,
+  Globe
+} from "lucide-react";
 
-const documentsRequired = ["Original Documents", "Passport Copy"];
+const PRIMARY_COLOR = "#294d6b";
+
+const documentsRequired = [
+  { icon: FileCheck, text: "Original Documents" },
+  { icon: Shield, text: "Passport Copy" }
+];
 
 const categories = [
   {
     title: "Educational Documents",
-    color: "from-sky-500 to-sky-600",
+    icon: GraduationCap,
     items: [
       "Degree certificate",
       "Diploma certificate",
       "Mark sheets",
       "Transfer Certificate",
-      "Nursing Certificate",
-    ],
+      "Nursing Certificate"
+    ]
   },
   {
     title: "Personal Documents",
-    color: "from-amber-400 to-amber-500",
+    icon: Heart,
     items: [
       "Birth certificate",
       "Marriage certificate",
       "Death certificate",
       "Divorce certificate",
-      "PCC Certificate",
-    ],
+      "PCC Certificate"
+    ]
   },
   {
     title: "Commercial Documents",
-    color: "from-rose-500 to-rose-600",
+    icon: Briefcase,
     items: [
       "Power of Attorney",
       "Company Invoices",
       "Export Documentation",
       "Certificates of Incorporation",
-      "Memorandum of Association",
-    ],
-  },
+      "Memorandum of Association"
+    ]
+  }
 ];
 
-const MeaDocumentsSection: React.FC = () => {
+export default function MeaDocumentsSection() {
+  useEffect(() => {
+    AOS.init({
+      duration: 800,
+      once: true,
+      offset: 80,
+      easing: "ease-in-out",
+    });
+  }, []);
+
   return (
-    <section className="bg-slate-50 py-12 md:py-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* MAIN HEADING */}
-        <div className="text-center mb-8 md:mb-10">
-          <h2 data-aos="fade-left" className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800">
+    <section className="py-16 md:py-24 bg-[#f5f6f8]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header */}
+        <div className="text-center mb-12" data-aos="fade-up">
+          <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-1.5 mb-4 shadow-sm border border-gray-100">
+            <Sparkles className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+            <span className="text-sm font-medium" style={{ color: PRIMARY_COLOR }}>Document Checklist</span>
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4" style={{ color: PRIMARY_COLOR }}>
             Documents Required For MEA Attestation
           </h2>
-          <p data-aos="fade-right" className="mt-3 text-sm sm:text-base text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            The documents required for MEA attestation are broadly classified
-            into educational, personal and commercial categories. Before
-            submission, you must have the following:
+          
+          <p className="text-gray-600 text-base max-w-2xl mx-auto">
+            The documents required for MEA attestation are broadly classified into educational, 
+            personal and commercial categories.
           </p>
-
-          <ul data-aos="zoom-in" className="mt-4 inline-flex flex-col sm:flex-row gap-2 sm:gap-4 items-center justify-center text-sm sm:text-base text-slate-800">
-            {documentsRequired.map((item) => (
-              <li
-                key={item}
-                className="flex items-center gap-2 bg-white shadow-sm border border-slate-200 rounded-full px-4 py-1.5"
-              >
-                <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          
+          <div className="flex justify-center mt-6">
+            <div className="w-20 h-1 rounded-full" style={{ backgroundColor: PRIMARY_COLOR }} />
+          </div>
         </div>
 
-        {/* SUB HEADING */}
-        <div className="text-center mb-6 md:mb-8" data-aos="zoom-out">
-          <h3 className="text-xl sm:text-2xl font-semibold text-slate-800">
+        {/* Required Documents Badges */}
+        <div className="flex flex-wrap justify-center gap-4 mb-12" data-aos="fade-up">
+          {documentsRequired.map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <div key={idx} className="flex items-center gap-2 px-5 py-2 bg-white rounded-full shadow-sm border border-gray-200">
+                <Icon className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+                <span className="text-gray-700 text-sm">{item.text}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Sub Header */}
+        <div className="text-center mb-10" data-aos="fade-up">
+          <h3 className="text-2xl md:text-3xl font-bold text-gray-800">
             Types of Documents That Need MEA Attestation
           </h3>
-          <p className="mt-2 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Below is an overview of the documents that are commonly attested for
-            use abroad.
+          <p className="text-gray-500 text-sm mt-2">
+            Below is an overview of the documents that are commonly attested for use abroad
           </p>
         </div>
 
-        {/* CATEGORY CARDS – different style from screenshot */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-7">
-  {categories.map((category, index) => {
-    const pos = index % 3; // 0,1,2
-    const aosType =
-      pos === 0 ? "fade-right" : pos === 1 ? "zoom-in" : "fade-left";
-
-    return (
-      <div
-        key={category.title}
-        data-aos={aosType}
-        data-aos-delay={pos * 120}
-        className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col"
-      >
-        {/* colored bar + title */}
-        <div
-          className="rounded-t-2xl bg-gradient-to-r px-4 py-3 text-center text-white font-semibold text-sm sm:text-base tracking-wide"
-          style={{ backgroundImage: undefined }}
-        >
-          <div
-            className={`inline-flex px-4 py-1 rounded-full bg-gradient-to-r ${category.color} shadow-sm`}
-          >
-            {category.title}
-          </div>
-        </div>
-
-        {/* content */}
-        <div className="px-4 pb-4 pt-3 sm:px-5 sm:pb-5 space-y-3">
-          <p className="text-xs sm:text-sm text-gray-500">
-            Commonly attested {category.title.toLowerCase()} include:
-          </p>
-
-          <div className="flex flex-wrap gap-2">
-            {category.items.map((doc) => (
-              <span
-                key={doc}
-                className="inline-flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 px-3 py-1 text-[11px] sm:text-xs text-slate-700"
+        {/* Category Cards */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {categories.map((category, index) => {
+            const Icon = category.icon;
+            
+            return (
+              <div
+                key={category.title}
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                data-aos="fade-up"
+                data-aos-delay={index * 100}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                {doc}
-              </span>
-            ))}
-          </div>
+                {/* Card Header */}
+                <div className="p-5 border-b border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                      <Icon className="w-6 h-6" style={{ color: PRIMARY_COLOR }} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800">{category.title}</h3>
+                      <p className="text-xs text-gray-500">{category.items.length} document types</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Card Body */}
+                <div className="p-5">
+                  <div className="space-y-2">
+                    {category.items.map((doc, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+                        <span className="text-gray-600 text-sm">{doc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Card Footer */}
+                <div className="px-5 pb-5">
+                  {/* <button className="w-full py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1" style={{ backgroundColor: `${PRIMARY_COLOR}10`, color: PRIMARY_COLOR }}>
+                    View Details
+                    <ChevronRight className="w-4 h-4" />
+                  </button> */}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
-    );
-  })}
-</div>
-
+        
+        {/* Info Note */}
+        <div className="mt-10 p-4 bg-white rounded-lg shadow-sm border border-gray-100 text-center" data-aos="fade-up">
+          <p className="text-xs text-gray-500">
+            EGS helps you prepare and submit the right documents for MEA attestation based on your destination country's requirements.
+          </p>
+        </div>
       </div>
     </section>
   );
-};
-
-export default MeaDocumentsSection;
+}
