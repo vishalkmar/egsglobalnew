@@ -93,7 +93,7 @@ export default function DummyTicketForm() {
   }, []);
 
   // ✅ keep your working API base
-  const API_BASE = "http://localhost:5000/api";
+  const API_BASE = import.meta.env.VITE_API_URL;
 
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;

@@ -21,7 +21,7 @@ const STATUS_OPTIONS = ["All", "Pending", "Processing", "Approved", "Rejected", 
 const PAYMENT_OPTIONS = ["All", "Pending", "Paid"];
 
 export default function AssistantAppointment() {
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const API_BASE = import.meta.env.VITE_API_URL;
   const [rows, setRows] = useState<ApiRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);

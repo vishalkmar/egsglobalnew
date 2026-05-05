@@ -216,7 +216,7 @@
 //   };
 
 //   // Cloudinary
-//   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+//   const API_BASE = import.meta.env.VITE_API_URL;
 //   const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
 //   const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "";
 //   const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB

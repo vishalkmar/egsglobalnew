@@ -20,7 +20,7 @@ const DESTINATION_COUNTRIES = ["All", "Bulgaria", "North Macedonia", "Croatia", 
 const STATUS_OPTIONS = ["All", "Pending", "Processing", "Approved", "Rejected", "Dispatched", "Received"];
 
 export default function DummyTicketAdmin() {
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const API_BASE = import.meta.env.VITE_API_URL;
   const [rows, setRows] = useState<DummyTicketRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);

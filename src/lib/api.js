@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API base URL - swap this when deploying to Render
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_URL;
 
 // Create axios instance
 const api = axios.create({

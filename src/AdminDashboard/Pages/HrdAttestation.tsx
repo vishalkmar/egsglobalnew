@@ -107,7 +107,7 @@ const PAYMENT_OPTIONS: Array<HrdRow["payment"] | "All"> = ["All", "Paid", "Pendi
 
 export default function HRDAttestation() {
   /* ---------- LIVE DATA ---------- */
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const API_BASE = import.meta.env.VITE_API_URL;
   const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("admin_token") || localStorage.getItem("token") : null);
 
   const [rows, setRows] = useState<HrdRow[]>([]);

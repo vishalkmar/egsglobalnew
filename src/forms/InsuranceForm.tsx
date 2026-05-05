@@ -119,7 +119,7 @@ export default function InsuranceForm() {
     const FEE_INR = Number((import.meta as any).env?.VITE_INSURANCE_FEE_INR || 1000);
 
     // KEEP SAME API
-    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    const API_BASE = import.meta.env.VITE_API_URL;
     const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
     const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "";
 

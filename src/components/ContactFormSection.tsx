@@ -35,7 +35,7 @@ export default function ContactFormSection({
   title?: string;
   description?: string;
 }) {
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const API_BASE = import.meta.env.VITE_API_URL;
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);

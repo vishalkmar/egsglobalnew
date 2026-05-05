@@ -97,7 +97,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const logout = async () => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/auth/admin/logout`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/auth/admin/logout`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

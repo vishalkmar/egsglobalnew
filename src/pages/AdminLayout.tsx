@@ -77,7 +77,7 @@ export default function AdminDashboard() {
       const fetchData = async () => {
         try {
           setDataLoading(true);
-          const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+          const apiUrl = import.meta.env.VITE_API_URL;
           const endpoint = activeKey === "mea" ? "mea-attestation" : "pcc-legalization";
           const url = `${apiUrl}/${activeKey}/${endpoint}/enquiry`;
 

@@ -71,7 +71,7 @@ const navItems: NavItem[] = useMemo(
 
 const logout = async () => {
   try {
-    await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/auth/user/logout`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/auth/user/logout`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
