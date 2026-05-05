@@ -2,41 +2,46 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+import { fileURLToPath } from "url";
 
-export default defineConfig({
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig(async () => ({
   plugins: [
     react(),
-    runtimeErrorOverlay(),
+
+    ...(process.env.NODE_ENV !== "production"
+      ? [runtimeErrorOverlay()]
+      : []),
+
     ...(process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined
       ? [
-          // Replit-only plugins
-          // NOTE: this file must be treated as ESM; Vite supports it.
-          // If your TS complains about top-level await, see note below.
-          // @ts-ignore
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer()
-          ),
-          // @ts-ignore
-          await import("@replit/vite-plugin-dev-banner").then((m) =>
-            m.devBanner()
-          ),
+          (await import("@replit/vite-plugin-cartographer")).cartographer(),
+          (await import("@replit/vite-plugin-dev-banner")).devBanner(),
         ]
       : []),
   ],
 
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "src"),
-      "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      "@": path.resolve(__dirname, "src"),
+      "@shared": path.resolve(__dirname, "shared"),
+      "@assets": path.resolve(__dirname, "attached_assets"),
     },
   },
 
-  // ❌ root remove kar diya (ab root hi project root hai)
-
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist"),
+    outDir: path.resolve(__dirname, "dist"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1000,
+
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom"],
+        },
+      },
+    },
   },
 
   server: {
@@ -45,4 +50,4 @@ export default defineConfig({
       deny: ["**/.*"],
     },
   },
-});
+}));
