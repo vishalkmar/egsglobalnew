@@ -83,26 +83,25 @@ export default function HeroSection() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
               <span className="bg-gradient-to-r from-[#294d6b] to-[#1a3650] bg-clip-text text-transparent">
-                Your Gateway to
+                India's 1st Smart Documentation
               </span>
               <br />
-              <span className="relative inline-block mt-2">
-                Hassle-Free Document
+              <span className="relative inline-block mt-2 text-gray-800">
+                Apostille / Translation Services
                 <svg className="absolute -bottom-2 left-0 w-full" height="4" viewBox="0 0 100 4" fill="none">
                   <path d="M0 2 L100 2" stroke={PRIMARY_COLOR} strokeWidth="3" strokeLinecap="round"/>
                 </svg>
               </span>
-              <br />
-              <span className="text-gray-800">& Visa Services</span>
             </h1>
 
             {/* Description */}
             <p className="text-gray-600 text-base md:text-lg leading-relaxed mb-6">
-              We believe that every aspirant deserves a fair shot at their dream career.  
-              Based in the heart of Delhi, we specialize in crafting high-quality, exam-accurate 
-              mock tests for UPSC, SSC, and state-level government examinations.
+              We simplify your documentation and visa process with fast, reliable, and
+              expert-assisted services. From form filling to document verification, our smart
+              support system ensures a smooth and hassle-free experience for students, travelers,
+              and professionals.
             </p>
 
             {/* CTA Buttons */}
